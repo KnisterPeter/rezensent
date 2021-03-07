@@ -2537,7 +2537,7 @@ resolve@^1.19.0:
   resolution: "rezensent@workspace:."
   dependencies:
     probot: ^11.1.0
-    smee-client: ^1.2.2
+    smee-client: 1.2.2
     ts-node: ^9.1.1
     typescript: ^4.2.3
   languageName: unknown
@@ -2649,7 +2649,7 @@ resolve@^1.19.0:
   languageName: node
   linkType: hard
 
-"smee-client@npm:^1.2.2":
+"smee-client@npm:1.2.2":
   version: 1.2.2
   resolution: "smee-client@npm:1.2.2"
   dependencies:
