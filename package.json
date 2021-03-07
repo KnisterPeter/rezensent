@@ -1,0 +1,19 @@
+{
+  "name": "rezensent",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:KnisterPeter/rezensent.git",
+  "author": "Markus Wolf <mail@markus-wolf.de>",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node-transpile-only ./src/index"
+  },
+  "dependencies": {
+    "probot": "^11.1.0",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.3"
+  },
+  "devDependencies": {
+    "smee-client": "^1.2.2"
+  }
+}
