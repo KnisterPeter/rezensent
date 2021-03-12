@@ -1067,7 +1067,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "esbuild",
-        "npm:0.9.0"
+        "npm:0.9.2"
       ],
       [
         "esbuild-jest",
@@ -2924,7 +2924,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/eventsource", "npm:1.1.5"],
             ["@types/jest", "npm:26.0.20"],
             ["dotenv", "npm:8.2.0"],
-            ["esbuild", "npm:0.9.0"],
+            ["esbuild", "npm:0.9.2"],
             ["esbuild-jest", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:0.5.0"],
             ["fastify", "npm:3.13.0"],
             ["jest", "npm:26.6.3"],
@@ -6246,10 +6246,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["esbuild", [
-        ["npm:0.9.0", {
-          "packageLocation": "./.yarn/cache/esbuild-npm-0.9.0-c4be84096e-28f63aa3ce.zip/node_modules/esbuild/",
+        ["npm:0.9.2", {
+          "packageLocation": "./.yarn/cache/esbuild-npm-0.9.2-a2f69bdcd9-443c46b61e.zip/node_modules/esbuild/",
           "packageDependencies": [
-            ["esbuild", "npm:0.9.0"]
+            ["esbuild", "npm:0.9.2"]
           ],
           "linkType": "HARD",
         }]
@@ -6270,7 +6270,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@babel/plugin-transform-modules-commonjs", "virtual:95e9bef36094180fc29215e262006801584200ecbeda9eb30262387f980622e0909bc7f843168aa4d6774b7d1eec6e0e70f2f450bc6f2fd58491c1bfac1b8c6b#npm:7.13.8"],
             ["@types/esbuild", null],
             ["babel-jest", "virtual:caddf51df4928b33a437ca87b8f5ddfb6205ebd6d8231f74d4ee7223f3866e6f815b221aa1e2bd33e98915f701e95bae72a93d2288b49a34a6246bdbc2a4a132#npm:26.6.3"],
-            ["esbuild", "npm:0.9.0"]
+            ["esbuild", "npm:0.9.2"]
           ],
           "packagePeers": [
             "@types/esbuild",
@@ -10421,7 +10421,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/eventsource", "npm:1.1.5"],
             ["@types/jest", "npm:26.0.20"],
             ["dotenv", "npm:8.2.0"],
-            ["esbuild", "npm:0.9.0"],
+            ["esbuild", "npm:0.9.2"],
             ["esbuild-jest", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:0.5.0"],
             ["fastify", "npm:3.13.0"],
             ["jest", "npm:26.6.3"],
