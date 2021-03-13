@@ -1,13 +1,12 @@
 import fastify from "fastify";
 import middie from "middie";
-import { createNodeMiddleware, createProbot, ProbotOctokit } from "probot";
+import { createNodeMiddleware, createProbot } from "probot";
 import { URL } from "url";
 
 import { app } from "./app";
 
 export interface Server {
   port: number;
-  octokit: typeof ProbotOctokit;
   stop(): Promise<void>;
 }
 
@@ -27,7 +26,6 @@ export async function startServer(options?: {
 
   return {
     port: Number(new URL(address).port),
-    octokit: undefined as never,
     async stop() {
       await server.close();
     },

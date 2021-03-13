@@ -659,6 +659,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@kwsites/file-exists@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@kwsites/file-exists@npm:1.1.1"
+  dependencies:
+    debug: ^4.1.1
+  checksum: 8e13130fb3bf4cb4889f9a594531260ea8e5892caa4b7989b22b1250ab10e6ccccabef88f69b59a6059a22e3a742763ee4f3af7037dad7d98b48095baf14a58f
+  languageName: node
+  linkType: hard
+
+"@kwsites/promise-deferred@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@kwsites/promise-deferred@npm:1.1.1"
+  checksum: 1f0c17684c88b5e17868058c781e6170d929e6c27a22bb7c84e384e92582afeb67ebe1f42db5a58177cc0aa567c7052bbed884c67e243587b0560f9e9e8d31a1
+  languageName: node
+  linkType: hard
+
 "@octokit/auth-app@npm:^3.0.0":
   version: 3.0.0
   resolution: "@octokit/auth-app@npm:3.0.0"
@@ -734,6 +750,13 @@ __metadata:
   version: 5.3.1
   resolution: "@octokit/openapi-types@npm:5.3.1"
   checksum: 3112f970d228ac4b0dcb118a71a96302bf97c039a71af7e20fdc4206156ebb52b42d8b9ee76469eca5c3418946cbf21328397ae25c2c5645f6bbebfe5f59e9ed
+  languageName: node
+  linkType: hard
+
+"@octokit/openapi-types@npm:^5.3.2":
+  version: 5.3.2
+  resolution: "@octokit/openapi-types@npm:5.3.2"
+  checksum: 5c5f2f2f6ea26192072b408b3e5ce8087d4eb256addda5ebcd2e58a0a94af49e135482c0e15768ee2998c329ed178d8f491b5d229bb2f283dede2389b0bb20c9
   languageName: node
   linkType: hard
 
@@ -825,6 +848,15 @@ __metadata:
   dependencies:
     "@octokit/openapi-types": ^5.3.0
   checksum: 5875448208952b594a2c8610b0c7391b1e0f078d55b330268aa85ff7855e349193a48380c960da4ef2f70aba0132b09e742a03fa61435735e119ffdbb9bf1ce6
+  languageName: node
+  linkType: hard
+
+"@octokit/types@npm:^6.12.2":
+  version: 6.12.2
+  resolution: "@octokit/types@npm:6.12.2"
+  dependencies:
+    "@octokit/openapi-types": ^5.3.2
+  checksum: d96bb9fae7f71c849f952432ffbcecc5ce2d00c18044bfb8d993625b9c9852ad6a672f2c144ab198f4e6a3618c744bdc833158b7c02e810659b006736ab73ed5
   languageName: node
   linkType: hard
 
@@ -2427,7 +2459,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.0.0, debug@npm:^4.1.0, debug@npm:^4.1.1":
+"debug@npm:4, debug@npm:^4.0.0, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.2":
   version: 4.3.2
   resolution: "debug@npm:4.3.2"
   dependencies:
@@ -6421,6 +6453,7 @@ fsevents@^2.1.2:
   version: 0.0.0-use.local
   resolution: "rezensent@workspace:."
   dependencies:
+    "@octokit/types": ^6.12.2
     "@types/eventsource": ^1.1.5
     "@types/jest": 26.0.21
     dotenv: ^8.2.0
@@ -6430,6 +6463,7 @@ fsevents@^2.1.2:
     jest: 26.6.3
     middie: ^5.2.0
     probot: ^11.1.0
+    simple-git: ^2.36.2
     smee-client: 1.2.2
     ts-node: ^9.1.1
     typescript: ^4.2.3
@@ -6689,6 +6723,17 @@ fsevents@^2.1.2:
   version: 3.0.3
   resolution: "signal-exit@npm:3.0.3"
   checksum: f8f3fec95c8d1f9ad7e3cce07e1195f84e7a85cdcb4e825e8a2b76aa5406a039083d2bc9662b3cf40e6948262f41277047d20e6fbd58c77edced0b18fab647d8
+  languageName: node
+  linkType: hard
+
+"simple-git@npm:^2.36.2":
+  version: 2.36.2
+  resolution: "simple-git@npm:2.36.2"
+  dependencies:
+    "@kwsites/file-exists": ^1.1.1
+    "@kwsites/promise-deferred": ^1.1.1
+    debug: ^4.3.2
+  checksum: 59bd368e8a940a9bdf61b646f7dd998bfe57014e12dbb77d8967e4c20d87ea397f3fc112d6ac364610841c0baf700a52392c3314836927da95a1e752cba709af
   languageName: node
   linkType: hard
 

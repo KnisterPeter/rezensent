@@ -242,6 +242,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         "npm:26.6.2"
       ],
       [
+        "@kwsites/file-exists",
+        "npm:1.1.1"
+      ],
+      [
+        "@kwsites/promise-deferred",
+        "npm:1.1.1"
+      ],
+      [
         "@octokit/auth-app",
         "npm:3.0.0"
       ],
@@ -267,7 +275,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "@octokit/openapi-types",
-        "npm:5.3.1"
+        "npm:5.3.2"
       ],
       [
         "@octokit/plugin-enterprise-compatibility",
@@ -299,7 +307,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "@octokit/types",
-        "npm:6.12.0"
+        "npm:6.12.2"
       ],
       [
         "@octokit/webhooks",
@@ -2474,6 +2482,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         "npm:3.0.3"
       ],
       [
+        "simple-git",
+        "npm:2.36.2"
+      ],
+      [
         "sisteransi",
         "npm:1.0.5"
       ],
@@ -2921,6 +2933,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         [null, {
           "packageLocation": "./",
           "packageDependencies": [
+            ["@octokit/types", "npm:6.12.2"],
             ["@types/eventsource", "npm:1.1.5"],
             ["@types/jest", "npm:26.0.21"],
             ["dotenv", "npm:8.2.0"],
@@ -2930,6 +2943,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["jest", "npm:26.6.3"],
             ["middie", "npm:5.2.0"],
             ["probot", "npm:11.1.0"],
+            ["simple-git", "npm:2.36.2"],
             ["smee-client", "npm:1.2.2"],
             ["ts-node", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:9.1.1"],
             ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"]
@@ -3802,6 +3816,25 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["@kwsites/file-exists", [
+        ["npm:1.1.1", {
+          "packageLocation": "./.yarn/cache/@kwsites-file-exists-npm-1.1.1-8dde907e27-8e13130fb3.zip/node_modules/@kwsites/file-exists/",
+          "packageDependencies": [
+            ["@kwsites/file-exists", "npm:1.1.1"],
+            ["debug", "virtual:9c93ae9d2da23681c262d2b54e0e9677e3dbb40afddc6211dbbe4a7adfcd0d9a623dd68b8efb726226f630af722103fbbd9d17d3fb73ccc04959957d49e10cfa#npm:4.3.2"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@kwsites/promise-deferred", [
+        ["npm:1.1.1", {
+          "packageLocation": "./.yarn/cache/@kwsites-promise-deferred-npm-1.1.1-82db04bcea-1f0c17684c.zip/node_modules/@kwsites/promise-deferred/",
+          "packageDependencies": [
+            ["@kwsites/promise-deferred", "npm:1.1.1"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["@octokit/auth-app", [
         ["npm:3.0.0", {
           "packageLocation": "./.yarn/cache/@octokit-auth-app-npm-3.0.0-c42ade514e-b8ffce80e6.zip/node_modules/@octokit/auth-app/",
@@ -3884,6 +3917,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@octokit-openapi-types-npm-5.3.1-4d90246403-3112f970d2.zip/node_modules/@octokit/openapi-types/",
           "packageDependencies": [
             ["@octokit/openapi-types", "npm:5.3.1"]
+          ],
+          "linkType": "HARD",
+        }],
+        ["npm:5.3.2", {
+          "packageLocation": "./.yarn/cache/@octokit-openapi-types-npm-5.3.2-f5b8c2e3e0-5c5f2f2f6e.zip/node_modules/@octokit/openapi-types/",
+          "packageDependencies": [
+            ["@octokit/openapi-types", "npm:5.3.2"]
           ],
           "linkType": "HARD",
         }]
@@ -4016,6 +4056,14 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["@octokit/types", "npm:6.12.0"],
             ["@octokit/openapi-types", "npm:5.3.1"]
+          ],
+          "linkType": "HARD",
+        }],
+        ["npm:6.12.2", {
+          "packageLocation": "./.yarn/cache/@octokit-types-npm-6.12.2-93c422055a-d96bb9fae7.zip/node_modules/@octokit/types/",
+          "packageDependencies": [
+            ["@octokit/types", "npm:6.12.2"],
+            ["@octokit/openapi-types", "npm:5.3.2"]
           ],
           "linkType": "HARD",
         }]
@@ -6247,7 +6295,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ]],
       ["esbuild", [
         ["npm:0.9.5", {
-          "packageLocation": "./.yarn/cache/esbuild-npm-0.9.5-e23d7adbe5-dbaf6ea851.zip/node_modules/esbuild/",
+          "packageLocation": "./.yarn/unplugged/esbuild-npm-0.9.5-e23d7adbe5/node_modules/esbuild/",
           "packageDependencies": [
             ["esbuild", "npm:0.9.5"]
           ],
@@ -10418,6 +10466,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",
           "packageDependencies": [
             ["rezensent", "workspace:."],
+            ["@octokit/types", "npm:6.12.2"],
             ["@types/eventsource", "npm:1.1.5"],
             ["@types/jest", "npm:26.0.21"],
             ["dotenv", "npm:8.2.0"],
@@ -10427,6 +10476,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["jest", "npm:26.6.3"],
             ["middie", "npm:5.2.0"],
             ["probot", "npm:11.1.0"],
+            ["simple-git", "npm:2.36.2"],
             ["smee-client", "npm:1.2.2"],
             ["ts-node", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:9.1.1"],
             ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"]
@@ -10710,6 +10760,18 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/signal-exit-npm-3.0.3-5a2d797648-f8f3fec95c.zip/node_modules/signal-exit/",
           "packageDependencies": [
             ["signal-exit", "npm:3.0.3"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["simple-git", [
+        ["npm:2.36.2", {
+          "packageLocation": "./.yarn/cache/simple-git-npm-2.36.2-b4e0bb6f78-59bd368e8a.zip/node_modules/simple-git/",
+          "packageDependencies": [
+            ["simple-git", "npm:2.36.2"],
+            ["@kwsites/file-exists", "npm:1.1.1"],
+            ["@kwsites/promise-deferred", "npm:1.1.1"],
+            ["debug", "virtual:9c93ae9d2da23681c262d2b54e0e9677e3dbb40afddc6211dbbe4a7adfcd0d9a623dd68b8efb726226f630af722103fbbd9d17d3fb73ccc04959957d49e10cfa#npm:4.3.2"]
           ],
           "linkType": "HARD",
         }]
