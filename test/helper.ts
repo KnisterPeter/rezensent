@@ -7,10 +7,22 @@ import { promises as fsp } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import { URL } from "url";
+import { promisify } from "util";
 
 import type { Endpoints } from "@octokit/types";
 
 import { startServer, Server } from "../src/node";
+
+const wait = promisify(setTimeout);
+export const enum Seconds {
+  one = 1000 * 1,
+  two = 1000 * 2,
+  ten = 1000 * 10,
+  thirty = 1000 * 30,
+  sixty = 1000 * 60,
+}
+export const titlePattern = "[%t] %s";
+export const branchPattern = "%t-%s";
 
 export type Awaited<PromiseType> = PromiseType extends Promise<infer Value>
   ? Value
@@ -90,7 +102,7 @@ class ExtendedSmeeClient extends SmeeClient {
           case "check_suite":
             try {
               const head = get<string>(data, "body.check_suite.head_branch");
-              if (head === testify(head, this.#testId, "%s-%t")) {
+              if (head === testify(head, this.#testId, branchPattern)) {
                 return super.onmessage(msg);
               }
             } catch {
@@ -170,6 +182,7 @@ export async function createAuthenticatedOctokit(): Promise<
 }
 
 export const context = {
+  owner: "KnisterPeter",
   repo<T>(object: T) {
     return {
       owner: "KnisterPeter",
@@ -179,7 +192,7 @@ export const context = {
   },
 };
 
-function testify(str: string, testId: string, test = "[%t] %s"): string {
+function testify(str: string, testId: string, test = titlePattern): string {
   const pattern = test
     .replace("[", "\\[")
     .replace("]", "\\]")
@@ -193,11 +206,43 @@ function testify(str: string, testId: string, test = "[%t] %s"): string {
 }
 
 export type CreatePullRequestParams = Endpoints["POST /repos/{owner}/{repo}/pulls"]["parameters"];
+export type ListPullRequestParams = Endpoints["GET /repos/{owner}/{repo}/pulls"]["parameters"] & {
+  user: string;
+  assignee: string;
+  labels: string[];
+};
+export type ListPullRequestResponse = Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"][number];
 export type CreateLabelParams = Endpoints["POST /repos/{owner}/{repo}/labels"]["parameters"];
+
+async function waitFor<Result>(
+  test: () => Promise<Result | undefined>,
+  timeout: number
+): Promise<Result> {
+  const start = Date.now();
+
+  let result = await test();
+  while (
+    result === undefined ||
+    (Array.isArray(result) && result.length === 0)
+  ) {
+    if (start + timeout < Date.now()) {
+      throw new Error("Timeout");
+    }
+    await wait(Seconds.two);
+    result = await test();
+  }
+
+  return result;
+}
 
 export type TestRunner = {
   testId: string;
 
+  user: {
+    name: string;
+    login: string;
+    email: string;
+  };
   octokit: AuthenticatedOctokit;
   github: {
     createLabel(params: Partial<CreateLabelParams>): Promise<string>;
@@ -209,6 +254,11 @@ export type TestRunner = {
     ): Promise<number>;
     closePullRequest(number: number): Promise<void>;
     closePullRequestAfterTest(number: number): void;
+
+    waitForPullRequest(
+      params: Partial<ListPullRequestParams>,
+      timeout?: number
+    ): Promise<number>;
   };
 
   gitClone(): Promise<{
@@ -218,6 +268,8 @@ export type TestRunner = {
       createBranch(name: string): Promise<string>;
       deleteBranch(name: string): Promise<void>;
       deleteBranchAfterTest(name: string): void;
+
+      writeFiles(files: { [path: string]: string }): Promise<void>;
 
       addAndPushAllChanges(branch: string, message: string): Promise<void>;
     };
@@ -280,7 +332,7 @@ export async function createPullRequest(
   } = await octokit.pulls.create(
     context.repo({
       base,
-      head: testify(head, testId, "%s-%t"),
+      head: testify(head, testId, branchPattern),
       title: testify(title, testId),
       body,
       draft,
@@ -289,6 +341,52 @@ export async function createPullRequest(
 
   console.log(`[${testId}] Created pull request [number=${number}]`);
   return number;
+}
+
+export async function listPullRequests(
+  octokit: AuthenticatedOctokit,
+  testId: string,
+  {
+    base,
+    direction,
+    head,
+    sort,
+    state,
+    user,
+    assignee,
+    labels,
+  }: Partial<ListPullRequestParams>
+): Promise<ListPullRequestResponse[]> {
+  console.log(`[${testId}] List pull requests`);
+
+  let { data: list } = await octokit.pulls.list(
+    context.repo({
+      base,
+      head: head
+        ? `${context.owner}:${testify(head, testId, branchPattern)}`
+        : undefined,
+      direction,
+      sort,
+      state,
+    })
+  );
+
+  list = list
+    .filter((pullRequest) => !user || pullRequest.user?.login === user)
+    .filter(
+      (pullRequest) => !assignee || pullRequest.assignee?.login === assignee
+    )
+    .filter(
+      (pullRequest) =>
+        !labels ||
+        pullRequest.labels
+          .map((label) => label.name)
+          .filter((label): label is string => Boolean(label))
+          .every((label) => labels.includes(label))
+    );
+
+  console.log(list);
+  return list;
 }
 
 export async function closePullRequest(
@@ -312,7 +410,6 @@ export async function getCredentials(
   name: string;
   login: string;
   email: string;
-  id: number;
 }> {
   const appOctokit = getAppOctokit();
 
@@ -325,7 +422,6 @@ export async function getCredentials(
     name: authenticated.name,
     login: user.login,
     email: `${user.id}+${user.login}@users.noreply.github.com`,
-    id: user.id,
   };
 }
 
@@ -364,7 +460,7 @@ export async function createBranch(
 ): Promise<string> {
   console.log(`[${testId}] Crate branch [name=${name}]`);
 
-  const branchName = testify(name, testId, "%s-%t");
+  const branchName = testify(name, testId, branchPattern);
   await git.checkout(["-b", branchName]);
   return branchName;
 }
@@ -376,9 +472,20 @@ export async function deleteBranch(
 ): Promise<void> {
   console.log(`[${testId}] Delete branch [name=${name}]`);
 
-  const branchName = testify(name, testId, "%s-%t");
+  const branchName = testify(name, testId, branchPattern);
 
   await git.push(["origin", "--delete", branchName]);
+}
+
+export async function writeFiles(
+  directory: string,
+  files: { [path: string]: string }
+): Promise<void> {
+  const tasks: Promise<void>[] = [];
+  for (const [path, contents] of Object.entries(files)) {
+    tasks.push(fsp.writeFile(join(directory, path), contents));
+  }
+  await Promise.all(tasks);
 }
 
 export async function addAndPushAllChanges(
@@ -390,7 +497,7 @@ export async function addAndPushAllChanges(
   await git
     .add(["."])
     .commit(message)
-    .push(["origin", testify(branch, testId, "%s-%t")]);
+    .push(["origin", testify(branch, testId, branchPattern)]);
 }
 
 type Task = () => Promise<void>;
@@ -410,6 +517,7 @@ export function setupApp(
         await test({
           testId,
 
+          user: await getCredentials(octokit),
           octokit,
           github: {
             createLabel: (params) => createLabel(octokit, testId, params),
@@ -425,6 +533,17 @@ export function setupApp(
               cleanupTasks.push(() =>
                 closePullRequest(octokit, testId, number)
               ),
+
+            waitForPullRequest: async (params, timeout = Seconds.ten) => {
+              const pullRequest = await waitFor<ListPullRequestResponse>(
+                async () => {
+                  const list = await listPullRequests(octokit, testId, params);
+                  return list.length > 0 ? list[0] : undefined;
+                },
+                timeout
+              );
+              return pullRequest.number;
+            },
           },
 
           async gitClone() {
@@ -440,6 +559,8 @@ export function setupApp(
                 deleteBranch: (name) => deleteBranch(git, testId, name),
                 deleteBranchAfterTest: (name) =>
                   cleanupTasks.push(() => deleteBranch(git, testId, name)),
+
+                writeFiles: (files) => writeFiles(directory, files),
 
                 addAndPushAllChanges: (branch, message) =>
                   addAndPushAllChanges(git, testId, branch, message),

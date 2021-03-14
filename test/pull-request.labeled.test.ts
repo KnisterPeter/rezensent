@@ -1,13 +1,10 @@
-import { promises as fsp } from "fs";
-import { join } from "path";
-
-import { setupApp, context } from "./helper";
+import { setupApp, context, Seconds } from "./helper";
 
 jest.setTimeout(1000 * 60 * 15);
 
 test(
-  "When a rezensent label is added to a pull request",
-  setupApp(async ({ gitClone, octokit, github }) => {
+  "Rezensent happy path workflow",
+  setupApp(async ({ gitClone, testId, user, octokit, github }) => {
     const label = "Rezensent: Review";
     const branch = "add-label";
 
@@ -16,11 +13,14 @@ test(
     });
     github.deleteLabelAfterTest(label);
 
-    const { directory, git } = await gitClone();
+    const { git } = await gitClone();
 
+    // create a pr and add the review label
     await git.createBranch(branch);
     git.deleteBranchAfterTest(branch);
-    await fsp.writeFile(join(directory, "a.txt"), "a");
+    await git.writeFiles({
+      "a.txt": "a",
+    });
     await git.addAndPushAllChanges(branch, "add a");
 
     const number = await github.createPullRequest({
@@ -31,11 +31,22 @@ test(
     await octokit.issues.addLabels(
       context.repo({
         issue_number: number,
-        labels: [label],
+        labels: [`[${testId}] ${label}`],
       })
     );
 
-    // todo: expect...
-    expect(true).toBeTruthy();
+    await github.waitForPullRequest(
+      {
+        head: `${branch}/team`,
+        state: "open",
+        user: user.login,
+      },
+      Seconds.thirty
+    );
+
+    // todo: merge one of the splitted prs
+    // todo: wait for the main pr to catch up
+    // todo: merge the second splitted pr
+    // todo: wait for the main pr to be closed
   })
 );
