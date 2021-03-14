@@ -6468,6 +6468,7 @@ fsevents@^2.1.2:
   resolution: "rezensent@workspace:."
   dependencies:
     "@octokit/types": ^6.12.2
+    "@octokit/webhooks": 7.21.0
     "@types/common-tags": ^1.8.0
     "@types/eventsource": ^1.1.5
     "@types/jest": 26.0.21
