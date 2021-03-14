@@ -5,7 +5,7 @@ import SmeeClient from "smee-client";
 import Git, { SimpleGit } from "simple-git";
 import { promises as fsp } from "fs";
 import { tmpdir } from "os";
-import { join } from "path";
+import { dirname, join } from "path";
 import { URL } from "url";
 import { promisify } from "util";
 
@@ -53,7 +53,7 @@ export function idGen(n: number): string {
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
   let str = "";
   for (let i = 0; i < n; i++) {
-    str += chars[Math.round(Math.random() * chars.length)];
+    str += chars[Math.round(Math.random() * (chars.length - 1))];
   }
   return str;
 }
@@ -103,6 +103,16 @@ class ExtendedSmeeClient extends SmeeClient {
             try {
               const head = get<string>(data, "body.check_suite.head_branch");
               if (head === testify(head, this.#testId, branchPattern)) {
+                return super.onmessage(msg);
+              }
+            } catch {
+              // ignore and throw below
+            }
+            break;
+          case "status":
+            try {
+              const branch = get<string>(data, "body.branches.0.name");
+              if (branch === testify(branch, this.#testId, branchPattern)) {
                 return super.onmessage(msg);
               }
             } catch {
@@ -221,10 +231,7 @@ async function waitFor<Result>(
   const start = Date.now();
 
   let result = await test();
-  while (
-    result === undefined ||
-    (Array.isArray(result) && result.length === 0)
-  ) {
+  while (result === undefined) {
     if (start + timeout < Date.now()) {
       throw new Error("Timeout");
     }
@@ -237,12 +244,12 @@ async function waitFor<Result>(
 
 export type TestRunner = {
   testId: string;
-
   user: {
     name: string;
     login: string;
     email: string;
   };
+
   octokit: AuthenticatedOctokit;
   github: {
     createLabel(params: Partial<CreateLabelParams>): Promise<string>;
@@ -280,12 +287,17 @@ export type AuthenticatedOctokit = Awaited<
   ReturnType<typeof createAuthenticatedOctokit>
 >;
 
+export interface OctokitTaskContext {
+  octokit: AuthenticatedOctokit;
+  testId: string;
+  log: typeof console["log"];
+}
+
 export async function createLabel(
-  octokit: AuthenticatedOctokit,
-  testId: string,
+  { octokit, testId, log }: OctokitTaskContext,
   { name = "label", description, color }: Partial<CreateLabelParams>
 ): Promise<string> {
-  console.log(`[${testId}] Create label ${name}`);
+  log(`[${testId}] Create label ${name}`);
 
   const {
     data: { name: labelName },
@@ -301,11 +313,10 @@ export async function createLabel(
 }
 
 export async function deleteLabel(
-  octokit: AuthenticatedOctokit,
-  testId: string,
+  { octokit, testId, log }: OctokitTaskContext,
   name: string
 ): Promise<void> {
-  console.log(`[${testId}] Delete label ${name}`);
+  log(`[${testId}] Delete label ${name}`);
 
   await octokit.issues.deleteLabel(
     context.repo({
@@ -315,8 +326,7 @@ export async function deleteLabel(
 }
 
 export async function createPullRequest(
-  octokit: AuthenticatedOctokit,
-  testId: string,
+  { octokit, testId, log }: OctokitTaskContext,
   {
     base = "main",
     head = "pull-request",
@@ -325,7 +335,7 @@ export async function createPullRequest(
     draft = false,
   }: Partial<CreatePullRequestParams>
 ): Promise<number> {
-  console.log(`[${testId}] Create pull request [title=${title}]`);
+  log(`[${testId}] Create pull request [title=${title}]`);
 
   const {
     data: { number },
@@ -339,13 +349,12 @@ export async function createPullRequest(
     })
   );
 
-  console.log(`[${testId}] Created pull request [number=${number}]`);
+  log(`[${testId}] Created pull request [number=${number}]`);
   return number;
 }
 
 export async function listPullRequests(
-  octokit: AuthenticatedOctokit,
-  testId: string,
+  { octokit, testId, log }: OctokitTaskContext,
   {
     base,
     direction,
@@ -357,7 +366,7 @@ export async function listPullRequests(
     labels,
   }: Partial<ListPullRequestParams>
 ): Promise<ListPullRequestResponse[]> {
-  console.log(`[${testId}] List pull requests`);
+  log(`[${testId}] List pull requests`);
 
   let { data: list } = await octokit.pulls.list(
     context.repo({
@@ -385,16 +394,14 @@ export async function listPullRequests(
           .every((label) => labels.includes(label))
     );
 
-  console.log(list);
   return list;
 }
 
 export async function closePullRequest(
-  octokit: AuthenticatedOctokit,
-  testId: string,
+  { octokit, testId, log }: OctokitTaskContext,
   number: number
 ): Promise<void> {
-  console.log(`[${testId}] Close pull request [number=${number}]`);
+  log(`[${testId}] Close pull request [number=${number}]`);
 
   await octokit.pulls.update(
     context.repo({
@@ -453,12 +460,17 @@ export async function setupGit(
   }
 }
 
+export interface SimpleGitTaskContext {
+  git: SimpleGit;
+  testId: string;
+  log: typeof console["log"];
+}
+
 export async function createBranch(
-  git: SimpleGit,
-  testId: string,
+  { git, testId, log }: SimpleGitTaskContext,
   name: string
 ): Promise<string> {
-  console.log(`[${testId}] Crate branch [name=${name}]`);
+  log(`[${testId}] Crate branch [name=${name}]`);
 
   const branchName = testify(name, testId, branchPattern);
   await git.checkout(["-b", branchName]);
@@ -466,11 +478,10 @@ export async function createBranch(
 }
 
 export async function deleteBranch(
-  git: SimpleGit,
-  testId: string,
+  { git, testId, log }: SimpleGitTaskContext,
   name: string
 ): Promise<void> {
-  console.log(`[${testId}] Delete branch [name=${name}]`);
+  log(`[${testId}] Delete branch [name=${name}]`);
 
   const branchName = testify(name, testId, branchPattern);
 
@@ -483,7 +494,13 @@ export async function writeFiles(
 ): Promise<void> {
   const tasks: Promise<void>[] = [];
   for (const [path, contents] of Object.entries(files)) {
-    tasks.push(fsp.writeFile(join(directory, path), contents));
+    tasks.push(
+      (async () => {
+        const fullPath = join(directory, path);
+        await fsp.mkdir(dirname(fullPath), { recursive: true });
+        await fsp.writeFile(fullPath, contents);
+      })()
+    );
   }
   await Promise.all(tasks);
 }
@@ -520,28 +537,43 @@ export function setupApp(
           user: await getCredentials(octokit),
           octokit,
           github: {
-            createLabel: (params) => createLabel(octokit, testId, params),
-            deleteLabel: (name) => deleteLabel(octokit, testId, name),
+            createLabel: (params) =>
+              createLabel({ octokit, testId, log: console.log }, params),
+            deleteLabel: (name) =>
+              deleteLabel({ octokit, testId, log: console.log }, name),
             deleteLabelAfterTest: (name) =>
-              cleanupTasks.push(() => deleteLabel(octokit, testId, name)),
+              cleanupTasks.push(() =>
+                deleteLabel({ octokit, testId, log: () => undefined }, name)
+              ),
 
             createPullRequest: (params) =>
-              createPullRequest(octokit, testId, params),
+              createPullRequest({ octokit, testId, log: console.log }, params),
             closePullRequest: (number) =>
-              closePullRequest(octokit, testId, number),
+              closePullRequest({ octokit, testId, log: console.log }, number),
             closePullRequestAfterTest: (number) =>
               cleanupTasks.push(() =>
-                closePullRequest(octokit, testId, number)
+                closePullRequest(
+                  { octokit, testId, log: () => undefined },
+                  number
+                )
               ),
 
             waitForPullRequest: async (params, timeout = Seconds.ten) => {
+              console.log(
+                `[${testId}] Wait for pull request [timeout=${timeout / 1000}s]`
+              );
+
               const pullRequest = await waitFor<ListPullRequestResponse>(
                 async () => {
-                  const list = await listPullRequests(octokit, testId, params);
+                  const list = await listPullRequests(
+                    { octokit, testId, log: () => undefined },
+                    params
+                  );
                   return list.length > 0 ? list[0] : undefined;
                 },
                 timeout
               );
+
               return pullRequest.number;
             },
           },
@@ -555,10 +587,14 @@ export function setupApp(
               simpleGit: git,
               directory,
               git: {
-                createBranch: (name) => createBranch(git, testId, name),
-                deleteBranch: (name) => deleteBranch(git, testId, name),
+                createBranch: (name) =>
+                  createBranch({ git, testId, log: console.log }, name),
+                deleteBranch: (name) =>
+                  deleteBranch({ git, testId, log: console.log }, name),
                 deleteBranchAfterTest: (name) =>
-                  cleanupTasks.push(() => deleteBranch(git, testId, name)),
+                  cleanupTasks.push(() =>
+                    deleteBranch({ git, testId, log: () => undefined }, name)
+                  ),
 
                 writeFiles: (files) => writeFiles(directory, files),
 
