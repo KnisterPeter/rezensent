@@ -25,8 +25,10 @@
   },
   "devDependencies": {
     "@octokit/types": "^6.12.2",
+    "@types/common-tags": "^1.8.0",
     "@types/eventsource": "^1.1.5",
     "@types/jest": "26.0.21",
+    "common-tags": "^1.8.0",
     "esbuild": "0.9.5",
     "esbuild-jest": "0.5.0",
     "jest": "26.6.3",

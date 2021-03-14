@@ -390,6 +390,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         "npm:1.19.0"
       ],
       [
+        "@types/common-tags",
+        "npm:1.8.0"
+      ],
+      [
         "@types/configstore",
         "npm:4.0.0"
       ],
@@ -856,6 +860,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       [
         "commander",
         "npm:6.2.1"
+      ],
+      [
+        "common-tags",
+        "npm:1.8.0"
       ],
       [
         "component-emitter",
@@ -2934,8 +2942,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",
           "packageDependencies": [
             ["@octokit/types", "npm:6.12.2"],
+            ["@types/common-tags", "npm:1.8.0"],
             ["@types/eventsource", "npm:1.1.5"],
             ["@types/jest", "npm:26.0.21"],
+            ["common-tags", "npm:1.8.0"],
             ["dotenv", "npm:8.2.0"],
             ["esbuild", "npm:0.9.5"],
             ["esbuild-jest", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:0.5.0"],
@@ -4310,6 +4320,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/body-parser", "npm:1.19.0"],
             ["@types/connect", "npm:3.4.34"],
             ["@types/node", "npm:14.14.32"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@types/common-tags", [
+        ["npm:1.8.0", {
+          "packageLocation": "./.yarn/cache/@types-common-tags-npm-1.8.0-812cad42b1-d6dce80376.zip/node_modules/@types/common-tags/",
+          "packageDependencies": [
+            ["@types/common-tags", "npm:1.8.0"]
           ],
           "linkType": "HARD",
         }]
@@ -5689,6 +5708,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/commander-npm-6.2.1-d5b635f237-47856aae6f.zip/node_modules/commander/",
           "packageDependencies": [
             ["commander", "npm:6.2.1"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["common-tags", [
+        ["npm:1.8.0", {
+          "packageLocation": "./.yarn/cache/common-tags-npm-1.8.0-7a31956e16-f37a868d86.zip/node_modules/common-tags/",
+          "packageDependencies": [
+            ["common-tags", "npm:1.8.0"]
           ],
           "linkType": "HARD",
         }]
@@ -10467,8 +10495,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["rezensent", "workspace:."],
             ["@octokit/types", "npm:6.12.2"],
+            ["@types/common-tags", "npm:1.8.0"],
             ["@types/eventsource", "npm:1.1.5"],
             ["@types/jest", "npm:26.0.21"],
+            ["common-tags", "npm:1.8.0"],
             ["dotenv", "npm:8.2.0"],
             ["esbuild", "npm:0.9.5"],
             ["esbuild-jest", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:0.5.0"],
