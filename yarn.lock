@@ -1075,6 +1075,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/common-tags@npm:^1.8.0":
+  version: 1.8.0
+  resolution: "@types/common-tags@npm:1.8.0"
+  checksum: d6dce803763646d3746a64373c3960b69c528bd67f6937e4c39747c97ecad9e633c92a78dd2b47f4668b81a2e5a8792fb4fe02ca5f3d42106acd555e794c788a
+  languageName: node
+  linkType: hard
+
 "@types/configstore@npm:*":
   version: 4.0.0
   resolution: "@types/configstore@npm:4.0.0"
@@ -2257,6 +2264,13 @@ __metadata:
   version: 6.2.1
   resolution: "commander@npm:6.2.1"
   checksum: 47856aae6f194404122e359d8463e5e1a18f7cbab26722ce69f1379be8514bd49a160ef81a983d3d2091e3240022643354101d1276c797dcdd0b5bfc3c3f04a3
+  languageName: node
+  linkType: hard
+
+"common-tags@npm:^1.8.0":
+  version: 1.8.0
+  resolution: "common-tags@npm:1.8.0"
+  checksum: f37a868d868929cf345fe49c4122efde693f9b06bf5764df36c3bdf5d3c271a24bb3fb6fbfaeec1f29768e60ad648cc11a4092c91bac05a8bde90ddbf5aae1a8
   languageName: node
   linkType: hard
 
@@ -6454,8 +6468,10 @@ fsevents@^2.1.2:
   resolution: "rezensent@workspace:."
   dependencies:
     "@octokit/types": ^6.12.2
+    "@types/common-tags": ^1.8.0
     "@types/eventsource": ^1.1.5
     "@types/jest": 26.0.21
+    common-tags: ^1.8.0
     dotenv: ^8.2.0
     esbuild: 0.9.5
     esbuild-jest: 0.5.0

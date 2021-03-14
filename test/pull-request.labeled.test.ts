@@ -1,3 +1,5 @@
+import { stripIndent } from "common-tags";
+
 import { setupApp, context, Seconds } from "./helper";
 
 jest.setTimeout(1000 * 60 * 15);
@@ -19,7 +21,15 @@ test(
     await git.createBranch(branch);
     git.deleteBranchAfterTest(branch);
     await git.writeFiles({
-      "a.txt": "a",
+      ".github/CODEOWNERS": stripIndent`
+        folder-a @KnisterPeter
+        folder-b @pr-merger
+      `,
+      ".github/rezensent.yml": stripIndent`
+        label: "[${testId}] ${label}"
+      `,
+      "folder-a/a.txt": `a`,
+      "folder-b/b.txt": `b`,
     });
     await git.addAndPushAllChanges(branch, "add a");
 
