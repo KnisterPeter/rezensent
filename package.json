@@ -16,10 +16,14 @@
     "test": "jest"
   },
   "dependencies": {
+    "@octokit/types": "^6.12.2",
+    "@octokit/webhooks": "7.21.0",
+    "@types/eventsource": "^1.1.5",
     "dotenv": "^8.2.0",
     "fastify": "^3.13.0",
     "middie": "^5.2.0",
     "probot": "^11.1.0",
+    "simple-git": "^2.36.2",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.3"
   },
@@ -32,7 +36,6 @@
     "esbuild": "0.9.5",
     "esbuild-jest": "0.5.0",
     "jest": "26.6.3",
-    "simple-git": "^2.36.2",
     "smee-client": "1.2.2"
   },
   "jest": {
