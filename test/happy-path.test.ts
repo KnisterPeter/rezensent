@@ -22,8 +22,8 @@ test(
     git.deleteBranchAfterTest(branch);
     await git.writeFiles({
       ".github/CODEOWNERS": stripIndent`
-        folder-a @KnisterPeter
-        folder-b @pr-merger
+        folder-a @team-a
+        folder-b @team-b
       `,
       ".github/rezensent.yml": stripIndent`
         label: "[${testId}] ${label}"
@@ -45,14 +45,27 @@ test(
       })
     );
 
-    await github.waitForPullRequest(
+    const splitTeamA = await github.waitForPullRequest(
       {
-        head: `${branch}/team`,
+        head: `${branch}-team-a`,
         state: "open",
         user: user.login,
       },
       Seconds.thirty
     );
+    git.deleteBranchAfterTest(`${branch}-team-a`);
+    github.closePullRequestAfterTest(splitTeamA);
+
+    const splitTeamB = await github.waitForPullRequest(
+      {
+        head: `${branch}-team-b`,
+        state: "open",
+        user: user.login,
+      },
+      Seconds.thirty
+    );
+    git.deleteBranchAfterTest(`${branch}-team-b`);
+    github.closePullRequestAfterTest(splitTeamB);
 
     // todo: merge one of the splitted prs
     // todo: wait for the main pr to catch up
