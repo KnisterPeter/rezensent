@@ -4,9 +4,9 @@ export interface Configuration {
   label: string;
 }
 
-export async function getConfig(
-  branch: string,
-  context: Context
+export async function get(
+  context: Context,
+  branch: string
 ): Promise<Configuration> {
   const config = await context.octokit.config.get(
     context.repo({

@@ -1,7 +1,7 @@
 import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
 
-import { getConfig } from "./get-config";
+import * as config from "./config";
 
 export async function onLabelAdded(
   context: EventTypesPayload["pull_request.labeled"] &
@@ -13,9 +13,9 @@ export async function onLabelAdded(
     head: { ref: head, sha: headSha },
   } = context.payload.pull_request;
 
-  const config = await getConfig(head, context);
+  const configuration = await config.get(context, head);
 
-  if (label !== config.label) {
+  if (label !== configuration.label) {
     context.log.debug(`Ignoring label on PR ${number}`);
     return;
   }
