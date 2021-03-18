@@ -427,7 +427,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "@types/jest",
-        "npm:26.0.20"
+        "npm:26.0.21"
       ],
       [
         "@types/js-yaml",
@@ -2922,7 +2922,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",
           "packageDependencies": [
             ["@types/eventsource", "npm:1.1.5"],
-            ["@types/jest", "npm:26.0.20"],
+            ["@types/jest", "npm:26.0.21"],
             ["dotenv", "npm:8.2.0"],
             ["esbuild", "npm:0.9.3"],
             ["esbuild-jest", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:0.5.0"],
@@ -4378,10 +4378,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@types/jest", [
-        ["npm:26.0.20", {
-          "packageLocation": "./.yarn/cache/@types-jest-npm-26.0.20-e4c9c054bf-221e39c7c9.zip/node_modules/@types/jest/",
+        ["npm:26.0.21", {
+          "packageLocation": "./.yarn/cache/@types-jest-npm-26.0.21-7bb11f0108-c219599d66.zip/node_modules/@types/jest/",
           "packageDependencies": [
-            ["@types/jest", "npm:26.0.20"],
+            ["@types/jest", "npm:26.0.21"],
             ["jest-diff", "npm:26.6.2"],
             ["pretty-format", "npm:26.6.2"]
           ],
@@ -10419,7 +10419,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [
             ["rezensent", "workspace:."],
             ["@types/eventsource", "npm:1.1.5"],
-            ["@types/jest", "npm:26.0.20"],
+            ["@types/jest", "npm:26.0.21"],
             ["dotenv", "npm:8.2.0"],
             ["esbuild", "npm:0.9.3"],
             ["esbuild-jest", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:0.5.0"],
