@@ -1,11 +1,11 @@
 # rezensent
 
-The rezensent is a github app which help managing big pull requests in a
+The rezensent (german for reviewer) is a github app which help managing big pull requests in a
 repository divided by code ownership rules.
 
 ## Idea
 
-Spit a pull request into several smaller ones along the lines of ownership.
+Split a pull request into several smaller ones along the lines of ownership.
 Then maintain the spitted pull requests using the app.
 
 It is loosely based on the idea of [googles rosie](https://cacm.acm.org/magazines/2016/7/204032-why-google-stores-billions-of-lines-of-code-in-a-single-repository/fulltext)
