@@ -6,7 +6,7 @@ jest.setTimeout(Minutes.fifteen);
 
 test(
   "Rezensent happy path workflow",
-  setupApp(async ({ gitClone, user, github }) => {
+  setupApp(async ({ logStep, gitClone, user, github }) => {
     //----------------------------------------
     // setup bot (labels, ...)
     //
@@ -22,8 +22,8 @@ test(
     const { git } = await gitClone();
 
     //----------------------------------------
-    // setup repo (branches, ...)
     //
+    logStep("Setup repo (branches, ...)");
 
     const mainBranch = await git.createBranch("main-test");
     await git.writeFiles({
@@ -42,8 +42,8 @@ test(
     let mainBranchSha = await git.getSha(mainBranch);
 
     //----------------------------------------
-    // prepare review pull request
     //
+    logStep("Prepare base pull request");
 
     const changeBranch = await git.createBranch("some-changes");
     await git.writeFiles({
@@ -52,15 +52,17 @@ test(
     });
     await git.addAndPushAllChanges(changeBranch, "add some files across teams");
 
-    const number = await github.createPullRequest({
+    const basePrNumber = await github.createPullRequest({
       base: mainBranch,
       head: changeBranch,
     });
-    await github.addLabel(number, managedReviewLabel);
+    await github.addLabel(basePrNumber, managedReviewLabel);
+    let basePr = await github.getPullRequest(basePrNumber);
 
     //----------------------------------------
-    // wait for bot to work
+    // wait for bot work
     //
+    logStep("Wait for bot work");
 
     const [splitTeamA, splitTeamB] = await Promise.all([
       github.waitForPullRequest({
@@ -81,8 +83,8 @@ test(
     git.deleteBranchAfterTest(`${changeBranch}-team-b`);
 
     //----------------------------------------
-    // merge first pr
     //
+    logStep("Merge first pr");
 
     await github.mergePullRequest(splitTeamA);
 
@@ -97,9 +99,18 @@ test(
       mainBranchSha
     );
 
+    await github.waitForPullRequestBaseToBeUpdated(
+      basePrNumber,
+      basePr.base.sha
+    );
+    basePr = await github.getPullRequest(basePrNumber);
+
+    let files = await github.getPullRequestFiles(basePrNumber);
+    expect(files).toHaveLength(1);
+
     //----------------------------------------
-    // merge second pr
     //
+    logStep("Merge second pr");
 
     await github.mergePullRequest(splitTeamB);
 
@@ -109,9 +120,21 @@ test(
       user: user.login,
     });
 
-    mainBranchSha = await git.waitForBranchToBeUpdated(
-      mainBranch,
-      mainBranchSha
+    await github.waitForPullRequestBaseToBeUpdated(
+      basePrNumber,
+      basePr.base.sha
     );
+
+    //----------------------------------------
+    //
+    logStep("Base pull request should be empty");
+
+    await github.waitForPullRequest({
+      head: changeBranch,
+      state: "closed",
+    });
+
+    files = await github.getPullRequestFiles(basePrNumber);
+    expect(files).toHaveLength(0);
   })
 );

@@ -502,6 +502,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         "npm:1.13.9"
       ],
       [
+        "@types/slice-ansi",
+        "npm:4.0.0"
+      ],
+      [
         "@types/sonic-boom",
         "npm:0.7.0"
       ],
@@ -636,6 +640,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       [
         "assign-symbols",
         "npm:1.0.0"
+      ],
+      [
+        "astral-regex",
+        "npm:2.0.0"
       ],
       [
         "asynckit",
@@ -2502,6 +2510,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         "npm:3.0.0"
       ],
       [
+        "slice-ansi",
+        "npm:4.0.0"
+      ],
+      [
         "smee-client",
         "npm:1.2.2"
       ],
@@ -2946,6 +2958,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/common-tags", "npm:1.8.0"],
             ["@types/eventsource", "npm:1.1.5"],
             ["@types/jest", "npm:26.0.21"],
+            ["@types/slice-ansi", "npm:4.0.0"],
+            ["chalk", "npm:4.1.0"],
             ["common-tags", "npm:1.8.0"],
             ["dotenv", "npm:8.2.0"],
             ["esbuild", "npm:0.9.5"],
@@ -2955,6 +2969,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["middie", "npm:5.2.0"],
             ["probot", "npm:11.1.0"],
             ["simple-git", "npm:2.36.2"],
+            ["slice-ansi", "npm:4.0.0"],
             ["smee-client", "npm:1.2.2"],
             ["ts-node", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:9.1.1"],
             ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"]
@@ -4601,6 +4616,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD",
         }]
       ]],
+      ["@types/slice-ansi", [
+        ["npm:4.0.0", {
+          "packageLocation": "./.yarn/cache/@types-slice-ansi-npm-4.0.0-3ea421e2de-d4b0e28dc2.zip/node_modules/@types/slice-ansi/",
+          "packageDependencies": [
+            ["@types/slice-ansi", "npm:4.0.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
       ["@types/sonic-boom", [
         ["npm:0.7.0", {
           "packageLocation": "./.yarn/cache/@types-sonic-boom-npm-0.7.0-de707a960a-b6a7c29c7b.zip/node_modules/@types/sonic-boom/",
@@ -4976,6 +5000,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/assign-symbols-npm-1.0.0-fd803ccdf1-893e9389a5.zip/node_modules/assign-symbols/",
           "packageDependencies": [
             ["assign-symbols", "npm:1.0.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["astral-regex", [
+        ["npm:2.0.0", {
+          "packageLocation": "./.yarn/cache/astral-regex-npm-2.0.0-f30d866aab-bf049ee704.zip/node_modules/astral-regex/",
+          "packageDependencies": [
+            ["astral-regex", "npm:2.0.0"]
           ],
           "linkType": "HARD",
         }]
@@ -10500,6 +10533,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/common-tags", "npm:1.8.0"],
             ["@types/eventsource", "npm:1.1.5"],
             ["@types/jest", "npm:26.0.21"],
+            ["@types/slice-ansi", "npm:4.0.0"],
+            ["chalk", "npm:4.1.0"],
             ["common-tags", "npm:1.8.0"],
             ["dotenv", "npm:8.2.0"],
             ["esbuild", "npm:0.9.5"],
@@ -10509,6 +10544,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["middie", "npm:5.2.0"],
             ["probot", "npm:11.1.0"],
             ["simple-git", "npm:2.36.2"],
+            ["slice-ansi", "npm:4.0.0"],
             ["smee-client", "npm:1.2.2"],
             ["ts-node", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:9.1.1"],
             ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"]
@@ -10822,6 +10858,18 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/slash-npm-3.0.0-b87de2279a-fc3e8597d8.zip/node_modules/slash/",
           "packageDependencies": [
             ["slash", "npm:3.0.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["slice-ansi", [
+        ["npm:4.0.0", {
+          "packageLocation": "./.yarn/cache/slice-ansi-npm-4.0.0-6eeca1d10e-f411aa0518.zip/node_modules/slice-ansi/",
+          "packageDependencies": [
+            ["slice-ansi", "npm:4.0.0"],
+            ["ansi-styles", "npm:4.3.0"],
+            ["astral-regex", "npm:2.0.0"],
+            ["is-fullwidth-code-point", "npm:3.0.0"]
           ],
           "linkType": "HARD",
         }]

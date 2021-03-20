@@ -3,10 +3,11 @@ import type { Context } from "probot";
 
 import { getConfig } from "./config";
 import {
-  cloneRepo,
-  getPullRequestCommits,
+  closePullRequest,
+  getPullRequestFiles,
   getPullRequests,
   isReferencedPullRequest,
+  waitForPullRequestUpdate,
 } from "./github";
 
 export async function onPullRequestClosed(
@@ -70,22 +71,32 @@ export async function onPullRequestClosed(
     return;
   }
 
-  const basePullRequestCommits = await getPullRequestCommits({
+  await context.octokit.pulls.updateBranch(
+    repo({
+      mediaType: {
+        previews: ["lydian"],
+      },
+      pull_number: basePullRequest.number,
+    })
+  );
+
+  await waitForPullRequestUpdate({
+    octokit: context.octokit,
+    repo,
+    pullRequest: basePullRequest,
+  });
+
+  const files = await getPullRequestFiles({
     octokit: context.octokit,
     repo,
     number: basePullRequest.number,
   });
 
-  const git = await cloneRepo({
-    octokit: context.octokit,
-    repo,
-    branch: basePullRequest.head.ref,
-    depth: basePullRequestCommits.length + 1,
-  });
-  try {
-    await git.rebase(basePullRequest.base.ref);
-    await git.forcePush(basePullRequest.head.ref);
-  } finally {
-    await git.close();
+  if (files.length === 0) {
+    await closePullRequest({
+      octokit: context.octokit,
+      repo,
+      number: basePullRequest.number,
+    });
   }
 }
