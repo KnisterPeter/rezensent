@@ -208,7 +208,8 @@ export async function getPullRequests({
     label: string | RegExp;
   };
 }): Promise<Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"]> {
-  let { data: pullRequests } = await octokit.pulls.list(
+  let pullRequests = await octokit.paginate(
+    octokit.pulls.list,
     repo({ per_page: 100, ...params })
   );
 
@@ -240,7 +241,8 @@ export async function isReferencedPullRequest({
   number: number;
   reference: number;
 }): Promise<boolean> {
-  const { data: items } = await octokit.issues.listEventsForTimeline(
+  const items = await octokit.paginate(
+    octokit.issues.listEventsForTimeline,
     repo({
       headers: { accept: "application/vnd.github.mockingbird-preview+json" },
       issue_number: number,
