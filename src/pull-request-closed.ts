@@ -26,8 +26,6 @@ export async function onPullRequestClosed(
   // read config from base here, because head might already be deleted
   const configuration = await getConfig(context, base);
 
-  console.log("read config from", base, configuration);
-
   const { data: labels } = await context.octokit.issues.listLabelsOnIssue(
     context.repo({
       issue_number: number,
@@ -43,16 +41,6 @@ export async function onPullRequestClosed(
   }
 
   const repo = context.repo.bind(context);
-
-  console.log("search base pr", {
-    params: {
-      base,
-      state: "open",
-    },
-    filters: {
-      label: configuration.manageReviewLabel,
-    },
-  });
 
   const basePullRequests = await getPullRequests({
     octokit: context.octokit,
@@ -74,8 +62,6 @@ export async function onPullRequestClosed(
       reference: number,
     })
   );
-
-  console.log("base number", basePullRequest?.number);
 
   if (!basePullRequest) {
     context.log.debug(
