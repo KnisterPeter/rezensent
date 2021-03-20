@@ -21,7 +21,8 @@ export async function startServer(options?: {
   await server.register(middie);
   await server.use(createNodeMiddleware(app, { probot }));
   const address = await server.listen(
-    options?.port ?? Number(process.env["PORT"])
+    options?.port ?? Number(process.env["PORT"]),
+    "0.0.0.0"
   );
 
   return {
