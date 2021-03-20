@@ -1,8 +1,13 @@
 import { Endpoints } from "@octokit/types";
 import { Context, ProbotOctokit } from "probot";
 import { URL } from "url";
+import { promisify } from "util";
 
 import { Git, clone } from "./git";
+
+export type PullRequest = Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"][number];
+
+const wait = promisify(setTimeout);
 
 async function getAccessToken({
   octokit,
@@ -156,6 +161,23 @@ export async function createPullRequest({
   return number;
 }
 
+export async function closePullRequest({
+  octokit,
+  repo,
+  number,
+}: {
+  octokit: InstanceType<typeof ProbotOctokit>;
+  repo: Context["repo"];
+  number: number;
+}): Promise<void> {
+  await octokit.pulls.update(
+    repo({
+      pull_number: number,
+      state: "closed",
+    })
+  );
+}
+
 export async function cloneRepo({
   octokit,
   repo,
@@ -207,7 +229,7 @@ export async function getPullRequests({
   filters?: {
     label: string | RegExp;
   };
-}): Promise<Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"]> {
+}): Promise<PullRequest[]> {
   let pullRequests = await octokit.paginate(
     octokit.pulls.list,
     repo({ per_page: 100, ...params })
@@ -244,7 +266,9 @@ export async function isReferencedPullRequest({
   const items = await octokit.paginate(
     octokit.issues.listEventsForTimeline,
     repo({
-      headers: { accept: "application/vnd.github.mockingbird-preview+json" },
+      mediaType: {
+        previews: ["mockingbird"],
+      },
       issue_number: number,
       per_page: 100,
     })
@@ -256,4 +280,33 @@ export async function isReferencedPullRequest({
     }
     return false;
   });
+}
+
+export async function waitForPullRequestUpdate({
+  octokit,
+  repo,
+  pullRequest,
+}: {
+  octokit: InstanceType<typeof ProbotOctokit>;
+  repo: Context["repo"];
+  pullRequest: PullRequest;
+}): Promise<void> {
+  let n = 0;
+  while (true) {
+    const { data: updatedPullRequest } = await octokit.pulls.get(
+      repo({ pull_number: pullRequest.number })
+    );
+
+    if (pullRequest.base.sha !== updatedPullRequest.base.sha) {
+      break;
+    }
+
+    await wait(4000);
+
+    // give up if we need to wait for too long
+    n++;
+    if (n >= 10) {
+      break;
+    }
+  }
 }

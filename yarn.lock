@@ -1310,6 +1310,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/slice-ansi@npm:^4":
+  version: 4.0.0
+  resolution: "@types/slice-ansi@npm:4.0.0"
+  checksum: d4b0e28dc2847c0457682a9a4f76ac7acba4b2330bf9676d21d37259640cefb0493ddbaa3bfb50e1066e154b639def3beb73552b9d131aec701350a01c7ace08
+  languageName: node
+  linkType: hard
+
 "@types/sonic-boom@npm:*":
   version: 0.7.0
   resolution: "@types/sonic-boom@npm:0.7.0"
@@ -1638,6 +1645,13 @@ __metadata:
   version: 1.0.0
   resolution: "assign-symbols@npm:1.0.0"
   checksum: 893e9389a5dde0690102ad8d6146e50d747b6f45d51996d39b04abb7774755a4a9b53883295abab4dd455704b1e10c1fa560d617db5404bae118526916472bec
+  languageName: node
+  linkType: hard
+
+"astral-regex@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "astral-regex@npm:2.0.0"
+  checksum: bf049ee7048b70af5473580020f98faf09159af31a7fa5e223099966dc90e9e87760bd34030e19a6dcac05b45614b428f559bd71f027344d123555e524cb95ac
   languageName: node
   linkType: hard
 
@@ -6472,6 +6486,8 @@ fsevents@^2.1.2:
     "@types/common-tags": ^1.8.0
     "@types/eventsource": ^1.1.5
     "@types/jest": 26.0.21
+    "@types/slice-ansi": ^4
+    chalk: ^4.1.0
     common-tags: ^1.8.0
     dotenv: ^8.2.0
     esbuild: 0.9.5
@@ -6481,6 +6497,7 @@ fsevents@^2.1.2:
     middie: ^5.2.0
     probot: ^11.1.0
     simple-git: ^2.36.2
+    slice-ansi: ^4.0.0
     smee-client: 1.2.2
     ts-node: ^9.1.1
     typescript: ^4.2.3
@@ -6765,6 +6782,17 @@ fsevents@^2.1.2:
   version: 3.0.0
   resolution: "slash@npm:3.0.0"
   checksum: fc3e8597d822ee3ba6cd76e9b001cd5be315f9b81c3a03a29bb611c003d1484e3b29a9e7bc020298fa669b585ff7c9268f44513f60c186216eb6af3111a3e838
+  languageName: node
+  linkType: hard
+
+"slice-ansi@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "slice-ansi@npm:4.0.0"
+  dependencies:
+    ansi-styles: ^4.0.0
+    astral-regex: ^2.0.0
+    is-fullwidth-code-point: ^3.0.0
+  checksum: f411aa051802605c3dc8523edee42d39ef59d7c36e6bef6bf1e61d9d2a83894187f6af56911a43ec8e58b921996722d75b354a4c3050b924426ffd1b05da33f9
   languageName: node
   linkType: hard
 

@@ -1,15 +1,16 @@
+import type { Endpoints } from "@octokit/types";
+import chalk from "chalk";
 import { config as dotEnvConfig } from "dotenv";
-import { ProbotOctokit } from "probot";
 import type EventSource from "eventsource";
-import SmeeClient from "smee-client";
-import Git, { SimpleGit } from "simple-git";
 import { promises as fsp } from "fs";
 import { tmpdir } from "os";
 import { dirname, join } from "path";
+import { ProbotOctokit } from "probot";
+import Git, { SimpleGit } from "simple-git";
+import sliceAnsi from "slice-ansi";
+import SmeeClient from "smee-client";
 import { URL } from "url";
 import { promisify } from "util";
-
-import type { Endpoints } from "@octokit/types";
 
 import { startServer, Server } from "../src/node";
 
@@ -243,6 +244,7 @@ export type CreateLabelParams = Omit<
   Endpoints["POST /repos/{owner}/{repo}/labels"]["parameters"],
   "owner" | "repo"
 >;
+export type GetPullRequestResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]["data"];
 
 export async function waitFor<Result>(
   test: () => Promise<Result | undefined>,
@@ -264,12 +266,15 @@ export async function waitFor<Result>(
 
 export type TestRunner = {
   testId: string;
+  log: typeof console["log"];
+  logStep(stepName: string): void;
+  skipCleanup(): void;
+
   user: {
     name: string;
     login: string;
     email: string;
   };
-
   octokit: AuthenticatedOctokit;
   github: {
     createLabel(params: Partial<CreateLabelParams>): Promise<string>;
@@ -283,12 +288,14 @@ export type TestRunner = {
     closePullRequest(number: number): Promise<void>;
     closePullRequestAfterTest(number: number): void;
     mergePullRequest(number: number): Promise<void>;
+    getPullRequest(number: number): Promise<GetPullRequestResponse>;
+    getPullRequestFiles(number: number): Promise<string[]>;
 
     waitForPullRequest(
       params: Partial<ListPullRequestParams>,
       timeout?: number
     ): Promise<number>;
-    waitForPullRequestToBeRebased(
+    waitForPullRequestBaseToBeUpdated(
       number: number,
       sha: string,
       timeout?: number
@@ -472,6 +479,36 @@ export async function mergePullRequest(
   );
 }
 
+export async function getPullRequest(
+  { octokit, log }: OctokitTaskContext,
+  number: number
+): Promise<GetPullRequestResponse> {
+  log(`Get pull request [number=${number}]`);
+
+  const { data: pullRequest } = await octokit.pulls.get(
+    context.repo({
+      pull_number: number,
+    })
+  );
+
+  return pullRequest;
+}
+
+export async function getPullRequestFiles(
+  { octokit, log }: OctokitTaskContext,
+  number: number
+): Promise<string[]> {
+  log(`Get pull request files [number=${number}]`);
+
+  return await octokit.paginate(
+    octokit.pulls.listFiles,
+    context.repo({
+      pull_number: number,
+    }),
+    ({ data: files }) => files.map((file) => file.filename)
+  );
+}
+
 export async function waitForPullRequest(
   { octokit, testId, log }: OctokitTaskContext,
   params: Partial<ListPullRequestParams>,
@@ -494,7 +531,7 @@ export async function waitForPullRequest(
   return pullRequest.number;
 }
 
-export async function waitForPullRequestToBeRebased(
+export async function waitForPullRequestBaseToBeUpdated(
   { octokit, log }: OctokitTaskContext,
   number: number,
   sha: string,
@@ -506,7 +543,7 @@ export async function waitForPullRequestToBeRebased(
     const { data } = await octokit.pulls.get(
       context.repo({ pull_number: number })
     );
-    return data.base.sha === sha ? true : undefined;
+    return data.base.sha !== sha ? true : undefined;
   }, timeout);
 }
 
@@ -532,9 +569,11 @@ export async function getCredentials(
 }
 
 export async function setupGit(
-  octokit: AuthenticatedOctokit
+  octokit: AuthenticatedOctokit,
+  testId: string
 ): Promise<{ git: SimpleGit; directory: string }> {
-  const baseDir = await fsp.mkdtemp(join(tmpdir(), "rezensent"));
+  const baseDir = join(tmpdir(), `rezensent-${testId}`);
+  await fsp.mkdir(baseDir, { recursive: true });
   try {
     const git: SimpleGit = Git({ baseDir });
 
@@ -664,20 +703,18 @@ export function setupApp(
     const testId = idGen(5);
     const eventSource = createEventSource(testId);
 
-    const logs = [
-      `───────┬────────────────────────────────────────────────────────────────────────`,
-    ];
+    const testIntroLine = chalk`══╕ {white.inverse  ${
+      expect.getState().currentTestName
+    } } ╞═ (${testId}) ══════════════════════════════════════════════════════════════════════════════════════════════════════════`;
+    const logs = [sliceAnsi(testIntroLine, 0, 110), `  │`];
     const log: typeof console["log"] = (...args) => {
-      logs.push(` ${testId} │ ${args.join(" ")}`);
+      logs.push(chalk`  │ ${args.join(" ")}`);
     };
 
     try {
+      let doCleanup = true;
       const cleanupTasks: Task[] = [];
       const octokit = await createAuthenticatedOctokit();
-
-      const cleanup = () => {
-        //
-      };
 
       const github: TestRunner["github"] = {
         createLabel: async (params) => {
@@ -709,15 +746,19 @@ export function setupApp(
           ),
         mergePullRequest: (number) =>
           mergePullRequest({ octokit, testId, log }, number),
+        getPullRequest: (number) =>
+          getPullRequest({ octokit, testId, log }, number),
+        getPullRequestFiles: (number) =>
+          getPullRequestFiles({ octokit, testId, log }, number),
 
         waitForPullRequest: async (params, timeout = Seconds.thirty) =>
           waitForPullRequest({ octokit, testId, log }, params, timeout),
-        waitForPullRequestToBeRebased: async (
+        waitForPullRequestBaseToBeUpdated: async (
           number,
           sha,
           timeout = Seconds.thirty
         ) =>
-          waitForPullRequestToBeRebased(
+          waitForPullRequestBaseToBeUpdated(
             { octokit, testId, log },
             number,
             sha,
@@ -728,13 +769,20 @@ export function setupApp(
       try {
         await test({
           testId,
+          log,
+          logStep: (name) => {
+            const line = chalk`  ├── {white.dim.inverse  ${name} } ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────`;
+            logs.push(sliceAnsi(line, 0, 110));
+            logs.push(`  │`);
+          },
+          skipCleanup: () => (doCleanup = false),
 
           user: await getCredentials(octokit),
           octokit,
           github,
 
           async gitClone() {
-            const { git, directory } = await setupGit(octokit);
+            const { git, directory } = await setupGit(octokit, testId);
             cleanupTasks.push(() =>
               fsp.rm(directory, { recursive: true, force: true })
             );
@@ -783,7 +831,7 @@ export function setupApp(
           },
         });
       } finally {
-        if (cleanupTasks.length > 0) {
+        if (doCleanup && cleanupTasks.length > 0) {
           for (const task of cleanupTasks.reverse()) {
             try {
               await task();
@@ -795,6 +843,10 @@ export function setupApp(
       }
     } finally {
       eventSource.close();
+
+      logs.push(
+        `  └───────────────────────────────────────────────────────────────────────────────────────────────────────────`
+      );
 
       logs.forEach((line) => {
         process.stdout.write(line + "\n");
