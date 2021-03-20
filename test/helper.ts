@@ -104,6 +104,8 @@ class ExtendedSmeeClient extends SmeeClient {
               if (title === testify(title, this.#testId, titlePattern)) {
                 return super.onmessage(msg);
               }
+              // detected concurrent tests, skip
+              return;
             } catch {
               // ignore and throw below
             }
@@ -114,6 +116,8 @@ class ExtendedSmeeClient extends SmeeClient {
               if (head === testify(head, this.#testId, branchPattern)) {
                 return super.onmessage(msg);
               }
+              // detected concurrent tests, skip
+              return;
             } catch {
               // ignore and throw below
             }
@@ -124,6 +128,8 @@ class ExtendedSmeeClient extends SmeeClient {
               if (branch === testify(branch, this.#testId, branchPattern)) {
                 return super.onmessage(msg);
               }
+              // detected concurrent tests, skip
+              return;
             } catch {
               // ignore and throw below
             }
