@@ -4,7 +4,7 @@ export interface Configuration {
   label: string;
 }
 
-export async function get(
+export async function getConfig(
   context: Context,
   branch: string
 ): Promise<Configuration> {
