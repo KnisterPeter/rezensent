@@ -842,21 +842,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@octokit/types@npm:6.12.2":
+  version: 6.12.2
+  resolution: "@octokit/types@npm:6.12.2"
+  dependencies:
+    "@octokit/openapi-types": ^5.3.2
+  checksum: d96bb9fae7f71c849f952432ffbcecc5ce2d00c18044bfb8d993625b9c9852ad6a672f2c144ab198f4e6a3618c744bdc833158b7c02e810659b006736ab73ed5
+  languageName: node
+  linkType: hard
+
 "@octokit/types@npm:^6.0.1, @octokit/types@npm:^6.0.3, @octokit/types@npm:^6.1.1, @octokit/types@npm:^6.11.0, @octokit/types@npm:^6.12.0, @octokit/types@npm:^6.7.1":
   version: 6.12.0
   resolution: "@octokit/types@npm:6.12.0"
   dependencies:
     "@octokit/openapi-types": ^5.3.0
   checksum: 5875448208952b594a2c8610b0c7391b1e0f078d55b330268aa85ff7855e349193a48380c960da4ef2f70aba0132b09e742a03fa61435735e119ffdbb9bf1ce6
-  languageName: node
-  linkType: hard
-
-"@octokit/types@npm:^6.12.2":
-  version: 6.12.2
-  resolution: "@octokit/types@npm:6.12.2"
-  dependencies:
-    "@octokit/openapi-types": ^5.3.2
-  checksum: d96bb9fae7f71c849f952432ffbcecc5ce2d00c18044bfb8d993625b9c9852ad6a672f2c144ab198f4e6a3618c744bdc833158b7c02e810659b006736ab73ed5
   languageName: node
   linkType: hard
 
@@ -1075,7 +1075,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/common-tags@npm:^1.8.0":
+"@types/common-tags@npm:1.8.0":
   version: 1.8.0
   resolution: "@types/common-tags@npm:1.8.0"
   checksum: d6dce803763646d3746a64373c3960b69c528bd67f6937e4c39747c97ecad9e633c92a78dd2b47f4668b81a2e5a8792fb4fe02ca5f3d42106acd555e794c788a
@@ -1098,7 +1098,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/eventsource@npm:^1.1.5":
+"@types/eventsource@npm:1.1.5":
   version: 1.1.5
   resolution: "@types/eventsource@npm:1.1.5"
   checksum: dde3896d6552eac00eca9f879fac5041a6994ecf3bb929b879ac4ebd707ceafed9030a7e408713e7c30cbd5f974c5009283bb9fb5023e88342f3d42ae9fedcea
@@ -1310,7 +1310,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/slice-ansi@npm:^4":
+"@types/slice-ansi@npm:4.0.0":
   version: 4.0.0
   resolution: "@types/slice-ansi@npm:4.0.0"
   checksum: d4b0e28dc2847c0457682a9a4f76ac7acba4b2330bf9676d21d37259640cefb0493ddbaa3bfb50e1066e154b639def3beb73552b9d131aec701350a01c7ace08
@@ -2087,6 +2087,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chalk@npm:4.1.0, chalk@npm:^4.0.0, chalk@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "chalk@npm:4.1.0"
+  dependencies:
+    ansi-styles: ^4.1.0
+    supports-color: ^7.1.0
+  checksum: f860285b419f9e925c2db0f45ffa88aa8794c14b80cc5d01ff30930bcfc384996606362706f0829cf557f6d36152a5fb2d227ad63c4bc90e2ec9e9dbed4a3c07
+  languageName: node
+  linkType: hard
+
 "chalk@npm:^3.0.0":
   version: 3.0.0
   resolution: "chalk@npm:3.0.0"
@@ -2094,16 +2104,6 @@ __metadata:
     ansi-styles: ^4.1.0
     supports-color: ^7.1.0
   checksum: 4018b0c812880da595d0d7b8159939527b72f58d3370e2fdc1a24d9abd460bab851695d7eca014082f110d5702d1221b05493fec430ccce375de907d50cc48c1
-  languageName: node
-  linkType: hard
-
-"chalk@npm:^4.0.0, chalk@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "chalk@npm:4.1.0"
-  dependencies:
-    ansi-styles: ^4.1.0
-    supports-color: ^7.1.0
-  checksum: f860285b419f9e925c2db0f45ffa88aa8794c14b80cc5d01ff30930bcfc384996606362706f0829cf557f6d36152a5fb2d227ad63c4bc90e2ec9e9dbed4a3c07
   languageName: node
   linkType: hard
 
@@ -2281,7 +2281,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"common-tags@npm:^1.8.0":
+"common-tags@npm:1.8.0":
   version: 1.8.0
   resolution: "common-tags@npm:1.8.0"
   checksum: f37a868d868929cf345fe49c4122efde693f9b06bf5764df36c3bdf5d3c271a24bb3fb6fbfaeec1f29768e60ad648cc11a4092c91bac05a8bde90ddbf5aae1a8
@@ -6481,14 +6481,14 @@ fsevents@^2.1.2:
   version: 0.0.0-use.local
   resolution: "rezensent@workspace:."
   dependencies:
-    "@octokit/types": ^6.12.2
+    "@octokit/types": 6.12.2
     "@octokit/webhooks": 7.21.0
-    "@types/common-tags": ^1.8.0
-    "@types/eventsource": ^1.1.5
+    "@types/common-tags": 1.8.0
+    "@types/eventsource": 1.1.5
     "@types/jest": 26.0.21
-    "@types/slice-ansi": ^4
-    chalk: ^4.1.0
-    common-tags: ^1.8.0
+    "@types/slice-ansi": 4.0.0
+    chalk: 4.1.0
+    common-tags: 1.8.0
     dotenv: ^8.2.0
     esbuild: 0.9.5
     esbuild-jest: 0.5.0
@@ -6497,7 +6497,7 @@ fsevents@^2.1.2:
     middie: ^5.2.0
     probot: ^11.1.0
     simple-git: ^2.36.2
-    slice-ansi: ^4.0.0
+    slice-ansi: 4.0.0
     smee-client: 1.2.2
     ts-node: ^9.1.1
     typescript: ^4.2.3
@@ -6785,7 +6785,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"slice-ansi@npm:^4.0.0":
+"slice-ansi@npm:4.0.0":
   version: 4.0.0
   resolution: "slice-ansi@npm:4.0.0"
   dependencies:
