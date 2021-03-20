@@ -2,7 +2,7 @@ import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
 
 import { getPatternsByTeam, getTeams } from "./codeowners";
-import * as config from "./config";
+import { getConfig } from "./config";
 import {
   cloneRepo,
   createPullRequest,
@@ -23,7 +23,7 @@ export async function onLabelAdded(
     title,
   } = context.payload.pull_request;
 
-  const configuration = await config.get(context, head);
+  const configuration = await getConfig(context, head);
 
   if (label !== configuration.label) {
     context.log.debug(`Ignoring label on PR ${number}`);
