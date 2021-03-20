@@ -72,7 +72,8 @@ test(
     git.deleteBranchAfterTest(`${changeBranch}-team-b`);
     github.closePullRequestAfterTest(splitTeamB);
 
-    // todo: merge one of the splitted prs
+    await github.mergePullRequest(splitTeamA);
+
     // todo: wait for the main pr to catch up
     // todo: merge the second splitted pr
     // todo: wait for the main pr to be closed

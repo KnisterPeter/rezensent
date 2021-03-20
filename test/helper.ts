@@ -261,6 +261,7 @@ export type TestRunner = {
     ): Promise<number>;
     closePullRequest(number: number): Promise<void>;
     closePullRequestAfterTest(number: number): void;
+    mergePullRequest(number: number): Promise<void>;
 
     waitForPullRequest(
       params: Partial<ListPullRequestParams>,
@@ -408,6 +409,19 @@ export async function closePullRequest(
     context.repo({
       pull_number: number,
       state: "closed",
+    })
+  );
+}
+
+export async function mergePullRequest(
+  { octokit, testId, log }: OctokitTaskContext,
+  number: number
+): Promise<void> {
+  log(`[${testId}] Merge pull request [number=${number}]`);
+
+  await octokit.pulls.merge(
+    context.repo({
+      pull_number: number,
     })
   );
 }
@@ -564,6 +578,8 @@ export function setupApp(
                   number
                 )
               ),
+            mergePullRequest: (number) =>
+              mergePullRequest({ octokit, testId, log: console.log }, number),
 
             waitForPullRequest: async (params, timeout = Seconds.ten) => {
               console.log(
