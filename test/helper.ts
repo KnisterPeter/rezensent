@@ -343,7 +343,7 @@ export async function createLabel(
     })
   );
 
-  log(`[${testId}] Created label '${labelName}'`);
+  log(`Created label '${labelName}'`);
   return labelName;
 }
 
@@ -351,7 +351,7 @@ export async function deleteLabel(
   { octokit, testId, log }: OctokitTaskContext,
   name: string
 ): Promise<void> {
-  log(`[${testId}] Delete label ${name}`);
+  log(`Delete label ${name}`);
 
   await octokit.issues.deleteLabel(
     context.repo({
@@ -365,7 +365,7 @@ export async function addLabel(
   number: number,
   name: string
 ): Promise<void> {
-  log(`[${testId}] Add label to pull request [pr=${number}, label=${name}]`);
+  log(`Add label to pull request [pr=${number}, label=${name}]`);
 
   await octokit.issues.addLabels(
     context.repo({
@@ -397,7 +397,7 @@ export async function createPullRequest(
     })
   );
 
-  log(`[${testId}] Created pull request [number=${number}]`);
+  log(`Created pull request [number=${number}]`);
   return number;
 }
 
@@ -414,7 +414,7 @@ export async function listPullRequests(
     labels,
   }: Partial<ListPullRequestParams>
 ): Promise<ListPullRequestResponse[]> {
-  log(`[${testId}] List pull requests`);
+  log(`List pull requests`);
 
   let { data: list } = await octokit.pulls.list(
     context.repo({
@@ -446,10 +446,10 @@ export async function listPullRequests(
 }
 
 export async function closePullRequest(
-  { octokit, testId, log }: OctokitTaskContext,
+  { octokit, log }: OctokitTaskContext,
   number: number
 ): Promise<void> {
-  log(`[${testId}] Close pull request [number=${number}]`);
+  log(`Close pull request [number=${number}]`);
 
   await octokit.pulls.update(
     context.repo({
@@ -460,10 +460,10 @@ export async function closePullRequest(
 }
 
 export async function mergePullRequest(
-  { octokit, testId, log }: OctokitTaskContext,
+  { octokit, log }: OctokitTaskContext,
   number: number
 ): Promise<void> {
-  log(`[${testId}] Merge pull request [number=${number}]`);
+  log(`Merge pull request [number=${number}]`);
 
   await octokit.pulls.merge(
     context.repo({
@@ -478,9 +478,9 @@ export async function waitForPullRequest(
   timeout: number
 ): Promise<number> {
   log(
-    `[${testId}] Wait for pull request [params=${JSON.stringify(
-      params
-    )}, timeout=${timeout / 1000}s]`
+    `Wait for pull request [params=${JSON.stringify(params)}, timeout=${
+      timeout / 1000
+    }s]`
   );
 
   const pullRequest = await waitFor<ListPullRequestResponse>(async () => {
@@ -495,12 +495,12 @@ export async function waitForPullRequest(
 }
 
 export async function waitForPullRequestToBeRebased(
-  { octokit, testId, log }: OctokitTaskContext,
+  { octokit, log }: OctokitTaskContext,
   number: number,
   sha: string,
   timeout: number
 ): Promise<void> {
-  log(`[${testId}] Wait for pull request update [timeout=${timeout / 1000}s]`);
+  log(`Wait for pull request update [timeout=${timeout / 1000}s]`);
 
   await waitFor(async () => {
     const { data } = await octokit.pulls.get(
@@ -565,12 +565,8 @@ export interface SimpleGitTaskContext {
   log: typeof console["log"];
 }
 
-export async function fetch({
-  git,
-  testId,
-  log,
-}: SimpleGitTaskContext): Promise<void> {
-  log(`[${testId}] Fetch repo`);
+export async function fetch({ git, log }: SimpleGitTaskContext): Promise<void> {
+  log(`Fetch repo`);
 
   await git.fetch();
 }
@@ -586,7 +582,7 @@ export async function createBranch(
   { git, testId, log }: SimpleGitTaskContext,
   name: string
 ): Promise<string> {
-  log(`[${testId}] Crate branch [name=${name}]`);
+  log(`Crate branch [name=${name}]`);
 
   const branchName = testify(name, testId, branchPattern);
   await git.checkout(["-b", branchName]);
@@ -597,7 +593,7 @@ export async function deleteBranch(
   { git, testId, log }: SimpleGitTaskContext,
   name: string
 ): Promise<void> {
-  log(`[${testId}] Delete branch [name=${name}]`);
+  log(`Delete branch [name=${name}]`);
 
   const branchName = testify(name, testId, branchPattern);
 
@@ -610,11 +606,7 @@ export async function waitForBranchToBeUpdated(
   oldSha: string,
   timeout: number
 ): Promise<string> {
-  log(
-    `[${testId}] Wait for branch update [name=${name}, timeout=${
-      timeout / 1000
-    }s]`
-  );
+  log(`Wait for branch update [name=${name}, timeout=${timeout / 1000}s]`);
 
   const newSha = await waitFor(async () => {
     await git.fetch();
@@ -671,11 +663,21 @@ export function setupApp(
   return async () => {
     const testId = idGen(5);
     const eventSource = createEventSource(testId);
-    const log = console.log;
+
+    const logs = [
+      `───────┬────────────────────────────────────────────────────────────────────────`,
+    ];
+    const log: typeof console["log"] = (...args) => {
+      logs.push(` ${testId} │ ${args.join(" ")}`);
+    };
 
     try {
       const cleanupTasks: Task[] = [];
       const octokit = await createAuthenticatedOctokit();
+
+      const cleanup = () => {
+        //
+      };
 
       const github: TestRunner["github"] = {
         createLabel: async (params) => {
@@ -793,6 +795,10 @@ export function setupApp(
       }
     } finally {
       eventSource.close();
+
+      logs.forEach((line) => {
+        process.stdout.write(line + "\n");
+      });
     }
   };
 }
