@@ -15,7 +15,7 @@ export async function getConfig(
       branch,
       defaults: {
         "manage-review-label": "Rezensent: Managed Review",
-        "team-review-label": "Rezensent: Team Review Requested",
+        "team-review-label": "Rezensent: Review Requested",
       },
     })
   );
