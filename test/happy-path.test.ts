@@ -1,12 +1,12 @@
 import { stripIndent } from "common-tags";
 
-import { setupApp, context } from "./helper";
+import { setupApp, Minutes } from "./helper";
 
-jest.setTimeout(1000 * 60 * 15);
+jest.setTimeout(Minutes.fifteen);
 
 test(
   "Rezensent happy path workflow",
-  setupApp(async ({ gitClone, user, octokit, github }) => {
+  setupApp(async ({ gitClone, user, github }) => {
     //----------------------------------------
     // setup bot (labels, ...)
     //
@@ -14,12 +14,10 @@ test(
     const managedReviewLabel = await github.createLabel({
       name: "Rezensent: Managed Review",
     });
-    github.deleteLabelAfterTest(managedReviewLabel);
 
     const teamReviewLabel = await github.createLabel({
       name: "Rezensent: Review Requested",
     });
-    github.deleteLabelAfterTest(teamReviewLabel);
 
     const { git } = await gitClone();
 
@@ -28,7 +26,6 @@ test(
     //
 
     const mainBranch = await git.createBranch("main-test");
-    git.deleteBranchAfterTest(mainBranch);
     await git.writeFiles({
       ".github/CODEOWNERS": stripIndent`
         folder-a @team-a
@@ -48,27 +45,18 @@ test(
     // prepare review pull request
     //
 
-    const changeBranch = await git.createBranch("add-label");
-    git.deleteBranchAfterTest(changeBranch);
+    const changeBranch = await git.createBranch("some-changes");
     await git.writeFiles({
       "folder-a/a.txt": `a`,
       "folder-b/b.txt": `b`,
     });
-    await git.addAndPushAllChanges(changeBranch, "add a");
+    await git.addAndPushAllChanges(changeBranch, "add some files across teams");
 
     const number = await github.createPullRequest({
       base: mainBranch,
       head: changeBranch,
     });
-    github.closePullRequestAfterTest(number);
-
-    // todo: add helper
-    await octokit.issues.addLabels(
-      context.repo({
-        issue_number: number,
-        labels: [managedReviewLabel],
-      })
-    );
+    await github.addLabel(number, managedReviewLabel);
 
     //----------------------------------------
     // wait for bot to work
@@ -87,6 +75,11 @@ test(
       }),
     ]);
 
+    github.closePullRequestAfterTest(splitTeamA);
+    github.closePullRequestAfterTest(splitTeamB);
+    git.deleteBranchAfterTest(`${changeBranch}-team-a`);
+    git.deleteBranchAfterTest(`${changeBranch}-team-b`);
+
     //----------------------------------------
     // merge first pr
     //
@@ -104,8 +97,6 @@ test(
       mainBranchSha
     );
 
-    await github.waitForPullRequestToBeRebased(number, mainBranchSha);
-
     //----------------------------------------
     // merge second pr
     //
@@ -122,6 +113,5 @@ test(
       mainBranch,
       mainBranchSha
     );
-    await github.waitForPullRequestToBeRebased(number, mainBranchSha);
   })
 );
