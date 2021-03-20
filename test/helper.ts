@@ -278,6 +278,7 @@ export type TestRunner = {
 
       writeFiles(files: { [path: string]: string }): Promise<void>;
 
+      push(branch: string): Promise<void>;
       addAndPushAllChanges(branch: string, message: string): Promise<void>;
     };
   }>;
@@ -341,7 +342,7 @@ export async function createPullRequest(
     data: { number },
   } = await octokit.pulls.create(
     context.repo({
-      base,
+      base: testify(base, testId, branchPattern),
       head: testify(head, testId, branchPattern),
       title: testify(title, testId),
       body,
@@ -370,7 +371,7 @@ export async function listPullRequests(
 
   let { data: list } = await octokit.pulls.list(
     context.repo({
-      base,
+      base: base ? testify(base, testId, branchPattern) : undefined,
       head: head
         ? `${context.owner}:${testify(head, testId, branchPattern)}`
         : undefined,
@@ -505,16 +506,22 @@ export async function writeFiles(
   await Promise.all(tasks);
 }
 
+export async function pushBranch(
+  git: SimpleGit,
+  testId: string,
+  branch: string
+): Promise<void> {
+  await git.push(["origin", testify(branch, testId, branchPattern)]);
+}
+
 export async function addAndPushAllChanges(
   git: SimpleGit,
   testId: string,
   branch: string,
   message: string
 ): Promise<void> {
-  await git
-    .add(["."])
-    .commit(message)
-    .push(["origin", testify(branch, testId, branchPattern)]);
+  await git.add(["."]).commit(message);
+  await pushBranch(git, testId, branch);
 }
 
 type Task = () => Promise<void>;
@@ -598,6 +605,7 @@ export function setupApp(
 
                 writeFiles: (files) => writeFiles(directory, files),
 
+                push: (branch) => pushBranch(git, testId, branch),
                 addAndPushAllChanges: (branch, message) =>
                   addAndPushAllChanges(git, testId, branch, message),
               },

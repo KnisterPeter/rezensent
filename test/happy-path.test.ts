@@ -8,7 +8,8 @@ test(
   "Rezensent happy path workflow",
   setupApp(async ({ gitClone, testId, user, octokit, github }) => {
     const label = "Rezensent: Review";
-    const branch = "add-label";
+    const mainBranch = "main-test";
+    const changeBranch = "add-label";
 
     await github.createLabel({
       name: label,
@@ -17,9 +18,12 @@ test(
 
     const { git } = await gitClone();
 
-    // create a pr and add the review label
-    await git.createBranch(branch);
-    git.deleteBranchAfterTest(branch);
+    await git.createBranch(mainBranch);
+    git.deleteBranchAfterTest(mainBranch);
+    await git.push(mainBranch);
+
+    await git.createBranch(changeBranch);
+    git.deleteBranchAfterTest(changeBranch);
     await git.writeFiles({
       ".github/CODEOWNERS": stripIndent`
         folder-a @team-a
@@ -31,10 +35,11 @@ test(
       "folder-a/a.txt": `a`,
       "folder-b/b.txt": `b`,
     });
-    await git.addAndPushAllChanges(branch, "add a");
+    await git.addAndPushAllChanges(changeBranch, "add a");
 
     const number = await github.createPullRequest({
-      head: branch,
+      base: mainBranch,
+      head: changeBranch,
     });
     github.closePullRequestAfterTest(number);
 
@@ -47,24 +52,24 @@ test(
 
     const splitTeamA = await github.waitForPullRequest(
       {
-        head: `${branch}-team-a`,
+        head: `${changeBranch}-team-a`,
         state: "open",
         user: user.login,
       },
       Seconds.thirty
     );
-    git.deleteBranchAfterTest(`${branch}-team-a`);
+    git.deleteBranchAfterTest(`${changeBranch}-team-a`);
     github.closePullRequestAfterTest(splitTeamA);
 
     const splitTeamB = await github.waitForPullRequest(
       {
-        head: `${branch}-team-b`,
+        head: `${changeBranch}-team-b`,
         state: "open",
         user: user.login,
       },
       Seconds.thirty
     );
-    git.deleteBranchAfterTest(`${branch}-team-b`);
+    git.deleteBranchAfterTest(`${changeBranch}-team-b`);
     github.closePullRequestAfterTest(splitTeamB);
 
     // todo: merge one of the splitted prs
