@@ -21,6 +21,14 @@ export const enum Seconds {
   thirty = 1000 * 30,
   sixty = 1000 * 60,
 }
+export const enum Minutes {
+  one = Seconds.sixty,
+  two = Seconds.sixty * 2,
+  ten = Seconds.sixty * 10,
+  fifteen = Seconds.sixty * 15,
+  thirty = Seconds.sixty * 30,
+  sixty = Seconds.sixty * 60,
+}
 export const titlePattern = "[%t] %s";
 export const branchPattern = "%t-%s";
 
@@ -267,6 +275,7 @@ export type TestRunner = {
     createLabel(params: Partial<CreateLabelParams>): Promise<string>;
     deleteLabel(name: string): Promise<void>;
     deleteLabelAfterTest(name: string): void;
+    addLabel(number: number, name: string): Promise<void>;
 
     createPullRequest(
       params: Partial<CreatePullRequestParams>
@@ -347,6 +356,21 @@ export async function deleteLabel(
   await octokit.issues.deleteLabel(
     context.repo({
       name: testify(name, testId, titlePattern),
+    })
+  );
+}
+
+export async function addLabel(
+  { octokit, testId, log }: OctokitTaskContext,
+  number: number,
+  name: string
+): Promise<void> {
+  log(`[${testId}] Add label to pull request [pr=${number}, label=${name}]`);
+
+  await octokit.issues.addLabels(
+    context.repo({
+      issue_number: number,
+      labels: [testify(name, testId, titlePattern)],
     })
   );
 }
@@ -594,7 +618,10 @@ export async function waitForBranchToBeUpdated(
 
   const newSha = await waitFor(async () => {
     await git.fetch();
-    const sha = await getSha({ git, testId, log: () => undefined }, name);
+    const sha = await getSha(
+      { git, testId, log: () => undefined },
+      `origin/${name}`
+    );
     return sha === oldSha ? undefined : sha;
   }, timeout);
 
@@ -644,10 +671,57 @@ export function setupApp(
   return async () => {
     const testId = idGen(5);
     const eventSource = createEventSource(testId);
+    const log = console.log;
 
     try {
       const cleanupTasks: Task[] = [];
       const octokit = await createAuthenticatedOctokit();
+
+      const github: TestRunner["github"] = {
+        createLabel: async (params) => {
+          const label = await createLabel({ octokit, testId, log }, params);
+          github.deleteLabelAfterTest(label);
+          return label;
+        },
+        deleteLabel: (name) => deleteLabel({ octokit, testId, log }, name),
+        deleteLabelAfterTest: (name) =>
+          cleanupTasks.push(() =>
+            deleteLabel({ octokit, testId, log: () => undefined }, name)
+          ),
+        addLabel: (number, name) =>
+          addLabel({ octokit, testId, log }, number, name),
+
+        createPullRequest: async (params) => {
+          const number = await createPullRequest(
+            { octokit, testId, log },
+            params
+          );
+          github.closePullRequestAfterTest(number);
+          return number;
+        },
+        closePullRequest: (number) =>
+          closePullRequest({ octokit, testId, log }, number),
+        closePullRequestAfterTest: (number) =>
+          cleanupTasks.push(() =>
+            closePullRequest({ octokit, testId, log: () => undefined }, number)
+          ),
+        mergePullRequest: (number) =>
+          mergePullRequest({ octokit, testId, log }, number),
+
+        waitForPullRequest: async (params, timeout = Seconds.thirty) =>
+          waitForPullRequest({ octokit, testId, log }, params, timeout),
+        waitForPullRequestToBeRebased: async (
+          number,
+          sha,
+          timeout = Seconds.thirty
+        ) =>
+          waitForPullRequestToBeRebased(
+            { octokit, testId, log },
+            number,
+            sha,
+            timeout
+          ),
+      };
 
       try {
         await test({
@@ -655,88 +729,54 @@ export function setupApp(
 
           user: await getCredentials(octokit),
           octokit,
-          github: {
-            createLabel: (params) =>
-              createLabel({ octokit, testId, log: console.log }, params),
-            deleteLabel: (name) =>
-              deleteLabel({ octokit, testId, log: console.log }, name),
-            deleteLabelAfterTest: (name) =>
-              cleanupTasks.push(() =>
-                deleteLabel({ octokit, testId, log: () => undefined }, name)
-              ),
-
-            createPullRequest: (params) =>
-              createPullRequest({ octokit, testId, log: console.log }, params),
-            closePullRequest: (number) =>
-              closePullRequest({ octokit, testId, log: console.log }, number),
-            closePullRequestAfterTest: (number) =>
-              cleanupTasks.push(() =>
-                closePullRequest(
-                  { octokit, testId, log: () => undefined },
-                  number
-                )
-              ),
-            mergePullRequest: (number) =>
-              mergePullRequest({ octokit, testId, log: console.log }, number),
-
-            waitForPullRequest: async (params, timeout = Seconds.thirty) =>
-              waitForPullRequest(
-                { octokit, testId, log: console.log },
-                params,
-                timeout
-              ),
-            waitForPullRequestToBeRebased: async (
-              number,
-              sha,
-              timeout = Seconds.thirty
-            ) =>
-              waitForPullRequestToBeRebased(
-                { octokit, testId, log: console.log },
-                number,
-                sha,
-                timeout
-              ),
-          },
+          github,
 
           async gitClone() {
             const { git, directory } = await setupGit(octokit);
             cleanupTasks.push(() =>
               fsp.rm(directory, { recursive: true, force: true })
             );
+
+            const api: Awaited<ReturnType<TestRunner["gitClone"]>>["git"] = {
+              fetch: () => fetch({ git, testId, log }),
+              getSha: (name) => getSha({ git, testId, log }, name),
+
+              createBranch: async (name) => {
+                const branch = await createBranch({ git, testId, log }, name);
+                api.deleteBranchAfterTest(branch);
+                return branch;
+              },
+              deleteBranch: (name) => deleteBranch({ git, testId, log }, name),
+              deleteBranchAfterTest: (name) =>
+                cleanupTasks.push(async () => {
+                  try {
+                    await deleteBranch(
+                      { git, testId, log: () => undefined },
+                      name
+                    );
+                  } catch {
+                    // ignore: branch was most likely already deleted
+                  }
+                }),
+              waitForBranchToBeUpdated: (name, sha, timeout = Seconds.thirty) =>
+                waitForBranchToBeUpdated(
+                  { git, testId, log },
+                  name,
+                  sha,
+                  timeout
+                ),
+
+              writeFiles: (files) => writeFiles(directory, files),
+
+              push: (branch) => pushBranch(git, testId, branch),
+              addAndPushAllChanges: (branch, message) =>
+                addAndPushAllChanges(git, testId, branch, message),
+            };
+
             return {
               simpleGit: git,
               directory,
-              git: {
-                fetch: () => fetch({ git, testId, log: console.log }),
-                getSha: (name) =>
-                  getSha({ git, testId, log: console.log }, name),
-
-                createBranch: (name) =>
-                  createBranch({ git, testId, log: console.log }, name),
-                deleteBranch: (name) =>
-                  deleteBranch({ git, testId, log: console.log }, name),
-                deleteBranchAfterTest: (name) =>
-                  cleanupTasks.push(async () =>
-                    deleteBranch({ git, testId, log: () => undefined }, name)
-                  ),
-                waitForBranchToBeUpdated: (
-                  name,
-                  sha,
-                  timeout = Seconds.thirty
-                ) =>
-                  waitForBranchToBeUpdated(
-                    { git, testId, log: console.log },
-                    name,
-                    sha,
-                    timeout
-                  ),
-
-                writeFiles: (files) => writeFiles(directory, files),
-
-                push: (branch) => pushBranch(git, testId, branch),
-                addAndPushAllChanges: (branch, message) =>
-                  addAndPushAllChanges(git, testId, branch, message),
-              },
+              git: api,
             };
           },
         });
