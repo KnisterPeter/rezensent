@@ -1,7 +1,8 @@
 import type { Context } from "probot";
 
 export interface Configuration {
-  label: string;
+  manageReviewLabel: string;
+  teamReviewLabel: string;
 }
 
 export async function getConfig(
@@ -13,10 +14,14 @@ export async function getConfig(
       path: ".github/rezensent.yml",
       branch,
       defaults: {
-        label: "Rezensent: Review",
+        "manage-review-label": "Rezensent: Managed Review",
+        "team-review-label": "Rezensent: Team Review Requested",
       },
     })
   );
 
-  return config.config;
+  return {
+    manageReviewLabel: config.config["manage-review-label"],
+    teamReviewLabel: config.config["team-review-label"],
+  };
 }

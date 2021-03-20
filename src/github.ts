@@ -118,6 +118,7 @@ export async function createPullRequest({
   title,
   body,
   basePullRequest: { base },
+  label,
 }: {
   octokit: InstanceType<typeof ProbotOctokit>;
   repo: Context["repo"];
@@ -129,6 +130,7 @@ export async function createPullRequest({
     head: string;
     number: number;
   };
+  label?: string;
 }): Promise<number> {
   const {
     data: { number },
@@ -140,6 +142,15 @@ export async function createPullRequest({
       body,
     })
   );
+
+  if (label) {
+    await octokit.issues.addLabels(
+      repo({
+        issue_number: number,
+        labels: [label],
+      })
+    );
+  }
 
   return number;
 }
