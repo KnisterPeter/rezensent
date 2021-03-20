@@ -25,7 +25,7 @@ export async function onLabelAdded(
 
   const configuration = await getConfig(context, head);
 
-  if (label !== configuration.label) {
+  if (label !== configuration.manageReviewLabel) {
     context.log.debug(`Ignoring label on PR ${number}`);
     return;
   }
@@ -124,6 +124,7 @@ export async function onLabelAdded(
           head,
           number,
         },
+        label: configuration.teamReviewLabel,
       });
     }
   } finally {

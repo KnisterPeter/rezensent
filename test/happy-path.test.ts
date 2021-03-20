@@ -7,14 +7,20 @@ jest.setTimeout(1000 * 60 * 15);
 test(
   "Rezensent happy path workflow",
   setupApp(async ({ gitClone, testId, user, octokit, github }) => {
-    const label = "Rezensent: Managed-Review";
+    const managedReviewLabel = "Rezensent: Managed-Review";
+    const teamReviewLabel = "Rezensent: Team Review Requested";
     const mainBranch = "main-test";
     const changeBranch = "add-label";
 
     await github.createLabel({
-      name: label,
+      name: managedReviewLabel,
     });
-    github.deleteLabelAfterTest(label);
+    github.deleteLabelAfterTest(managedReviewLabel);
+
+    await github.createLabel({
+      name: teamReviewLabel,
+    });
+    github.deleteLabelAfterTest(teamReviewLabel);
 
     const { git } = await gitClone();
 
@@ -30,7 +36,8 @@ test(
         folder-b @team-b
       `,
       ".github/rezensent.yml": stripIndent`
-        label: "[${testId}] ${label}"
+        manage-review-label: "[${testId}] ${managedReviewLabel}"
+        team-review-label": "[${testId}] ${teamReviewLabel}"
       `,
       "folder-a/a.txt": `a`,
       "folder-b/b.txt": `b`,
@@ -46,7 +53,7 @@ test(
     await octokit.issues.addLabels(
       context.repo({
         issue_number: number,
-        labels: [`[${testId}] ${label}`],
+        labels: [`[${testId}] ${managedReviewLabel}`],
       })
     );
 
