@@ -92,7 +92,7 @@ class ExtendedSmeeClient extends SmeeClient {
           case "pull_request":
             try {
               const title = get<string>(data, "body.pull_request.title");
-              if (title === testify(title, this.#testId)) {
+              if (title === testify(title, this.#testId, titlePattern)) {
                 return super.onmessage(msg);
               }
             } catch {
@@ -202,7 +202,7 @@ export const context = {
   },
 };
 
-function testify(str: string, testId: string, test = titlePattern): string {
+function testify(str: string, testId: string, test: string): string {
   const pattern = test
     .replace("[", "\\[")
     .replace("]", "\\]")
@@ -212,19 +212,31 @@ function testify(str: string, testId: string, test = titlePattern): string {
     .replace("%t", testId);
   const regexp = new RegExp(pattern);
 
+  if (str.startsWith("origin/")) {
+    return `origin/${testify(str.substr("origin/".length), testId, test)}`;
+  }
   return regexp.test(str) ? str : test.replace("%s", str).replace("%t", testId);
 }
 
-export type CreatePullRequestParams = Endpoints["POST /repos/{owner}/{repo}/pulls"]["parameters"];
-export type ListPullRequestParams = Endpoints["GET /repos/{owner}/{repo}/pulls"]["parameters"] & {
+export type CreatePullRequestParams = Omit<
+  Endpoints["POST /repos/{owner}/{repo}/pulls"]["parameters"],
+  "owner" | "repo"
+>;
+export type ListPullRequestParams = Omit<
+  Endpoints["GET /repos/{owner}/{repo}/pulls"]["parameters"],
+  "owner" | "repo"
+> & {
   user: string;
   assignee: string;
   labels: string[];
 };
 export type ListPullRequestResponse = Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"][number];
-export type CreateLabelParams = Endpoints["POST /repos/{owner}/{repo}/labels"]["parameters"];
+export type CreateLabelParams = Omit<
+  Endpoints["POST /repos/{owner}/{repo}/labels"]["parameters"],
+  "owner" | "repo"
+>;
 
-async function waitFor<Result>(
+export async function waitFor<Result>(
   test: () => Promise<Result | undefined>,
   timeout: number
 ): Promise<Result> {
@@ -267,15 +279,28 @@ export type TestRunner = {
       params: Partial<ListPullRequestParams>,
       timeout?: number
     ): Promise<number>;
+    waitForPullRequestToBeRebased(
+      number: number,
+      sha: string,
+      timeout?: number
+    ): Promise<void>;
   };
 
   gitClone(): Promise<{
     directory: string;
     simpleGit: SimpleGit;
     git: {
+      fetch(): Promise<void>;
+      getSha(name: string): Promise<string>;
+
       createBranch(name: string): Promise<string>;
       deleteBranch(name: string): Promise<void>;
       deleteBranchAfterTest(name: string): void;
+      waitForBranchToBeUpdated(
+        name: string,
+        sha: string,
+        timeout?: number
+      ): Promise<string>;
 
       writeFiles(files: { [path: string]: string }): Promise<void>;
 
@@ -299,18 +324,17 @@ export async function createLabel(
   { octokit, testId, log }: OctokitTaskContext,
   { name = "label", description, color }: Partial<CreateLabelParams>
 ): Promise<string> {
-  log(`[${testId}] Create label ${name}`);
-
   const {
     data: { name: labelName },
   } = await octokit.issues.createLabel(
     context.repo({
-      name: testify(name, testId),
+      name: testify(name, testId, titlePattern),
       description,
       color,
     })
   );
 
+  log(`[${testId}] Created label '${labelName}'`);
   return labelName;
 }
 
@@ -322,7 +346,7 @@ export async function deleteLabel(
 
   await octokit.issues.deleteLabel(
     context.repo({
-      name: testify(name, testId),
+      name: testify(name, testId, titlePattern),
     })
   );
 }
@@ -337,15 +361,13 @@ export async function createPullRequest(
     draft = false,
   }: Partial<CreatePullRequestParams>
 ): Promise<number> {
-  log(`[${testId}] Create pull request [title=${title}]`);
-
   const {
     data: { number },
   } = await octokit.pulls.create(
     context.repo({
       base: testify(base, testId, branchPattern),
       head: testify(head, testId, branchPattern),
-      title: testify(title, testId),
+      title: testify(title, testId, titlePattern),
       body,
       draft,
     })
@@ -426,6 +448,44 @@ export async function mergePullRequest(
   );
 }
 
+export async function waitForPullRequest(
+  { octokit, testId, log }: OctokitTaskContext,
+  params: Partial<ListPullRequestParams>,
+  timeout: number
+): Promise<number> {
+  log(
+    `[${testId}] Wait for pull request [params=${JSON.stringify(
+      params
+    )}, timeout=${timeout / 1000}s]`
+  );
+
+  const pullRequest = await waitFor<ListPullRequestResponse>(async () => {
+    const list = await listPullRequests(
+      { octokit, testId, log: () => undefined },
+      params
+    );
+    return list.length > 0 ? list[0] : undefined;
+  }, timeout);
+
+  return pullRequest.number;
+}
+
+export async function waitForPullRequestToBeRebased(
+  { octokit, testId, log }: OctokitTaskContext,
+  number: number,
+  sha: string,
+  timeout: number
+): Promise<void> {
+  log(`[${testId}] Wait for pull request update [timeout=${timeout / 1000}s]`);
+
+  await waitFor(async () => {
+    const { data } = await octokit.pulls.get(
+      context.repo({ pull_number: number })
+    );
+    return data.base.sha === sha ? true : undefined;
+  }, timeout);
+}
+
 export async function getCredentials(
   octokit: AuthenticatedOctokit
 ): Promise<{
@@ -481,6 +541,23 @@ export interface SimpleGitTaskContext {
   log: typeof console["log"];
 }
 
+export async function fetch({
+  git,
+  testId,
+  log,
+}: SimpleGitTaskContext): Promise<void> {
+  log(`[${testId}] Fetch repo`);
+
+  await git.fetch();
+}
+
+export async function getSha(
+  { git, testId }: SimpleGitTaskContext,
+  name: string
+): Promise<string> {
+  return await git.revparse([testify(name, testId, branchPattern)]);
+}
+
 export async function createBranch(
   { git, testId, log }: SimpleGitTaskContext,
   name: string
@@ -501,6 +578,27 @@ export async function deleteBranch(
   const branchName = testify(name, testId, branchPattern);
 
   await git.push(["origin", "--delete", branchName]);
+}
+
+export async function waitForBranchToBeUpdated(
+  { git, testId, log }: SimpleGitTaskContext,
+  name: string,
+  oldSha: string,
+  timeout: number
+): Promise<string> {
+  log(
+    `[${testId}] Wait for branch update [name=${name}, timeout=${
+      timeout / 1000
+    }s]`
+  );
+
+  const newSha = await waitFor(async () => {
+    await git.fetch();
+    const sha = await getSha({ git, testId, log: () => undefined }, name);
+    return sha === oldSha ? undefined : sha;
+  }, timeout);
+
+  return newSha;
 }
 
 export async function writeFiles(
@@ -581,24 +679,23 @@ export function setupApp(
             mergePullRequest: (number) =>
               mergePullRequest({ octokit, testId, log: console.log }, number),
 
-            waitForPullRequest: async (params, timeout = Seconds.ten) => {
-              console.log(
-                `[${testId}] Wait for pull request [timeout=${timeout / 1000}s]`
-              );
-
-              const pullRequest = await waitFor<ListPullRequestResponse>(
-                async () => {
-                  const list = await listPullRequests(
-                    { octokit, testId, log: () => undefined },
-                    params
-                  );
-                  return list.length > 0 ? list[0] : undefined;
-                },
+            waitForPullRequest: async (params, timeout = Seconds.thirty) =>
+              waitForPullRequest(
+                { octokit, testId, log: console.log },
+                params,
                 timeout
-              );
-
-              return pullRequest.number;
-            },
+              ),
+            waitForPullRequestToBeRebased: async (
+              number,
+              sha,
+              timeout = Seconds.thirty
+            ) =>
+              waitForPullRequestToBeRebased(
+                { octokit, testId, log: console.log },
+                number,
+                sha,
+                timeout
+              ),
           },
 
           async gitClone() {
@@ -610,13 +707,28 @@ export function setupApp(
               simpleGit: git,
               directory,
               git: {
+                fetch: () => fetch({ git, testId, log: console.log }),
+                getSha: (name) =>
+                  getSha({ git, testId, log: console.log }, name),
+
                 createBranch: (name) =>
                   createBranch({ git, testId, log: console.log }, name),
                 deleteBranch: (name) =>
                   deleteBranch({ git, testId, log: console.log }, name),
                 deleteBranchAfterTest: (name) =>
-                  cleanupTasks.push(() =>
+                  cleanupTasks.push(async () =>
                     deleteBranch({ git, testId, log: () => undefined }, name)
+                  ),
+                waitForBranchToBeUpdated: (
+                  name,
+                  sha,
+                  timeout = Seconds.thirty
+                ) =>
+                  waitForBranchToBeUpdated(
+                    { git, testId, log: console.log },
+                    name,
+                    sha,
+                    timeout
                   ),
 
                 writeFiles: (files) => writeFiles(directory, files),

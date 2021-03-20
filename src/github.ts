@@ -1,3 +1,4 @@
+import { Endpoints } from "@octokit/types";
 import { Context, ProbotOctokit } from "probot";
 import { URL } from "url";
 
@@ -189,4 +190,68 @@ export async function cloneRepo({
   });
 
   return git;
+}
+
+export async function getPullRequests({
+  octokit,
+  repo,
+  params,
+  filters,
+}: {
+  octokit: InstanceType<typeof ProbotOctokit>;
+  repo: Context["repo"];
+  params?: Omit<
+    Endpoints["GET /repos/{owner}/{repo}/pulls"]["parameters"],
+    "repo" | "owner"
+  >;
+  filters?: {
+    label: string | RegExp;
+  };
+}): Promise<Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"]> {
+  let { data: pullRequests } = await octokit.pulls.list(
+    repo({ per_page: 100, ...params })
+  );
+
+  if (filters) {
+    if (filters.label) {
+      const test = filters.label;
+      pullRequests = pullRequests.filter((pullRequest) => {
+        const labels = pullRequest.labels
+          .map((label) => label.name)
+          .filter((label): label is string => Boolean(label));
+        return typeof test === "string"
+          ? labels.includes(test)
+          : labels.some((label) => test.test(label));
+      });
+    }
+  }
+
+  return pullRequests;
+}
+
+export async function isReferencedPullRequest({
+  octokit,
+  repo,
+  number,
+  reference,
+}: {
+  octokit: InstanceType<typeof ProbotOctokit>;
+  repo: Context["repo"];
+  number: number;
+  reference: number;
+}): Promise<boolean> {
+  const { data: items } = await octokit.issues.listEventsForTimeline(
+    repo({
+      headers: { accept: "application/vnd.github.mockingbird-preview+json" },
+      issue_number: number,
+      per_page: 100,
+    })
+  );
+
+  return items.some((item) => {
+    if (item.event === "cross-referenced" && (item as any).source === "issue") {
+      return (item as any).source.issue.number === reference;
+    }
+    return false;
+  });
 }

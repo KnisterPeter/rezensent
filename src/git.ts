@@ -21,6 +21,10 @@ export class Git {
     await this.#git.checkout([sha]);
   }
 
+  async rebase(ref: string): Promise<void> {
+    await this.#git.fetch("origin", ref).rebase([`origin/${ref}`]);
+  }
+
   async resetCommits(sha = "HEAD^"): Promise<string> {
     await this.#git.reset(ResetMode.MIXED, [sha]);
     return await this.#git.revparse(["HEAD"]);
@@ -50,6 +54,10 @@ export class Git {
     branch: string;
   }): Promise<void> {
     await this.#git.commit(message).push("origin", branch);
+  }
+
+  async forcePush(branch: string): Promise<void> {
+    await this.#git.push(["--force", "origin", branch]);
   }
 
   async close(): Promise<void> {
