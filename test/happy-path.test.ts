@@ -7,7 +7,7 @@ jest.setTimeout(1000 * 60 * 15);
 test(
   "Rezensent happy path workflow",
   setupApp(async ({ gitClone, testId, user, octokit, github }) => {
-    const label = "Rezensent: Review";
+    const label = "Rezensent: Managed-Review";
     const mainBranch = "main-test";
     const changeBranch = "add-label";
 
