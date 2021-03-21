@@ -842,21 +842,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/types@npm:6.12.2":
-  version: 6.12.2
-  resolution: "@octokit/types@npm:6.12.2"
-  dependencies:
-    "@octokit/openapi-types": ^5.3.2
-  checksum: d96bb9fae7f71c849f952432ffbcecc5ce2d00c18044bfb8d993625b9c9852ad6a672f2c144ab198f4e6a3618c744bdc833158b7c02e810659b006736ab73ed5
-  languageName: node
-  linkType: hard
-
 "@octokit/types@npm:^6.0.1, @octokit/types@npm:^6.0.3, @octokit/types@npm:^6.1.1, @octokit/types@npm:^6.11.0, @octokit/types@npm:^6.12.0, @octokit/types@npm:^6.7.1":
   version: 6.12.0
   resolution: "@octokit/types@npm:6.12.0"
   dependencies:
     "@octokit/openapi-types": ^5.3.0
   checksum: 5875448208952b594a2c8610b0c7391b1e0f078d55b330268aa85ff7855e349193a48380c960da4ef2f70aba0132b09e742a03fa61435735e119ffdbb9bf1ce6
+  languageName: node
+  linkType: hard
+
+"@octokit/types@npm:^6.12.2":
+  version: 6.12.2
+  resolution: "@octokit/types@npm:6.12.2"
+  dependencies:
+    "@octokit/openapi-types": ^5.3.2
+  checksum: d96bb9fae7f71c849f952432ffbcecc5ce2d00c18044bfb8d993625b9c9852ad6a672f2c144ab198f4e6a3618c744bdc833158b7c02e810659b006736ab73ed5
   languageName: node
   linkType: hard
 
@@ -6492,7 +6492,7 @@ fsevents@^2.1.2:
   version: 0.0.0-use.local
   resolution: "rezensent@workspace:."
   dependencies:
-    "@octokit/types": 6.12.2
+    "@octokit/types": ^6.12.2
     "@octokit/webhooks": 7.24.3
     "@types/common-tags": 1.8.0
     "@types/eventsource": 1.1.5
