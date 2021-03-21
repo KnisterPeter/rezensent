@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@octokit/types": "^6.12.2",
-    "@octokit/webhooks": "7.21.0",
+    "@octokit/webhooks": "7.24.3",
     "@types/eventsource": "^1.1.5",
     "dotenv": "^8.2.0",
     "fastify": "^3.13.0",
