@@ -575,11 +575,9 @@ export async function getCredentials(
 }
 
 export async function setupGit(
-  octokit: AuthenticatedOctokit,
-  testId: string
+  octokit: AuthenticatedOctokit
 ): Promise<{ git: SimpleGit; directory: string }> {
-  const baseDir = join(tmpdir(), `rezensent-${testId}`);
-  await fsp.mkdir(baseDir, { recursive: true });
+  const baseDir = await fsp.mkdtemp(join(tmpdir(), "rezensent"));
   try {
     const git: SimpleGit = Git({ baseDir });
 
@@ -788,7 +786,7 @@ export function setupApp(
           github,
 
           async gitClone() {
-            const { git, directory } = await setupGit(octokit, testId);
+            const { git, directory } = await setupGit(octokit);
             cleanupTasks.push(() =>
               fsp.rm(directory, { recursive: true, force: true })
             );
