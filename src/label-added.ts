@@ -1,6 +1,7 @@
 import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
 
+import { createBotContext } from "./bot-context";
 import { getPatternsByTeam, getTeams } from "./codeowners";
 import { getConfig } from "./config";
 import {
@@ -26,22 +27,20 @@ export async function onLabelAdded(
   const configuration = await getConfig(context, head);
 
   if (label !== configuration.manageReviewLabel) {
-    context.log.debug(`Ignoring label on PR ${number}`);
+    context.log.debug(`[PR-${number}] ignoring label`);
     return;
   }
 
-  const repo = context.repo.bind(context);
+  context.log.debug(`[PR-${number}] Manage Review label added`);
 
-  const codeowners = await getFile({
-    octokit: context.octokit,
-    repo,
+  const botContext = createBotContext(context);
+
+  const codeowners = await getFile(botContext, {
     branch: head,
     path: ".github/CODEOWNERS",
   });
 
-  const changedFiles = await getPullRequestFiles({
-    octokit: context.octokit,
-    repo,
+  const changedFiles = await getPullRequestFiles(botContext, {
     number,
   });
 
@@ -69,10 +68,15 @@ export async function onLabelAdded(
 
   if (changedFilesByTeam.size === 1) {
     context.log.debug(
-      `Ignoring PR ${number}, because it contains only changes for one team`
+      `[PR-${number}] ignoring, because it contains only changes for one team`
     );
     return;
   }
+
+  context.log.debug(
+    Object.fromEntries(changedFilesByTeam.entries()),
+    `[PR-${number}] files changed by team`
+  );
 
   await context.octokit.repos.createCommitStatus(
     context.repo({
@@ -83,39 +87,37 @@ export async function onLabelAdded(
     })
   );
 
-  const commits = await getPullRequestCommits({
-    octokit: context.octokit,
-    repo,
+  const commits = await getPullRequestCommits(botContext, {
     number,
   });
 
-  const git = await cloneRepo({
-    octokit: context.octokit,
-    repo,
+  context.log.debug({ commits }, `[PR-${number}] commits`);
+
+  const git = await cloneRepo(botContext, {
     branch: headSha,
     depth: commits.length + 1,
   });
   try {
+    context.log.debug(`[PR-${number}] resetting branch`);
     const startPoint = await git.resetCommits(
       `${commits[commits.length - 1]}^`
     );
 
     for (const [team, files] of changedFilesByTeam) {
+      context.log.debug({ team, files }, `[PR-${number}] preparing changes`);
       const branch = `${head}-${team}`;
 
-      await git.addToNewBranch({
+      await git.addToNewBranch(botContext, {
         branch,
         startPoint,
         files,
       });
-      await git.commitAndPush({
+      await git.commitAndPush(botContext, {
         message: `Changes from #${number} for ${team}`,
         branch,
       });
 
-      await createPullRequest({
-        octokit: context.octokit,
-        repo,
+      const teamPullRequestNumber = await createPullRequest(botContext, {
         branch,
         title: `${title} - ${team}`,
         body: `Splitted changes for ${team} from #${number}`,
@@ -126,8 +128,13 @@ export async function onLabelAdded(
         },
         label: configuration.teamReviewLabel,
       });
+      context.log.debug(
+        `[PR-${number}] created team pull request PR-${teamPullRequestNumber}`
+      );
     }
   } finally {
     await git.close();
   }
+
+  context.log.debug(`[PR-${number}] done preparing`);
 }

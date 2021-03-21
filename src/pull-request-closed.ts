@@ -1,6 +1,7 @@
 import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
 
+import { createBotContext } from "./bot-context";
 import { getConfig } from "./config";
 import {
   closePullRequest,
@@ -37,15 +38,17 @@ export async function onPullRequestClosed(
     .map((label) => label.name)
     .includes(configuration.teamReviewLabel);
   if (!isTeamReviewPullRequest) {
-    context.log.debug(`Ignoring PR ${number} merge`);
+    context.log.debug(
+      `[PR-${number}] ignoring, because not a team review request`
+    );
     return;
   }
 
-  const repo = context.repo.bind(context);
+  const botContext = createBotContext(context);
 
-  const basePullRequests = await getPullRequests({
-    octokit: context.octokit,
-    repo,
+  context.log.debug(`[PR-${number}] searching base pull request`);
+
+  const basePullRequests = await getPullRequests(botContext, {
     params: {
       base,
       state: "open",
@@ -56,9 +59,7 @@ export async function onPullRequestClosed(
   });
 
   const basePullRequest = basePullRequests.find((basePullRequest) =>
-    isReferencedPullRequest({
-      octokit: context.octokit,
-      repo,
+    isReferencedPullRequest(botContext, {
       number: basePullRequest.number,
       reference: number,
     })
@@ -66,13 +67,17 @@ export async function onPullRequestClosed(
 
   if (!basePullRequest) {
     context.log.debug(
-      `Ignoring PR ${number} merge; no base pull request found`
+      `[PR-${number}] ignoring merge, because no base pull request found`
     );
     return;
   }
 
+  context.log.debug(
+    `[PR-${number}] merge base HEAD into base pull request PR-${basePullRequest.number}`
+  );
+
   await context.octokit.pulls.updateBranch(
-    repo({
+    context.repo({
       mediaType: {
         previews: ["lydian"],
       },
@@ -80,22 +85,20 @@ export async function onPullRequestClosed(
     })
   );
 
-  await waitForPullRequestUpdate({
-    octokit: context.octokit,
-    repo,
+  context.log.debug(`[PR-${number}] wait for pull request to get updated`);
+
+  await waitForPullRequestUpdate(botContext, {
     pullRequest: basePullRequest,
   });
 
-  const files = await getPullRequestFiles({
-    octokit: context.octokit,
-    repo,
+  const files = await getPullRequestFiles(botContext, {
     number: basePullRequest.number,
   });
 
   if (files.length === 0) {
-    await closePullRequest({
-      octokit: context.octokit,
-      repo,
+    context.log.debug(`[PR-${number}] base pull request is empty; closing`);
+
+    await closePullRequest(botContext, {
       number: basePullRequest.number,
     });
   }
