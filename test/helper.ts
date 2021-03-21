@@ -429,7 +429,8 @@ export async function listPullRequests(
 ): Promise<ListPullRequestResponse[]> {
   log(`List pull requests`);
 
-  let { data: list } = await octokit.pulls.list(
+  let list = await octokit.paginate(
+    octokit.pulls.list,
     context.repo({
       base: base ? testify(base, testId, branchPattern) : undefined,
       head: head
