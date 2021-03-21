@@ -13,7 +13,8 @@
   },
   "scripts": {
     "start": "ts-node-transpile-only ./src/node",
-    "test": "jest"
+    "test": "jest",
+    "test:debug": "TERM=dumb LOG_LEVEL=debug jest -i"
   },
   "dependencies": {
     "@octokit/types": "^6.12.2",

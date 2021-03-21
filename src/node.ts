@@ -16,7 +16,7 @@ export async function startServer(options?: {
   const probot = createProbot();
 
   const server = fastify({
-    logger: process.env["LOG_LEVEL"] ? { prettyPrint: true } : false,
+    logger: false,
   });
   await server.register(middie);
   await server.use(createNodeMiddleware(app, { probot }));
