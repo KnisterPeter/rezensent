@@ -1,19 +1,16 @@
 import { Endpoints } from "@octokit/types";
-import { Context, ProbotOctokit } from "probot";
+import { ProbotOctokit } from "probot";
 import { URL } from "url";
 import { promisify } from "util";
 
+import { BotContext } from "./bot-context";
 import { Git, clone } from "./git";
 
 export type PullRequest = Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"][number];
 
 const wait = promisify(setTimeout);
 
-async function getAccessToken({
-  octokit,
-}: {
-  octokit: InstanceType<typeof ProbotOctokit>;
-}): Promise<string> {
+async function getAccessToken(octokit: BotContext["octokit"]): Promise<string> {
   const { data: installations } = await octokit.apps.listInstallations();
 
   if (!installations[0]) {
@@ -29,20 +26,16 @@ async function getAccessToken({
   return accessToken.token;
 }
 
-async function getCredentials({
-  octokit,
-}: {
-  octokit: InstanceType<typeof ProbotOctokit>;
-}): Promise<{
+async function getCredentials(
+  octokit: BotContext["octokit"]
+): Promise<{
   name: string;
   login: string;
   email: string;
 }> {
   const { data: authenticated } = await octokit.apps.getAuthenticated();
 
-  const token = await getAccessToken({
-    octokit,
-  });
+  const token = await getAccessToken(octokit);
   const authenticatedOctokit = new ProbotOctokit({
     auth: { token },
   });
@@ -57,17 +50,16 @@ async function getCredentials({
   };
 }
 
-export async function getFile({
-  octokit,
-  repo,
-  branch,
-  path,
-}: {
-  octokit: InstanceType<typeof ProbotOctokit>;
-  repo: Context["repo"];
-  branch: string;
-  path: string;
-}): Promise<string> {
+export async function getFile(
+  { octokit, repo }: BotContext,
+  {
+    branch,
+    path,
+  }: {
+    branch: string;
+    path: string;
+  }
+): Promise<string> {
   const { data } = await octokit.repos.getContent(
     repo({
       ref: branch,
@@ -81,15 +73,14 @@ export async function getFile({
   return Buffer.from(data.content, "base64").toString().replace("\\n", "\n");
 }
 
-export async function getPullRequestCommits({
-  octokit,
-  repo,
-  number,
-}: {
-  octokit: InstanceType<typeof ProbotOctokit>;
-  repo: Context["repo"];
-  number: number;
-}): Promise<string[]> {
+export async function getPullRequestCommits(
+  { octokit, repo }: BotContext,
+  {
+    number,
+  }: {
+    number: number;
+  }
+): Promise<string[]> {
   return await octokit.paginate(
     octokit.pulls.listCommits,
     repo({
@@ -99,15 +90,14 @@ export async function getPullRequestCommits({
   );
 }
 
-export async function getPullRequestFiles({
-  octokit,
-  repo,
-  number,
-}: {
-  octokit: InstanceType<typeof ProbotOctokit>;
-  repo: Context["repo"];
-  number: number;
-}): Promise<string[]> {
+export async function getPullRequestFiles(
+  { octokit, repo }: BotContext,
+  {
+    number,
+  }: {
+    number: number;
+  }
+): Promise<string[]> {
   return await octokit.paginate(
     octokit.pulls.listFiles,
     repo({
@@ -117,27 +107,26 @@ export async function getPullRequestFiles({
   );
 }
 
-export async function createPullRequest({
-  octokit,
-  repo,
-  branch,
-  title,
-  body,
-  basePullRequest: { base },
-  label,
-}: {
-  octokit: InstanceType<typeof ProbotOctokit>;
-  repo: Context["repo"];
-  branch: string;
-  title: string;
-  body?: string;
-  basePullRequest: {
-    base: string;
-    head: string;
-    number: number;
-  };
-  label?: string;
-}): Promise<number> {
+export async function createPullRequest(
+  { octokit, repo }: BotContext,
+  {
+    branch,
+    title,
+    body,
+    basePullRequest: { base },
+    label,
+  }: {
+    branch: string;
+    title: string;
+    body?: string;
+    basePullRequest: {
+      base: string;
+      head: string;
+      number: number;
+    };
+    label?: string;
+  }
+): Promise<number> {
   const {
     data: { number },
   } = await octokit.pulls.create(
@@ -161,15 +150,14 @@ export async function createPullRequest({
   return number;
 }
 
-export async function closePullRequest({
-  octokit,
-  repo,
-  number,
-}: {
-  octokit: InstanceType<typeof ProbotOctokit>;
-  repo: Context["repo"];
-  number: number;
-}): Promise<void> {
+export async function closePullRequest(
+  { octokit, repo }: BotContext,
+  {
+    number,
+  }: {
+    number: number;
+  }
+): Promise<void> {
   await octokit.pulls.update(
     repo({
       pull_number: number,
@@ -178,30 +166,25 @@ export async function closePullRequest({
   );
 }
 
-export async function cloneRepo({
-  octokit,
-  repo,
-  branch,
-  depth = 1,
-}: {
-  octokit: InstanceType<typeof ProbotOctokit>;
-  repo: Context["repo"];
-  branch: string;
-  depth?: number;
-}): Promise<Git> {
+export async function cloneRepo(
+  { octokit, repo }: BotContext,
+  {
+    branch,
+    depth = 1,
+  }: {
+    branch: string;
+    depth?: number;
+  }
+): Promise<Git> {
   const {
     data: { clone_url },
   } = await octokit.repos.get(repo({}));
 
   const url = new URL(clone_url);
   url.username = "x-access-token";
-  url.password = await getAccessToken({
-    octokit,
-  });
+  url.password = await getAccessToken(octokit);
 
-  const { name: user, email } = await getCredentials({
-    octokit,
-  });
+  const { name: user, email } = await getCredentials(octokit);
 
   const git = await clone({
     url,
@@ -214,22 +197,21 @@ export async function cloneRepo({
   return git;
 }
 
-export async function getPullRequests({
-  octokit,
-  repo,
-  params,
-  filters,
-}: {
-  octokit: InstanceType<typeof ProbotOctokit>;
-  repo: Context["repo"];
-  params?: Omit<
-    Endpoints["GET /repos/{owner}/{repo}/pulls"]["parameters"],
-    "repo" | "owner"
-  >;
-  filters?: {
-    label: string | RegExp;
-  };
-}): Promise<PullRequest[]> {
+export async function getPullRequests(
+  { octokit, repo }: BotContext,
+  {
+    params,
+    filters,
+  }: {
+    params?: Omit<
+      Endpoints["GET /repos/{owner}/{repo}/pulls"]["parameters"],
+      "repo" | "owner"
+    >;
+    filters?: {
+      label: string | RegExp;
+    };
+  }
+): Promise<PullRequest[]> {
   let pullRequests = await octokit.paginate(
     octokit.pulls.list,
     repo({ per_page: 100, ...params })
@@ -252,17 +234,16 @@ export async function getPullRequests({
   return pullRequests;
 }
 
-export async function isReferencedPullRequest({
-  octokit,
-  repo,
-  number,
-  reference,
-}: {
-  octokit: InstanceType<typeof ProbotOctokit>;
-  repo: Context["repo"];
-  number: number;
-  reference: number;
-}): Promise<boolean> {
+export async function isReferencedPullRequest(
+  { octokit, repo }: BotContext,
+  {
+    number,
+    reference,
+  }: {
+    number: number;
+    reference: number;
+  }
+): Promise<boolean> {
   const items = await octokit.paginate(
     octokit.issues.listEventsForTimeline,
     repo({
@@ -282,15 +263,14 @@ export async function isReferencedPullRequest({
   });
 }
 
-export async function waitForPullRequestUpdate({
-  octokit,
-  repo,
-  pullRequest,
-}: {
-  octokit: InstanceType<typeof ProbotOctokit>;
-  repo: Context["repo"];
-  pullRequest: PullRequest;
-}): Promise<void> {
+export async function waitForPullRequestUpdate(
+  { octokit, repo }: BotContext,
+  {
+    pullRequest,
+  }: {
+    pullRequest: PullRequest;
+  }
+): Promise<void> {
   let n = 0;
   while (true) {
     const { data: updatedPullRequest } = await octokit.pulls.get(
