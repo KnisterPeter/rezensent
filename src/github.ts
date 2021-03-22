@@ -50,6 +50,17 @@ async function getCredentials(
   };
 }
 
+export async function deleteBranch(
+  { octokit, repo }: BotContext,
+  branch: string
+): Promise<void> {
+  await octokit.git.deleteRef(
+    repo({
+      ref: `heads/${branch}`,
+    })
+  );
+}
+
 export async function getFile(
   { octokit, repo }: BotContext,
   {
@@ -208,7 +219,7 @@ export async function getPullRequests(
       "repo" | "owner"
     >;
     filters?: {
-      label: string | RegExp;
+      label?: string | RegExp;
     };
   }
 ): Promise<PullRequest[]> {
@@ -255,12 +266,15 @@ export async function isReferencedPullRequest(
     })
   );
 
-  return items.some((item) => {
-    if (item.event === "cross-referenced" && (item as any).source === "issue") {
-      return (item as any).source.issue.number === reference;
-    }
-    return false;
-  });
+  const crossReferences = items.filter(
+    (item) => item.event === "cross-referenced"
+  );
+
+  const issues = crossReferences.filter(
+    (item) => (item as any).source.type === "issue"
+  );
+
+  return issues.some((item) => (item as any).source.issue.number === reference);
 }
 
 export async function waitForPullRequestUpdate(

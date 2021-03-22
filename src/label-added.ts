@@ -81,9 +81,9 @@ export async function onLabelAdded(
   await context.octokit.repos.createCommitStatus(
     context.repo({
       sha: headSha,
-      state: "pending",
       context: "rezensent",
       description: "blocking while in review",
+      state: "pending",
     })
   );
 
