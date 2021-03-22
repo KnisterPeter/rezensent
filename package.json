@@ -13,6 +13,7 @@
   },
   "scripts": {
     "start": "ts-node-transpile-only ./src/node",
+    "check": "tsc",
     "test": "jest",
     "test:debug": "TERM=dumb LOG_LEVEL=debug jest -i"
   },
