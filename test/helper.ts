@@ -252,6 +252,12 @@ export type CreateLabelParams = Omit<
 >;
 export type GetPullRequestResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]["data"];
 
+export type CommitStatusesForReferenceParams = Omit<
+  Endpoints["GET /repos/{owner}/{repo}/commits/{ref}/statuses"]["parameters"],
+  "owner" | "repo"
+>;
+export type CommitStatusesForReferenceResponse = Endpoints["GET /repos/{owner}/{repo}/commits/{ref}/statuses"]["response"]["data"][number];
+
 export async function waitFor<Result>(
   test: () => Promise<Result | undefined>,
   timeout: number
@@ -287,6 +293,7 @@ export type TestRunner = {
     deleteLabel(name: string): Promise<void>;
     deleteLabelAfterTest(name: string): void;
     addLabel(number: number, name: string): Promise<void>;
+    removeLabel(number: number, name: string): Promise<void>;
 
     createPullRequest(
       params: Partial<CreatePullRequestParams>
@@ -306,6 +313,12 @@ export type TestRunner = {
       sha: string,
       timeout?: number
     ): Promise<void>;
+
+    waitForCommitStatus(
+      params: CommitStatusesForReferenceParams,
+      filter: Partial<CommitStatusesForReferenceResponse>,
+      timeout?: number
+    ): Promise<void>;
   };
 
   gitClone(): Promise<{
@@ -315,6 +328,7 @@ export type TestRunner = {
       fetch(): Promise<void>;
       getSha(name: string): Promise<string>;
 
+      hasBranch(name: string): Promise<boolean>;
       createBranch(name: string): Promise<string>;
       deleteBranch(name: string): Promise<void>;
       deleteBranchAfterTest(name: string): void;
@@ -323,6 +337,7 @@ export type TestRunner = {
         sha: string,
         timeout?: number
       ): Promise<string>;
+      waitForBranchToBeDeleted(name: string, timeout?: number): Promise<void>;
 
       writeFiles(files: { [path: string]: string }): Promise<void>;
 
@@ -384,6 +399,21 @@ export async function addLabel(
     context.repo({
       issue_number: number,
       labels: [testify(name, testId, titlePattern)],
+    })
+  );
+}
+
+export async function removeLabel(
+  { octokit, testId, log }: OctokitTaskContext,
+  number: number,
+  name: string
+): Promise<void> {
+  log(`Remove label from pull request [pr=${number}, label=${name}]`);
+
+  await octokit.issues.removeLabel(
+    context.repo({
+      issue_number: number,
+      name: testify(name, testId, titlePattern),
     })
   );
 }
@@ -554,6 +584,40 @@ export async function waitForPullRequestBaseToBeUpdated(
   }, timeout);
 }
 
+export async function waitForCommitStatus(
+  { octokit, log }: OctokitTaskContext,
+  params: CommitStatusesForReferenceParams,
+  filter: Partial<CommitStatusesForReferenceResponse>,
+  timeout: number
+): Promise<void> {
+  log(`Wait for commit status [timeout=${timeout / 1000}s]`);
+
+  await waitFor(async () => {
+    const { data: statuses } = await octokit.repos.listCommitStatusesForRef(
+      context.repo({
+        ref: params.ref,
+      })
+    );
+
+    const contextSeen = new Set<string>();
+
+    const latestStatuses = statuses.filter((status) => {
+      const seen = contextSeen.has(status.context);
+      contextSeen.add(status.context);
+      return !seen;
+    });
+
+    const matchingStatus = latestStatuses.filter(
+      (status) =>
+        (!filter.context || status.context === filter.context) &&
+        (!filter.description || status.description === filter.description) &&
+        (!filter.state || status.state === filter.state)
+    );
+
+    return matchingStatus.length === 0 ? undefined : true;
+  }, timeout);
+}
+
 export async function getCredentials(
   octokit: AuthenticatedOctokit
 ): Promise<{
@@ -622,6 +686,19 @@ export async function getSha(
   return await git.revparse([testify(name, testId, branchPattern)]);
 }
 
+export async function hasBranch(
+  { git, testId, log }: SimpleGitTaskContext,
+  name: string
+): Promise<boolean> {
+  log(`Has branch? [name=${name}]`);
+
+  await git.fetch();
+  const branches = await git.branch();
+  const exists = branches.all.includes(testify(name, testId, branchPattern));
+
+  return exists;
+}
+
 export async function createBranch(
   { git, testId, log }: SimpleGitTaskContext,
   name: string
@@ -662,6 +739,19 @@ export async function waitForBranchToBeUpdated(
   }, timeout);
 
   return newSha;
+}
+
+export async function waitForBranchToBeDeleted(
+  { git, testId, log }: SimpleGitTaskContext,
+  name: string,
+  timeout: number
+): Promise<void> {
+  log(`Wait for branch deleted [name=${name}, timeout=${timeout / 1000}s]`);
+
+  await waitFor(async () => {
+    const exists = await hasBranch({ git, testId, log: () => undefined }, name);
+    return exists ? undefined : true;
+  }, timeout);
 }
 
 export async function writeFiles(
@@ -734,6 +824,8 @@ export function setupApp(
           ),
         addLabel: (number, name) =>
           addLabel({ octokit, testId, log }, number, name),
+        removeLabel: (number, name) =>
+          removeLabel({ octokit, testId, log }, number, name),
 
         createPullRequest: async (params) => {
           const number = await createPullRequest(
@@ -769,6 +861,14 @@ export function setupApp(
             sha,
             timeout
           ),
+
+        waitForCommitStatus: (params, filter, timeout = Seconds.thirty) =>
+          waitForCommitStatus(
+            { octokit, testId, log },
+            params,
+            filter,
+            timeout
+          ),
       };
 
       try {
@@ -796,6 +896,7 @@ export function setupApp(
               fetch: () => fetch({ git, testId, log }),
               getSha: (name) => getSha({ git, testId, log }, name),
 
+              hasBranch: async (name) => hasBranch({ git, testId, log }, name),
               createBranch: async (name) => {
                 const branch = await createBranch({ git, testId, log }, name);
                 api.deleteBranchAfterTest(branch);
@@ -820,6 +921,8 @@ export function setupApp(
                   sha,
                   timeout
                 ),
+              waitForBranchToBeDeleted: (name, timeout = Seconds.thirty) =>
+                waitForBranchToBeDeleted({ git, testId, log }, name, timeout),
 
               writeFiles: (files) => writeFiles(directory, files),
 
