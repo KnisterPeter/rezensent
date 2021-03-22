@@ -8,6 +8,7 @@ import {
   getPullRequestFiles,
   getPullRequests,
   isReferencedPullRequest,
+  PullRequest,
   waitForPullRequestUpdate,
 } from "./github";
 
@@ -58,12 +59,17 @@ export async function onPullRequestClosed(
     },
   });
 
-  const basePullRequest = basePullRequests.find((basePullRequest) =>
-    isReferencedPullRequest(botContext, {
-      number: basePullRequest.number,
+  let basePullRequest: PullRequest | undefined;
+  for (const pullRequest of basePullRequests) {
+    const isReferenced = await isReferencedPullRequest(botContext, {
+      number: pullRequest.number,
       reference: number,
-    })
-  );
+    });
+    if (isReferenced) {
+      basePullRequest = pullRequest;
+      break;
+    }
+  }
 
   if (!basePullRequest) {
     context.log.debug(
