@@ -439,7 +439,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "@types/jest",
-        "npm:26.0.21"
+        "npm:26.0.22"
       ],
       [
         "@types/js-yaml",
@@ -2957,7 +2957,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@octokit/webhooks", "npm:7.21.0"],
             ["@types/common-tags", "npm:1.8.0"],
             ["@types/eventsource", "npm:1.1.5"],
-            ["@types/jest", "npm:26.0.21"],
+            ["@types/jest", "npm:26.0.22"],
             ["@types/slice-ansi", "npm:4.0.0"],
             ["chalk", "npm:4.1.0"],
             ["common-tags", "npm:1.8.0"],
@@ -4461,10 +4461,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@types/jest", [
-        ["npm:26.0.21", {
-          "packageLocation": "./.yarn/cache/@types-jest-npm-26.0.21-7bb11f0108-c219599d66.zip/node_modules/@types/jest/",
+        ["npm:26.0.22", {
+          "packageLocation": "./.yarn/cache/@types-jest-npm-26.0.22-1621c2cb77-4c98ed0585.zip/node_modules/@types/jest/",
           "packageDependencies": [
-            ["@types/jest", "npm:26.0.21"],
+            ["@types/jest", "npm:26.0.22"],
             ["jest-diff", "npm:26.6.2"],
             ["pretty-format", "npm:26.6.2"]
           ],
@@ -10532,7 +10532,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@octokit/webhooks", "npm:7.21.0"],
             ["@types/common-tags", "npm:1.8.0"],
             ["@types/eventsource", "npm:1.1.5"],
-            ["@types/jest", "npm:26.0.21"],
+            ["@types/jest", "npm:26.0.22"],
             ["@types/slice-ansi", "npm:4.0.0"],
             ["chalk", "npm:4.1.0"],
             ["common-tags", "npm:1.8.0"],
