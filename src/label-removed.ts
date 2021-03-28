@@ -15,23 +15,22 @@ export async function onLabelRemoved(
   context: EventTypesPayload["pull_request.unlabeled"] &
     Omit<Context<any>, keyof WebhookEvent<any>>
 ) {
-  const { name: label } = context.payload.label ?? {};
+  const { name: removedLabel } = context.payload.label ?? {};
   const {
     number,
     base: { ref: base },
     head: { ref: head, sha: headSha },
   } = context.payload.pull_request;
 
+  const botContext = createBotContext(context);
   const configuration = await getConfig(context, head);
 
-  if (label !== configuration.manageReviewLabel) {
-    context.log.debug(`[PR-${number}] ignoring label`);
+  if (removedLabel !== configuration.manageReviewLabel) {
+    context.log.debug(`[PR-${number}] not a managed pull request`);
     return;
   }
 
   context.log.debug(`[PR-${number}] Manage Review label removed`);
-
-  const botContext = createBotContext(context);
 
   const pullRequests = await getPullRequests(botContext, {
     params: {

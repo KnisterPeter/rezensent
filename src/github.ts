@@ -124,13 +124,13 @@ export async function createPullRequest(
     branch,
     title,
     body,
-    basePullRequest: { base },
+    managedPullRequest: { base },
     label,
   }: {
     branch: string;
     title: string;
     body?: string;
-    basePullRequest: {
+    managedPullRequest: {
       base: string;
       head: string;
       number: number;
