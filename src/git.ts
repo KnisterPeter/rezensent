@@ -4,8 +4,6 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { URL } from "url";
 
-import { BotContext } from "./bot-context";
-
 export class Git {
   #baseDir: string;
   #git: GitType;
@@ -32,9 +30,7 @@ export class Git {
     return await this.#git.revparse(["HEAD"]);
   }
 
-  async addToNewBranch(
-    { log }: BotContext,
-    {
+  async addToNewBranch({
       branch,
       startPoint,
       files,
@@ -42,41 +38,30 @@ export class Git {
       branch: string;
       startPoint?: string;
       files: string[];
-    }
-  ): Promise<void> {
+  }): Promise<void> {
     const args = ["-b", branch];
     if (startPoint) {
       args.push(startPoint);
     }
-    log.debug(`git checkout ${args.join(" ")}`);
     await this.#git.checkout(args);
 
-    log.debug(`git add ${files.join(" ")}`);
     await this.#git.add(files);
   }
 
-  async commitAndPush(
-    { log }: BotContext,
-    {
+  async commitAndPush({
       message,
       branch,
     }: {
       message: string;
       branch: string;
-    }
-  ): Promise<void> {
-    log.debug(`git commit -m "..."`);
-    const commit = await this.#git.commit(message);
-    log.debug(commit, `commit result`);
+  }): Promise<void> {
+    await this.#git.commit(message);
 
-    log.debug(`git push origin ${branch}`);
-    try {
-      const push = await this.#git.push("origin", branch);
-      log.debug(push, `push result`);
-    } catch (e) {
-      log.error(e, `push failed :-(`);
-      throw e;
+    await this.#git.push("origin", branch);
     }
+
+  async push(branch: string): Promise<void> {
+    await this.#git.push(["origin", branch]);
   }
 
   async forcePush(branch: string): Promise<void> {

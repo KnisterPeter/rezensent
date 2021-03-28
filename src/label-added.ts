@@ -107,12 +107,12 @@ export async function onLabelAdded(
       context.log.debug({ team, files }, `[PR-${number}] preparing changes`);
       const branch = `${head}-${team}`;
 
-      await git.addToNewBranch(botContext, {
+      await git.addToNewBranch({
         branch,
         startPoint,
         files,
       });
-      await git.commitAndPush(botContext, {
+      await git.commitAndPush({
         message: `Changes from #${number} for ${team}`,
         branch,
       });
