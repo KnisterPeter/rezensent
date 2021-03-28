@@ -3,13 +3,8 @@ import type { Context } from "probot";
 
 import { getConfig } from "./config";
 import { createBotContext } from "./bot-context";
-import {
-  cloneRepo,
-  getPullRequestCommits,
-  getPullRequests,
-  isReferencedPullRequest,
-  PullRequest,
-} from "./github";
+import { cloneRepo, getPullRequestCommits } from "./github";
+import { findManagedPullRequest } from "./managed-pull-request";
 
 export async function onPullRequestUpdated(
   context: EventTypesPayload["pull_request.synchronize"] &
@@ -17,7 +12,6 @@ export async function onPullRequestUpdated(
 ) {
   const {
     number,
-    base: { ref: base },
     head: { ref: head, sha: headSha },
     merged,
   } = context.payload.pull_request;
@@ -49,60 +43,38 @@ export async function onPullRequestUpdated(
 
   const botContext = createBotContext(context);
 
-  context.log.debug(`[PR-${number}] searching base pull request`);
-
-  const basePullRequests = await getPullRequests(botContext, {
-    params: {
-      base,
-      state: "open",
-    },
-    filters: {
-      label: configuration.manageReviewLabel,
-    },
+  const managedPullRequest = await findManagedPullRequest(botContext, {
+    configuration,
+    number,
   });
-
-  let basePullRequest: PullRequest | undefined;
-  for (const pullRequest of basePullRequests) {
-    const isReferenced = await isReferencedPullRequest(botContext, {
-      number: pullRequest.number,
-      reference: number,
-    });
-    if (isReferenced) {
-      basePullRequest = pullRequest;
-      break;
-    }
-  }
-
-  if (!basePullRequest) {
-    context.log.debug(
-      `[PR-${number}] ignoring merge, because no base pull request found`
-    );
+  if (!managedPullRequest) {
+    context.log.debug(`[PR-${number}] ignoring merge`);
     return;
   }
 
   context.log.debug(
-    `[PR-${number}] merging update into base pull request PR-${basePullRequest.number}`
+    `[PR-${number}] merging update into managed pull request PR-${managedPullRequest.number}`
   );
 
   const commits = await getPullRequestCommits(botContext, {
-    number: basePullRequest.number,
+    number: managedPullRequest.number,
   });
 
   const git = await cloneRepo(botContext, {
-    branch: basePullRequest.head.ref,
+    branch: managedPullRequest.head.ref,
     depth: commits.length + 1,
   });
   try {
     const newHeadSha = await git.mergeTheirs(head);
 
     if (newHeadSha !== headSha) {
-      await git.push(basePullRequest.head.ref);
+      await git.push(managedPullRequest.head.ref);
       context.log.debug(
-        `[PR-${number}] changes integrated into base pull request`
+        `[PR-${number}] changes integrated into managed pull request`
       );
     } else {
       context.log.debug(
-        `[PR-${number}] no changes to integrated into base pull request`
+        `[PR-${number}] no changes to integrated into managed pull request`
       );
     }
   } finally {

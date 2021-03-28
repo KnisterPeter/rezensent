@@ -3,14 +3,11 @@ import type { Context } from "probot";
 
 import { createBotContext } from "./bot-context";
 import { getConfig } from "./config";
+import { waitForPullRequestUpdate } from "./github";
 import {
-  closePullRequest,
-  getPullRequestFiles,
-  getPullRequests,
-  isReferencedPullRequest,
-  PullRequest,
-  waitForPullRequestUpdate,
-} from "./github";
+  closeManagedPullRequestIfEmpty,
+  findManagedPullRequest,
+} from "./managed-pull-request";
 
 export async function onPullRequestClosed(
   context: EventTypesPayload["pull_request.merged"] &
@@ -49,39 +46,17 @@ export async function onPullRequestClosed(
 
   const botContext = createBotContext(context);
 
-  context.log.debug(`[PR-${number}] searching base pull request`);
-
-  const basePullRequests = await getPullRequests(botContext, {
-    params: {
-      base,
-      state: "open",
-    },
-    filters: {
-      label: configuration.manageReviewLabel,
-    },
+  const managedPullRequest = await findManagedPullRequest(botContext, {
+    configuration,
+    number,
   });
-
-  let basePullRequest: PullRequest | undefined;
-  for (const pullRequest of basePullRequests) {
-    const isReferenced = await isReferencedPullRequest(botContext, {
-      number: pullRequest.number,
-      reference: number,
-    });
-    if (isReferenced) {
-      basePullRequest = pullRequest;
-      break;
-    }
-  }
-
-  if (!basePullRequest) {
-    context.log.debug(
-      `[PR-${number}] ignoring merge, because no base pull request found`
-    );
+  if (!managedPullRequest) {
+    context.log.debug(`[PR-${number}] ignoring merge`);
     return;
   }
 
   context.log.debug(
-    `[PR-${number}] merge base HEAD into base pull request PR-${basePullRequest.number}`
+    `[PR-${number}] merge base HEAD into managed pull request PR-${managedPullRequest.number}`
   );
 
   await context.octokit.pulls.updateBranch(
@@ -89,25 +64,19 @@ export async function onPullRequestClosed(
       mediaType: {
         previews: ["lydian"],
       },
-      pull_number: basePullRequest.number,
+      pull_number: managedPullRequest.number,
     })
   );
 
-  context.log.debug(`[PR-${number}] wait for pull request to get updated`);
+  context.log.debug(
+    `[PR-${number}] wait for managed pull request to get updated`
+  );
 
   await waitForPullRequestUpdate(botContext, {
-    pullRequest: basePullRequest,
+    pullRequest: managedPullRequest,
   });
 
-  const files = await getPullRequestFiles(botContext, {
-    number: basePullRequest.number,
+  await closeManagedPullRequestIfEmpty(botContext, {
+    number: managedPullRequest.number,
   });
-
-  if (files.length === 0) {
-    context.log.debug(`[PR-${number}] base pull request is empty; closing`);
-
-    await closePullRequest(botContext, {
-      number: basePullRequest.number,
-    });
-  }
 }
