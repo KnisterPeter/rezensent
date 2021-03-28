@@ -26,6 +26,8 @@ export async function onPullRequestClosed(
     return;
   }
 
+  context.log.debug(`[PR-${number}] was merged`);
+
   // read config from base here, because head might already be deleted
   const configuration = await getConfig(context, base);
 
