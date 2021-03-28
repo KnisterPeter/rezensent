@@ -1,4 +1,9 @@
-import SimpleGit, { SimpleGit as GitType, ResetMode } from "simple-git";
+import SimpleGit, {
+  SimpleGit as GitType,
+  ResetMode,
+  GitResponseError,
+  MergeResult,
+} from "simple-git";
 import { promises as fsp } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
@@ -25,19 +30,40 @@ export class Git {
     await this.#git.fetch("origin", ref).rebase([`origin/${ref}`]);
   }
 
+  async mergeTheirs(from: string): Promise<string> {
+    await this.#git.fetch("origin", from);
+    try {
+      await this.#git.merge([
+        "--no-edit",
+        "--strategy=recursive",
+        "--strategy-option=theirs",
+        `origin/${from}`,
+      ]);
+    } catch (e) {
+      const result:
+        | MergeResult
+        | undefined = (e as GitResponseError<MergeResult>).git;
+      if (result?.result !== "success") {
+        throw e;
+      }
+    }
+
+    return await this.#git.revparse(["HEAD"]);
+  }
+
   async resetCommits(sha = "HEAD^"): Promise<string> {
     await this.#git.reset(ResetMode.MIXED, [sha]);
     return await this.#git.revparse(["HEAD"]);
   }
 
   async addToNewBranch({
-      branch,
-      startPoint,
-      files,
-    }: {
-      branch: string;
-      startPoint?: string;
-      files: string[];
+    branch,
+    startPoint,
+    files,
+  }: {
+    branch: string;
+    startPoint?: string;
+    files: string[];
   }): Promise<void> {
     const args = ["-b", branch];
     if (startPoint) {
@@ -49,16 +75,16 @@ export class Git {
   }
 
   async commitAndPush({
-      message,
-      branch,
-    }: {
-      message: string;
-      branch: string;
+    message,
+    branch,
+  }: {
+    message: string;
+    branch: string;
   }): Promise<void> {
     await this.#git.commit(message);
 
     await this.#git.push("origin", branch);
-    }
+  }
 
   async push(branch: string): Promise<void> {
     await this.#git.push(["origin", branch]);

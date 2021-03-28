@@ -12,10 +12,10 @@
     "node": "14.16.0"
   },
   "scripts": {
-    "start": "ts-node-transpile-only ./src/node",
+    "start": "LANG=C ts-node-transpile-only ./src/node",
     "check": "tsc",
-    "test": "jest",
-    "test:debug": "TERM=dumb LOG_LEVEL=debug jest -i"
+    "test": "LANG=C jest",
+    "test:debug": "TERM=dumb LOG_LEVEL=debug DEBUG=simple-git LANG=C jest -i"
   },
   "dependencies": {
     "@octokit/types": "^6.12.2",
