@@ -313,6 +313,11 @@ export type TestRunner = {
       sha: string,
       timeout?: number
     ): Promise<void>;
+    waitForPullRequestHeadToBeUpdated(
+      number: number,
+      sha: string,
+      timeout?: number
+    ): Promise<void>;
 
     waitForCommitStatus(
       params: CommitStatusesForReferenceParams,
@@ -574,13 +579,29 @@ export async function waitForPullRequestBaseToBeUpdated(
   sha: string,
   timeout: number
 ): Promise<void> {
-  log(`Wait for pull request update [timeout=${timeout / 1000}s]`);
+  log(`Wait for pull request base update [timeout=${timeout / 1000}s]`);
 
   await waitFor(async () => {
     const { data } = await octokit.pulls.get(
       context.repo({ pull_number: number })
     );
     return data.base.sha !== sha ? true : undefined;
+  }, timeout);
+}
+
+export async function waitForPullRequestHeadToBeUpdated(
+  { octokit, log }: OctokitTaskContext,
+  number: number,
+  sha: string,
+  timeout: number
+): Promise<void> {
+  log(`Wait for pull request head update [timeout=${timeout / 1000}s]`);
+
+  await waitFor(async () => {
+    const { data } = await octokit.pulls.get(
+      context.repo({ pull_number: number })
+    );
+    return data.head.sha !== sha ? true : undefined;
   }, timeout);
 }
 
@@ -856,6 +877,17 @@ export function setupApp(
           timeout = Seconds.thirty
         ) =>
           waitForPullRequestBaseToBeUpdated(
+            { octokit, testId, log },
+            number,
+            sha,
+            timeout
+          ),
+        waitForPullRequestHeadToBeUpdated: async (
+          number,
+          sha,
+          timeout = Seconds.thirty
+        ) =>
+          waitForPullRequestHeadToBeUpdated(
             { octokit, testId, log },
             number,
             sha,
