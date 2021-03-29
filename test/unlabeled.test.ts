@@ -40,7 +40,7 @@ test(
 
     //----------------------------------------
     //
-    logStep("Prepare base pull request");
+    logStep("Prepare managed pull request");
 
     const changeBranch = await git.createBranch("some-changes-unlabeled");
     await git.writeFiles({
@@ -49,13 +49,13 @@ test(
     });
     await git.addAndPushAllChanges(changeBranch, "add some files across teams");
 
-    const basePrNumber = await github.createPullRequest({
+    const managedPrNumber = await github.createPullRequest({
       base: mainBranch,
       head: changeBranch,
       title: "Unlabeled Test",
     });
-    await github.addLabel(basePrNumber, managedReviewLabel);
-    const basePr = await github.getPullRequest(basePrNumber);
+    await github.addLabel(managedPrNumber, managedReviewLabel);
+    const managedPr = await github.getPullRequest(managedPrNumber);
 
     //----------------------------------------
     // wait for bot work
@@ -82,12 +82,12 @@ test(
 
     //----------------------------------------
     //
-    logStep("Un-label base pr");
+    logStep("Un-label managed pull request");
 
     const splitTeamAPr = await github.getPullRequest(splitTeamA);
     const splitTeamBPr = await github.getPullRequest(splitTeamB);
 
-    await github.removeLabel(basePrNumber, managedReviewLabel);
+    await github.removeLabel(managedPrNumber, managedReviewLabel);
 
     //----------------------------------------
     //
@@ -107,7 +107,7 @@ test(
     });
 
     await github.waitForCommitStatus(
-      { ref: basePr.head.ref },
+      { ref: managedPr.head.ref },
       {
         context: "rezensent",
         state: "success",

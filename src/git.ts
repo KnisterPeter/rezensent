@@ -56,6 +56,41 @@ export class Git {
     return await this.#git.revparse(["HEAD"]);
   }
 
+  async resetHardCommits(sha = "HEAD^"): Promise<string> {
+    await this.#git.reset(ResetMode.HARD, [sha]);
+    return await this.#git.revparse(["HEAD"]);
+  }
+
+  async cherryPick({
+    commit,
+    onto,
+  }: {
+    commit: string;
+    onto: string;
+  }): Promise<string> {
+    await this.#git.fetch("origin", onto);
+    await this.#git.checkout([onto]);
+
+    await this.#git.raw(["cherry-pick", commit]);
+    const newCommitId = await this.#git.revparse(["HEAD"]);
+
+    await this.push(onto);
+
+    return newCommitId;
+  }
+
+  async addToExistingBranch({
+    branch,
+    files,
+  }: {
+    branch: string;
+    files: string[];
+  }): Promise<void> {
+    await this.#git.fetch("origin", branch);
+    await this.#git.checkout([branch]);
+    await this.#git.add(files);
+  }
+
   async addToNewBranch({
     branch,
     startPoint,
