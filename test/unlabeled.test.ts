@@ -12,11 +12,11 @@ test(
     //
 
     const managedReviewLabel = await github.createLabel({
-      name: "Rezensent: Managed Review",
+      name: "Rezensent: Managed Review (unlabeled)",
     });
 
     const teamReviewLabel = await github.createLabel({
-      name: "Rezensent: Review Requested",
+      name: "Rezensent: Review Requested (unlabeled)",
     });
 
     const { git } = await gitClone();
@@ -42,7 +42,7 @@ test(
     //
     logStep("Prepare base pull request");
 
-    const changeBranch = await git.createBranch("some-changes");
+    const changeBranch = await git.createBranch("some-changes-unlabeled");
     await git.writeFiles({
       "folder-a/a.txt": `a`,
       "folder-b/b.txt": `b`,
@@ -52,6 +52,7 @@ test(
     const basePrNumber = await github.createPullRequest({
       base: mainBranch,
       head: changeBranch,
+      title: "Unlabeled Test",
     });
     await github.addLabel(basePrNumber, managedReviewLabel);
     const basePr = await github.getPullRequest(basePrNumber);

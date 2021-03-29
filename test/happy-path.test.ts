@@ -12,11 +12,11 @@ test(
     //
 
     const managedReviewLabel = await github.createLabel({
-      name: "Rezensent: Managed Review",
+      name: "Rezensent: Managed Review (happy path)",
     });
 
     const teamReviewLabel = await github.createLabel({
-      name: "Rezensent: Review Requested",
+      name: "Rezensent: Review Requested (happy path)",
     });
 
     const { git } = await gitClone();
@@ -25,7 +25,7 @@ test(
     //
     logStep("Setup repo (branches, ...)");
 
-    const mainBranch = await git.createBranch("main-test");
+    const mainBranch = await git.createBranch("main-test-happy-path");
     await git.writeFiles({
       ".github/CODEOWNERS": stripIndent`
         folder-a @team-a
@@ -45,7 +45,7 @@ test(
     //
     logStep("Prepare base pull request");
 
-    const changeBranch = await git.createBranch("some-changes");
+    const changeBranch = await git.createBranch("some-changes-happy-path");
     await git.writeFiles({
       "folder-a/a.txt": `a`,
       "folder-b/b.txt": `b`,
@@ -55,6 +55,7 @@ test(
     const basePrNumber = await github.createPullRequest({
       base: mainBranch,
       head: changeBranch,
+      title: "Happy Path Test",
     });
     await github.addLabel(basePrNumber, managedReviewLabel);
     let basePr = await github.getPullRequest(basePrNumber);

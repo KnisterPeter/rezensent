@@ -44,7 +44,7 @@ test(
     //
     logStep("Prepare base pull request");
 
-    const changeBranch = await git.createBranch("some-changes");
+    const changeBranch = await git.createBranch("some-changes-update-pr");
     let changeBranchSha = await git.getSha(changeBranch);
     await git.writeFiles({
       "folder-a/a.txt": `a`,
@@ -55,6 +55,7 @@ test(
     const basePrNumber = await github.createPullRequest({
       base: mainBranch,
       head: changeBranch,
+      title: "Update PR Test",
     });
     await github.addLabel(basePrNumber, managedReviewLabel);
     let basePr = await github.getPullRequest(basePrNumber);
