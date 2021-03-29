@@ -134,6 +134,18 @@ class ExtendedSmeeClient extends SmeeClient {
               // ignore and throw below
             }
             break;
+          case "issue_comment":
+            try {
+              const title = get<string>(data, "body.issue.title");
+              if (title === testify(title, this.#testId, titlePattern)) {
+                return super.onmessage(msg);
+              }
+              // detected concurrent tests, skip
+              return;
+            } catch {
+              // ignore and throw below
+            }
+            break;
         }
 
         throw new Error(`Unknown webhook message: '${data["x-github-event"]}'`);
@@ -704,7 +716,11 @@ export async function getSha(
   { git, testId }: SimpleGitTaskContext,
   name: string
 ): Promise<string> {
-  return await git.revparse([testify(name, testId, branchPattern)]);
+  try {
+    return await git.revparse([testify(name, testId, branchPattern)]);
+  } catch (e) {
+    throw new Error(`Failed to get sha for '${name}':\n${e.stack}`);
+  }
 }
 
 export async function hasBranch(

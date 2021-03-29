@@ -2,15 +2,14 @@ import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
 
 import { BotContext, createBotContext } from "./bot-context";
-import { getPatternsByTeam, getTeams } from "./codeowners";
 import { Configuration, getConfig } from "./config";
 import { Git } from "./git";
 import {
   cloneRepo,
   createPullRequest,
-  getFile,
+  getChangedFilesPerTeam,
+  getFilePatternMapPerTeam,
   getPullRequestCommits,
-  getPullRequestFiles,
 } from "./github";
 import { isManagedPullRequest } from "./managed-pull-request";
 
@@ -47,13 +46,6 @@ export async function onLabelAdded(
     patterns,
   });
 
-  if (changedFilesByTeam.size === 1) {
-    context.log.debug(
-      `[PR-${number}] ignoring, because it contains only changes for one team`
-    );
-    return;
-  }
-
   context.log.debug(
     Object.fromEntries(changedFilesByTeam.entries()),
     `[PR-${number}] files changed by team`
@@ -75,51 +67,6 @@ export async function onLabelAdded(
   });
 
   context.log.debug(`[PR-${number}] done preparing`);
-}
-
-async function getFilePatternMapPerTeam(
-  context: BotContext,
-  { branch }: { branch: string }
-): Promise<Map<string, string[]>> {
-  const codeowners = await getFile(context, {
-    branch,
-    path: ".github/CODEOWNERS",
-  });
-
-  // todo: implement policy-bot mapper
-  const patterns = getTeams({
-    file: codeowners,
-  }).reduce((map, team) => {
-    map.set(team, getPatternsByTeam({ file: codeowners, team }));
-    return map;
-  }, new Map<string, string[]>());
-
-  return patterns;
-}
-
-async function getChangedFilesPerTeam(
-  context: BotContext,
-  { number, patterns }: { number: number; patterns: Map<string, string[]> }
-): Promise<Map<string, string[]>> {
-  const changedFiles = await getPullRequestFiles(context, {
-    number,
-  });
-
-  const changedFilesByTeam = changedFiles.reduce((map, file) => {
-    for (const [team, pattern] of patterns.entries()) {
-      if (pattern.some((p) => new RegExp(p).test(file))) {
-        let files = map.get(team);
-        if (!files) {
-          files = [];
-          map.set(team, files);
-        }
-        files.push(file);
-      }
-    }
-    return map;
-  }, new Map<string, string[]>());
-
-  return changedFilesByTeam;
 }
 
 async function createPullRequestForTeam(

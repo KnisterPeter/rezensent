@@ -43,7 +43,7 @@ test(
 
     //----------------------------------------
     //
-    logStep("Prepare base pull request");
+    logStep("Prepare managed pull request");
 
     const changeBranch = await git.createBranch("some-changes-happy-path");
     await git.writeFiles({
@@ -52,13 +52,13 @@ test(
     });
     await git.addAndPushAllChanges(changeBranch, "add some files across teams");
 
-    const basePrNumber = await github.createPullRequest({
+    const managedPrNumber = await github.createPullRequest({
       base: mainBranch,
       head: changeBranch,
       title: "Happy Path Test",
     });
-    await github.addLabel(basePrNumber, managedReviewLabel);
-    let basePr = await github.getPullRequest(basePrNumber);
+    await github.addLabel(managedPrNumber, managedReviewLabel);
+    let managedPr = await github.getPullRequest(managedPrNumber);
 
     //----------------------------------------
     // wait for bot work
@@ -101,12 +101,12 @@ test(
     );
 
     await github.waitForPullRequestBaseToBeUpdated(
-      basePrNumber,
-      basePr.base.sha
+      managedPrNumber,
+      managedPr.base.sha
     );
-    basePr = await github.getPullRequest(basePrNumber);
+    managedPr = await github.getPullRequest(managedPrNumber);
 
-    let files = await github.getPullRequestFiles(basePrNumber);
+    let files = await github.getPullRequestFiles(managedPrNumber);
     expect(files).toHaveLength(1);
 
     //----------------------------------------
@@ -122,20 +122,20 @@ test(
     });
 
     await github.waitForPullRequestBaseToBeUpdated(
-      basePrNumber,
-      basePr.base.sha
+      managedPrNumber,
+      managedPr.base.sha
     );
 
     //----------------------------------------
     //
-    logStep("Base pull request should be empty");
+    logStep("Managed pull request should be empty");
 
     await github.waitForPullRequest({
       head: changeBranch,
       state: "closed",
     });
 
-    files = await github.getPullRequestFiles(basePrNumber);
+    files = await github.getPullRequestFiles(managedPrNumber);
     expect(files).toHaveLength(0);
   })
 );

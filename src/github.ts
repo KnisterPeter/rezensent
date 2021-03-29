@@ -4,6 +4,7 @@ import { URL } from "url";
 import { promisify } from "util";
 
 import { BotContext } from "./bot-context";
+import { getPatternsByTeam, getTeams } from "./codeowners";
 import { Git, clone } from "./git";
 
 export type PullRequest = Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"][number];
@@ -303,4 +304,49 @@ export async function waitForPullRequestUpdate(
       break;
     }
   }
+}
+
+export async function getFilePatternMapPerTeam(
+  context: BotContext,
+  { branch }: { branch: string }
+): Promise<Map<string, string[]>> {
+  const codeowners = await getFile(context, {
+    branch,
+    path: ".github/CODEOWNERS",
+  });
+
+  // todo: implement policy-bot mapper
+  const patterns = getTeams({
+    file: codeowners,
+  }).reduce((map, team) => {
+    map.set(team, getPatternsByTeam({ file: codeowners, team }));
+    return map;
+  }, new Map<string, string[]>());
+
+  return patterns;
+}
+
+export async function getChangedFilesPerTeam(
+  context: BotContext,
+  { number, patterns }: { number: number; patterns: Map<string, string[]> }
+): Promise<Map<string, string[]>> {
+  const changedFiles = await getPullRequestFiles(context, {
+    number,
+  });
+
+  const changedFilesByTeam = changedFiles.reduce((map, file) => {
+    for (const [team, pattern] of patterns.entries()) {
+      if (pattern.some((p) => new RegExp(p).test(file))) {
+        let files = map.get(team);
+        if (!files) {
+          files = [];
+          map.set(team, files);
+        }
+        files.push(file);
+      }
+    }
+    return map;
+  }, new Map<string, string[]>());
+
+  return changedFilesByTeam;
 }
