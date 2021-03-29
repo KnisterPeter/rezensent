@@ -1,23 +1,57 @@
-name: test
+name: CI
 
 on: [push]
 
 jobs:
-  test:
-
+  check:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 14.x
-      uses: actions/setup-node@v2
-      with:
-        node-version: 14.x
-    - run: yarn install
-    - run: yarn check
-    - run: yarn test
-      env:
-        APP_ID: ${{ secrets.APP_ID }}
-        PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-        WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
-        WEBHOOK_PROXY_URL: ${{ secrets.WEBHOOK_PROXY_URL }}
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - run: yarn install
+      - run: yarn check
+
+  setup-tests:
+    runs-on: ubuntu-latest
+    outputs:
+      tests: ${{ steps.prepare.outputs.tests }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - run: yarn install
+      - id: prepare
+        run: echo "::set-output name=tests::$(yarn jest --listTests --json |jq --compact-output '[.[] | split("/")[-1] | sub(".test.ts"; "") | . ]')"
+
+  run-test:
+    runs-on: ubuntu-latest
+    name: test (${{ matrix.tests }})
+    needs: [setup-tests]
+    strategy:
+      matrix:
+        tests: ${{ fromJson(needs.setup-tests.outputs.tests) }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - run: yarn install
+      - run: yarn test ${{ matrix.tests }}
+        env:
+          APP_ID: ${{ secrets.APP_ID }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+          WEBHOOK_PROXY_URL: ${{ secrets.WEBHOOK_PROXY_URL }}
+
+  test-result:
+    runs-on: ubuntu-latest
+    name: test-result
+    needs: [run-test]
+    steps:
+      - run: echo ${{ needs.run-test.result == 'success' }}
