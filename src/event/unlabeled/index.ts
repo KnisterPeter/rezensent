@@ -1,15 +1,12 @@
 import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
 
-import { createBotContext } from "./bot-context";
-import { getConfig } from "./config";
-import {
-  closePullRequest,
-  deleteBranch,
-  getPullRequests,
-  isReferencedPullRequest,
-  PullRequest,
-} from "./github";
+import { getConfig } from "../../config";
+import { closePullRequest } from "../../github/close";
+import { getPullRequests } from "../../github/get";
+import { deleteBranch } from "../../github/git";
+import { isReferencedPullRequest } from "../../github/is-referenced";
+import { PullRequest } from "../../github/pr";
 
 export async function onLabelRemoved(
   context: EventTypesPayload["pull_request.unlabeled"] &
@@ -22,7 +19,6 @@ export async function onLabelRemoved(
     head: { ref: head, sha: headSha },
   } = context.payload.pull_request;
 
-  const botContext = createBotContext(context);
   const configuration = await getConfig(context, head);
 
   if (removedLabel !== configuration.manageReviewLabel) {
@@ -32,7 +28,7 @@ export async function onLabelRemoved(
 
   context.log.debug(`[PR-${number}] Manage Review label removed`);
 
-  const pullRequests = await getPullRequests(botContext, {
+  const pullRequests = await getPullRequests(context, {
     params: {
       base,
       state: "open",
@@ -44,7 +40,7 @@ export async function onLabelRemoved(
 
   const reviewRequests: PullRequest[] = [];
   for (const pullRequest of pullRequests) {
-    const isReferenced = await isReferencedPullRequest(botContext, {
+    const isReferenced = await isReferencedPullRequest(context, {
       number,
       reference: pullRequest.number,
     });
@@ -59,10 +55,10 @@ export async function onLabelRemoved(
   );
 
   for (const pullRequest of reviewRequests) {
-    await closePullRequest(botContext, {
+    await closePullRequest(context, {
       number: pullRequest.number,
     });
-    await deleteBranch(botContext, pullRequest.head.ref);
+    await deleteBranch(context, pullRequest.head.ref);
   }
 
   await context.octokit.repos.createCommitStatus(

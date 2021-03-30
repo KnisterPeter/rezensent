@@ -885,12 +885,12 @@ export function setupApp(
         getPullRequestFiles: (number) =>
           getPullRequestFiles({ octokit, testId, log }, number),
 
-        waitForPullRequest: async (params, timeout = Seconds.thirty) =>
+        waitForPullRequest: async (params, timeout = Seconds.sixty) =>
           waitForPullRequest({ octokit, testId, log }, params, timeout),
         waitForPullRequestBaseToBeUpdated: async (
           number,
           sha,
-          timeout = Seconds.thirty
+          timeout = Seconds.sixty
         ) =>
           waitForPullRequestBaseToBeUpdated(
             { octokit, testId, log },
@@ -901,7 +901,7 @@ export function setupApp(
         waitForPullRequestHeadToBeUpdated: async (
           number,
           sha,
-          timeout = Seconds.thirty
+          timeout = Seconds.sixty
         ) =>
           waitForPullRequestHeadToBeUpdated(
             { octokit, testId, log },
@@ -910,7 +910,7 @@ export function setupApp(
             timeout
           ),
 
-        waitForCommitStatus: (params, filter, timeout = Seconds.thirty) =>
+        waitForCommitStatus: (params, filter, timeout = Seconds.sixty) =>
           waitForCommitStatus(
             { octokit, testId, log },
             params,
@@ -962,14 +962,14 @@ export function setupApp(
                     // ignore: branch was most likely already deleted
                   }
                 }),
-              waitForBranchToBeUpdated: (name, sha, timeout = Seconds.thirty) =>
+              waitForBranchToBeUpdated: (name, sha, timeout = Seconds.sixty) =>
                 waitForBranchToBeUpdated(
                   { git, testId, log },
                   name,
                   sha,
                   timeout
                 ),
-              waitForBranchToBeDeleted: (name, timeout = Seconds.thirty) =>
+              waitForBranchToBeDeleted: (name, timeout = Seconds.sixty) =>
                 waitForBranchToBeDeleted({ git, testId, log }, name, timeout),
 
               writeFiles: (files) => writeFiles(directory, files),

@@ -1,20 +1,19 @@
-import { BotContext } from "./bot-context";
-import { Configuration } from "./config";
-import {
-  closePullRequest,
-  deleteBranch,
-  getPullRequestFiles,
-  getPullRequests,
-  isReferencedPullRequest,
-  PullRequest,
-} from "./github";
+import { Context } from "probot";
+
+import { Configuration } from "../config";
+import { closePullRequest } from "../github/close";
+import { getPullRequestFiles } from "../github/files";
+import { getPullRequests } from "../github/get";
+import { deleteBranch } from "../github/git";
+import { isReferencedPullRequest } from "../github/is-referenced";
+import { PullRequest } from "../github/pr";
 
 export async function isManagedPullRequest(
-  { octokit, repo }: BotContext,
+  context: Context,
   { configuration, number }: { configuration: Configuration; number: number }
 ): Promise<boolean> {
-  const { data: labels } = await octokit.issues.listLabelsOnIssue(
-    repo({
+  const { data: labels } = await context.octokit.issues.listLabelsOnIssue(
+    context.repo({
       issue_number: number,
     })
   );
@@ -27,7 +26,7 @@ export async function isManagedPullRequest(
 }
 
 export async function closeManagedPullRequestIfEmpty(
-  context: BotContext,
+  context: Context,
   { number }: { number: number }
 ): Promise<void> {
   const files = await getPullRequestFiles(context, {
@@ -53,7 +52,7 @@ export async function closeManagedPullRequestIfEmpty(
 }
 
 export async function findManagedPullRequest(
-  context: BotContext,
+  context: Context,
   { configuration, number }: { configuration: Configuration; number: number }
 ): Promise<PullRequest | undefined> {
   context.log.debug(`[PR-${number}] searching managed pull request`);

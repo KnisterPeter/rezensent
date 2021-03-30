@@ -1,6 +1,6 @@
 import { stripIndent } from "common-tags";
 
-import { getTeams, getPatternsByTeam } from "../src/codeowners";
+import { getTeams, getPatternsByTeam } from "../src/ownership/codeowners";
 
 test("getTeams", () => {
   const teams = getTeams({
