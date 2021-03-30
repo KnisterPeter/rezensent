@@ -3,10 +3,9 @@ import type { Context } from "probot";
 
 import { getConfig } from "../../config";
 import { closePullRequest } from "../../github/close";
-import { getPullRequests } from "../../github/get";
+import { getPullRequest } from "../../github/get";
 import { deleteBranch } from "../../github/git";
-import { isReferencedPullRequest } from "../../github/is-referenced";
-import { PullRequest } from "../../github/pr";
+import { createManaged } from "../../pr/matcher";
 
 export async function onLabelRemoved(
   context: EventTypesPayload["pull_request.unlabeled"] &
@@ -15,8 +14,7 @@ export async function onLabelRemoved(
   const { name: removedLabel } = context.payload.label ?? {};
   const {
     number,
-    base: { ref: base },
-    head: { ref: head, sha: headSha },
+    head: { ref: head },
   } = context.payload.pull_request;
 
   const configuration = await getConfig(context, head);
@@ -28,42 +26,25 @@ export async function onLabelRemoved(
 
   context.log.debug(`[PR-${number}] Manage Review label removed`);
 
-  const pullRequests = await getPullRequests(context, {
-    params: {
-      base,
-      state: "open",
-    },
-    filters: {
-      label: configuration.teamReviewLabel,
-    },
-  });
-
-  const reviewRequests: PullRequest[] = [];
-  for (const pullRequest of pullRequests) {
-    const isReferenced = await isReferencedPullRequest(context, {
-      number,
-      reference: pullRequest.number,
-    });
-    if (isReferenced) {
-      reviewRequests.push(pullRequest);
-    }
-  }
+  const pr = await getPullRequest(context, { number });
+  const managed = createManaged(context, pr, configuration);
+  const reviewRequests = await managed.children;
 
   context.log.debug(
     reviewRequests.map((pr) => pr.number),
     `[PR-${number}] found review requests`
   );
 
-  for (const pullRequest of reviewRequests) {
+  for (const review of reviewRequests) {
     await closePullRequest(context, {
-      number: pullRequest.number,
+      number: review.number,
     });
-    await deleteBranch(context, pullRequest.head.ref);
+    await deleteBranch(context, review.head.ref);
   }
 
   await context.octokit.repos.createCommitStatus(
     context.repo({
-      sha: headSha,
+      sha: managed.head.sha,
       context: "rezensent",
       description: "removed review label",
       state: "success",
