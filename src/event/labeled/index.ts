@@ -1,17 +1,14 @@
 import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
 
-import { BotContext, createBotContext } from "./bot-context";
-import { Configuration, getConfig } from "./config";
-import { Git } from "./git";
-import {
-  cloneRepo,
-  createPullRequest,
-  getChangedFilesPerTeam,
-  getFilePatternMapPerTeam,
-  getPullRequestCommits,
-} from "./github";
-import { isManagedPullRequest } from "./managed-pull-request";
+import { Configuration, getConfig } from "../../config";
+import { Git } from "../../git";
+import { withGit } from "../../github/clone";
+import { getPullRequestCommits } from "../../github/commits";
+import { createPullRequest } from "../../github/create";
+import { getChangedFilesPerTeam } from "../../github/files";
+import { getFilePatternMapPerTeam } from "../../ownership/codeowners";
+import { isManagedPullRequest } from "../../pr/managed";
 
 /**
  * Called when a label is added to a pull request.
@@ -25,10 +22,9 @@ export async function onLabelAdded(
     head: { ref: head, sha: headSha },
   } = context.payload.pull_request;
 
-  const botContext = createBotContext(context);
   const configuration = await getConfig(context, head);
 
-  const isManaged = await isManagedPullRequest(botContext, {
+  const isManaged = await isManagedPullRequest(context, {
     configuration,
     number,
   });
@@ -39,9 +35,9 @@ export async function onLabelAdded(
 
   context.log.debug(`[PR-${number}] Manage Review label added`);
 
-  const patterns = await getFilePatternMapPerTeam(botContext, { branch: head });
+  const patterns = await getFilePatternMapPerTeam(context, { branch: head });
 
-  const changedFilesByTeam = await getChangedFilesPerTeam(botContext, {
+  const changedFilesByTeam = await getChangedFilesPerTeam(context, {
     number,
     patterns,
   });
@@ -60,7 +56,7 @@ export async function onLabelAdded(
     })
   );
 
-  await createTeamPullRequests(botContext, {
+  await createTeamPullRequests(context, {
     changedFilesByTeam,
     configuration,
     number,
@@ -70,7 +66,7 @@ export async function onLabelAdded(
 }
 
 async function createPullRequestForTeam(
-  context: BotContext,
+  context: Context,
   {
     configuration,
     git,
@@ -122,7 +118,7 @@ async function createPullRequestForTeam(
 }
 
 async function createTeamPullRequests(
-  context: BotContext,
+  context: Context,
   {
     changedFilesByTeam,
     configuration,
@@ -144,25 +140,26 @@ async function createTeamPullRequests(
 
   context.log.debug({ commits }, `[PR-${number}] commits`);
 
-  const git = await cloneRepo(context, {
-    branch: pr.head.ref,
-    depth: commits.length + 1,
-  });
-  try {
-    context.log.debug(`[PR-${number}] resetting branch`);
-    const startPoint = await git.resetCommits(`${firstCommit}^`);
+  await withGit(
+    context,
+    {
+      branch: pr.head.ref,
+      depth: commits.length + 1,
+    },
+    async (git) => {
+      context.log.debug(`[PR-${number}] resetting branch`);
+      const startPoint = await git.resetCommits(`${firstCommit}^`);
 
-    for (const [team, files] of changedFilesByTeam) {
-      await createPullRequestForTeam(context, {
-        configuration,
-        git,
-        startPoint,
-        team,
-        files,
-        number,
-      });
+      for (const [team, files] of changedFilesByTeam) {
+        await createPullRequestForTeam(context, {
+          configuration,
+          git,
+          startPoint,
+          team,
+          files,
+          number,
+        });
+      }
     }
-  } finally {
-    await git.close();
-  }
+  );
 }

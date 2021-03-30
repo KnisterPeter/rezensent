@@ -5,6 +5,11 @@ export interface Configuration {
   teamReviewLabel: string;
 }
 
+const defaults = {
+  "manage-review-label": "Rezensent: Managed Review",
+  "team-review-label": "Rezensent: Review Requested",
+};
+
 export async function getConfig(
   context: Context,
   branch: string
@@ -13,10 +18,7 @@ export async function getConfig(
     context.repo({
       path: ".github/rezensent.yml",
       branch,
-      defaults: {
-        "manage-review-label": "Rezensent: Managed Review",
-        "team-review-label": "Rezensent: Review Requested",
-      },
+      defaults,
     })
   );
 

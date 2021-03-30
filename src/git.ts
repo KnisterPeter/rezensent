@@ -27,7 +27,8 @@ export class Git {
   }
 
   async rebase(ref: string): Promise<void> {
-    await this.#git.fetch("origin", ref).rebase([`origin/${ref}`]);
+    await this.#git.fetch("origin", ref);
+    await this.#git.rebase([`origin/${ref}`]);
   }
 
   async mergeTheirs(from: string): Promise<string> {
@@ -158,7 +159,6 @@ export async function clone({
     });
     await git.checkout([sha]);
 
-    // const { name, email } = await this.getCredentials();
     await git.addConfig("user.name", user);
     await git.addConfig("user.email", email);
 

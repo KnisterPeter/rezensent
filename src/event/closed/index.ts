@@ -1,13 +1,12 @@
 import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
 
-import { createBotContext } from "./bot-context";
-import { getConfig } from "./config";
-import { waitForPullRequestUpdate } from "./github";
+import { getConfig } from "../../config";
+import { waitForPullRequestUpdate } from "../../github/wait-for-update";
 import {
   closeManagedPullRequestIfEmpty,
   findManagedPullRequest,
-} from "./managed-pull-request";
+} from "../../pr/managed";
 
 export async function onPullRequestClosed(
   context: EventTypesPayload["pull_request.merged"] &
@@ -44,9 +43,7 @@ export async function onPullRequestClosed(
     return;
   }
 
-  const botContext = createBotContext(context);
-
-  const managedPullRequest = await findManagedPullRequest(botContext, {
+  const managedPullRequest = await findManagedPullRequest(context, {
     configuration,
     number,
   });
@@ -72,11 +69,11 @@ export async function onPullRequestClosed(
     `[PR-${number}] wait for managed pull request to get updated`
   );
 
-  await waitForPullRequestUpdate(botContext, {
+  await waitForPullRequestUpdate(context, {
     pullRequest: managedPullRequest,
   });
 
-  await closeManagedPullRequestIfEmpty(botContext, {
+  await closeManagedPullRequestIfEmpty(context, {
     number: managedPullRequest.number,
   });
 }
