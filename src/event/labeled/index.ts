@@ -8,7 +8,7 @@ import { getPullRequestCommits } from "../../github/commits";
 import { createPullRequest } from "../../github/create";
 import { getChangedFilesPerTeam } from "../../github/files";
 import { getFilePatternMapPerTeam } from "../../ownership/codeowners";
-import { isManagedPullRequest } from "../../pr/managed";
+import { match } from "../../pr/matcher";
 
 /**
  * Called when a label is added to a pull request.
@@ -19,50 +19,47 @@ export async function onLabelAdded(
 ) {
   const {
     number,
-    head: { ref: head, sha: headSha },
+    head: { ref: head },
   } = context.payload.pull_request;
 
   const configuration = await getConfig(context, head);
 
-  const isManaged = await isManagedPullRequest(context, {
-    configuration,
-    number,
+  await match(context, number, {
+    async managed(managed) {
+      context.log.debug(`[PR-${managed.number}] Manage Review label added`);
+
+      const patterns = await getFilePatternMapPerTeam(context, {
+        branch: managed.head.ref,
+      });
+
+      const changedFilesByTeam = await getChangedFilesPerTeam(context, {
+        number: managed.number,
+        patterns,
+      });
+
+      context.log.debug(
+        Object.fromEntries(changedFilesByTeam.entries()),
+        `[PR-${managed.number}] files changed by team`
+      );
+
+      await context.octokit.repos.createCommitStatus(
+        context.repo({
+          sha: managed.head.sha,
+          context: "rezensent",
+          description: "blocking while in review",
+          state: "pending",
+        })
+      );
+
+      await createTeamPullRequests(context, {
+        changedFilesByTeam,
+        configuration,
+        number: managed.number,
+      });
+
+      context.log.debug(`[PR-${managed.number}] done preparing`);
+    },
   });
-  if (!isManaged) {
-    context.log.debug(`[PR-${number}] ignoring label`);
-    return;
-  }
-
-  context.log.debug(`[PR-${number}] Manage Review label added`);
-
-  const patterns = await getFilePatternMapPerTeam(context, { branch: head });
-
-  const changedFilesByTeam = await getChangedFilesPerTeam(context, {
-    number,
-    patterns,
-  });
-
-  context.log.debug(
-    Object.fromEntries(changedFilesByTeam.entries()),
-    `[PR-${number}] files changed by team`
-  );
-
-  await context.octokit.repos.createCommitStatus(
-    context.repo({
-      sha: headSha,
-      context: "rezensent",
-      description: "blocking while in review",
-      state: "pending",
-    })
-  );
-
-  await createTeamPullRequests(context, {
-    changedFilesByTeam,
-    configuration,
-    number,
-  });
-
-  context.log.debug(`[PR-${number}] done preparing`);
 }
 
 async function createPullRequestForTeam(

@@ -1,7 +1,7 @@
 import { Context } from "probot";
 import { promisify } from "util";
 
-import { PullRequest } from "./pr";
+import { PullRequestBase } from "../pr/matcher";
 
 const wait = promisify(setTimeout);
 
@@ -10,7 +10,7 @@ export async function waitForPullRequestUpdate(
   {
     pullRequest,
   }: {
-    pullRequest: PullRequest;
+    pullRequest: PullRequestBase;
   }
 ): Promise<void> {
   let n = 0;

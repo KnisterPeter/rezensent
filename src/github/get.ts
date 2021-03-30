@@ -1,7 +1,20 @@
 import { Endpoints } from "@octokit/types";
 import { Context } from "probot";
 
-import { PullRequest } from "./pr";
+import { PullRequest, PullRequests } from "./pr";
+
+export async function getPullRequest(
+  context: Context,
+  { number }: { number: number }
+): Promise<PullRequest> {
+  const { data: pullRequest } = await context.octokit.pulls.get(
+    context.repo({
+      pull_number: number,
+    })
+  );
+
+  return pullRequest;
+}
 
 export async function getPullRequests(
   context: Context,
@@ -17,7 +30,7 @@ export async function getPullRequests(
       label?: string | RegExp;
     };
   }
-): Promise<PullRequest[]> {
+): Promise<PullRequests> {
   let pullRequests = await context.octokit.paginate(
     context.octokit.pulls.list,
     context.repo({ per_page: 100, ...params })
