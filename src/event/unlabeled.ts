@@ -20,7 +20,6 @@ export async function onLabelRemoved(
   const configuration = await getConfig(context, head);
 
   if (removedLabel !== configuration.manageReviewLabel) {
-    context.log.debug(`[PR-${number}] not a managed pull request`);
     return;
   }
 
@@ -32,7 +31,7 @@ export async function onLabelRemoved(
 
   context.log.debug(
     reviews.map((pr) => `PR-${pr.number} | ${pr.title}`),
-    `[PR-${number}] found review requests`
+    `[${managed}] found review requests`
   );
 
   for (const review of reviews) {

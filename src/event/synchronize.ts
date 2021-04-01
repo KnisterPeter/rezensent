@@ -34,7 +34,7 @@ export async function onPullRequestUpdated(
     },
 
     async review(review) {
-      context.log.debug(`[PR-${review.number}] update is team review request`);
+      context.log.debug(`[${review}] update is team review request`);
 
       const managedPullRequest = await review.parent();
 
@@ -60,13 +60,13 @@ export async function onPullRequestUpdated(
 
       if (referencedCommits.includes(commit.sha)) {
         context.log.debug(
-          `[PR-${number}] Update is referenced in managed pull request; keep commit`
+          `[${review}] Update is referenced in managed pull request; keep commit`
         );
         return;
       }
 
       context.log.debug(
-        `[PR-${number}] invalid commit ${commit.sha} onto team-pr; reset and cherry-pick onto PR-${managedPullRequest.number}`
+        `[${review}] invalid commit ${commit.sha} onto team-pr; reset and cherry-pick onto PR-${managedPullRequest.number}`
       );
 
       const commits = await getPullRequestCommits(context, number);
@@ -80,7 +80,7 @@ export async function onPullRequestUpdated(
         async (git) => {
           context.log.debug(
             { commits },
-            `[PR-${number}] Commits (reset to HEAD^ now)`
+            `[${review}] Commits (reset to HEAD^ now)`
           );
 
           await git.resetHardCommits();

@@ -19,30 +19,26 @@ export function synchronize(context: Context, number: number): Task {
     async run(): Promise<void> {
       await match(context, number, {
         async managed(managed) {
-          context.log.debug(
-            `[PR-${managed.number}] synchronize managed pull request`
-          );
+          context.log.debug(`[${managed}] synchronize managed pull request`);
 
           if (await task.updateFromHead(managed)) {
             context.log.debug(
-              `[PR-${managed.number}] merge HEAD; wait for next synchronization`
+              `[${managed}] merge HEAD; wait for next synchronization`
             );
             return;
           }
 
           const result = await closeManagedPullRequestIfEmpty(context, managed);
           if (result === "closed") {
-            context.log.debug(
-              `[PR-${managed.number}] closed; all changes are merged into ${managed.base.ref}`
+            context.log.info(
+              `[${managed}] closed; all changes are merged into ${managed.base.ref}`
             );
             return;
           }
 
           await task.updateReviews(managed);
 
-          context.log.debug(
-            `[PR-${managed.number}] synchronized managed pull request`
-          );
+          context.log.debug(`[${managed}] synchronized managed pull request`);
         },
       });
     },
@@ -59,7 +55,7 @@ export function synchronize(context: Context, number: number): Task {
       }
 
       context.log.debug(
-        `[PR-${managed.number}] merge ${managed.base.ref} into ${managed.head.ref}`
+        `[${managed}] merge ${managed.base.ref} into ${managed.head.ref}`
       );
 
       await context.octokit.pulls.updateBranch(
@@ -94,7 +90,7 @@ export function synchronize(context: Context, number: number): Task {
 
       context.log.debug(
         Object.fromEntries(changedFilesByTeam.entries()),
-        `[PR-${managed.number}] changes per team`
+        `[${managed}] changes per team`
       );
 
       const commits = await getPullRequestCommits(context, managed.number);
@@ -111,9 +107,7 @@ export function synchronize(context: Context, number: number): Task {
               continue;
             }
 
-            context.log.debug(
-              `[PR-${managed.number}] update review for ${team}`
-            );
+            context.log.info(`[${managed}] update review for ${team}`);
 
             await this.updateReview(managed, reviews, {
               git,
