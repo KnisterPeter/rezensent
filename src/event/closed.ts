@@ -9,9 +9,9 @@ export async function onPullRequestClosed(
   context: EventTypesPayload["pull_request.merged"] &
     Omit<Context<any>, keyof WebhookEvent<any>>
 ) {
-  const { number } = context.payload.pull_request;
+  const { number, merged } = context.payload.pull_request;
 
-  context.log.debug(`[PR-${number}] was merged`);
+  context.log.debug(`[PR-${number}] was ${merged ? "merged" : "closed"}`);
 
   await match(context, number, {
     async review(review) {

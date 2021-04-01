@@ -12,18 +12,13 @@ export async function closeManagedPullRequestIfEmpty(
   const files = await getPullRequestFiles(context, {
     number: managed.number,
   });
-  context.log.debug(
-    { files },
-    `Managed pull request PR-${managed.number} files`
-  );
+  context.log.debug({ files }, `[${managed}] files`);
 
   if (files.length > 0) {
     return "open";
   }
 
-  context.log.debug(
-    `Managed pull request PR-${managed.number} is empty; closing`
-  );
+  context.log.debug(`[${managed}] is empty; closing`);
 
   await closePullRequest(context, managed.number);
   await deleteBranch(context, managed.head.ref);
