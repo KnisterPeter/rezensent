@@ -43,10 +43,7 @@ export async function closeManagedPullRequestIfEmpty(
     `Managed pull request PR-${managed.number} is empty; closing`
   );
 
-  await closePullRequest(context, {
-    number: managed.number,
-  });
-
+  await closePullRequest(context, managed.number);
   await deleteBranch(context, managed.head.ref);
 
   return "closed";

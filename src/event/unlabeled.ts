@@ -28,17 +28,15 @@ export async function onLabelRemoved(
 
   const pr = context.payload.pull_request as PullRequest;
   const managed = createManaged(context, pr, configuration);
-  const reviewRequests = await managed.children();
+  const reviews = await managed.children();
 
   context.log.debug(
-    reviewRequests.map((pr) => pr.number),
+    reviews.map((pr) => `PR-${pr.number} | ${pr.title}`),
     `[PR-${number}] found review requests`
   );
 
-  for (const review of reviewRequests) {
-    await closePullRequest(context, {
-      number: review.number,
-    });
+  for (const review of reviews) {
+    await closePullRequest(context, review.number);
     await deleteBranch(context, review.head.ref);
   }
 
