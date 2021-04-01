@@ -183,6 +183,8 @@ export async function match(
     await matcher.managed?.(createManaged(context, pr, configuration));
   } else if (isReview) {
     await matcher.review?.(createReview(context, pr, configuration));
+  } else {
+    context.log.debug(`[PR-${number}] neither managed nor review; ignore`);
   }
 }
 
@@ -194,17 +196,25 @@ async function getPullRequestTypes(
   isManaged: boolean;
   isReview: boolean;
 }> {
-  const { data: labels } = await context.octokit.issues.listLabelsOnIssue(
+  const { data: labelObjects } = await context.octokit.issues.listLabelsOnIssue(
     context.repo({
       issue_number: number,
     })
   );
-  const isManaged = labels
-    .map((label) => label.name)
-    .some((label) => label === configuration.manageReviewLabel);
-  const isReview = labels
-    .map((label) => label.name)
-    .some((label) => label === configuration.teamReviewLabel);
+
+  const labels = labelObjects.map((label) => label.name);
+
+  const isManaged = labels.some(
+    (label) => label === configuration.manageReviewLabel
+  );
+  const isReview = labels.some(
+    (label) => label === configuration.teamReviewLabel
+  );
+
+  context.log.debug(
+    { configuration, labels, isManaged, isReview },
+    `[PR-${number}] labels`
+  );
 
   return {
     isManaged,

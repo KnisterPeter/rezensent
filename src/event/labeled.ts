@@ -17,7 +17,7 @@ export async function onLabelAdded(
     pull_request: { number },
   } = context.payload;
 
-  context.log.debug(`[PR-${number}] was labeled '${label}'`);
+  context.log.debug({ label }, `[PR-${number}] was labeled`);
 
   await match(context, number, {
     async managed(managed) {

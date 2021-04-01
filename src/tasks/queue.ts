@@ -23,6 +23,9 @@ export function enqueue(context: Context, reason: string, task: Task): void {
     }
 
     queue = [...queue, [reason, task]];
+    context.log.info(
+      `Queue task | [PR-${task.number}] ${task.name} | ${reason}`
+    );
   } else {
     const runTask = async (reason: string, task: Task) => {
       context.log.info(
