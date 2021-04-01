@@ -12,7 +12,12 @@ export async function onLabelAdded(
   context: EventTypesPayload["pull_request.labeled"] &
     Omit<Context<any>, keyof WebhookEvent<any>>
 ) {
-  const { number } = context.payload.pull_request;
+  const {
+    label: { name: label } = {},
+    pull_request: { number },
+  } = context.payload;
+
+  context.log.debug(`[PR-${number}] was labeled '${label}'`);
 
   await match(context, number, {
     async managed(managed) {
