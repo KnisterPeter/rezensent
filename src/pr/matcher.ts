@@ -16,6 +16,7 @@ export interface PullRequestBase {
   };
   state: PullRequest["state"];
   title: PullRequest["title"];
+  labels: PullRequest["labels"][number]["name"][];
 
   toString(): string;
 }
@@ -91,7 +92,9 @@ async function reviewRequests(
     (item) => (item as any)?.source?.type === "issue"
   );
 
-  const numbers = issues.map((item) => (item as any)?.source?.issue?.number);
+  const numbers: number[] = issues.map(
+    (item) => (item as any)?.source?.issue?.number
+  );
 
   const reviewRequests: Review[] = [];
   for (const number of numbers) {
@@ -155,31 +158,34 @@ export function createReview(
 
 export async function match(
   context: Context,
-  number: number,
+  numberOrPullRequest: number | PullRequestBase,
   matcher: {
     managed?(pullRequest: Managed): Promise<void>;
     review?(pullRequest: Review): Promise<void>;
   }
 ): Promise<void> {
-  const pr = await getPullRequest(context, number);
+  const pr =
+    typeof numberOrPullRequest === "number"
+      ? await getPullRequest(context, numberOrPullRequest)
+      : numberOrPullRequest;
 
   // if pr is merged, the branch might already be deleted
   // therefore we take the base branch
   const configBranch = pr.state === "closed" ? pr.base.ref : pr.head.ref;
   context.log.debug(
     { from: pr.state === "closed" ? "base" : "head", branch: configBranch },
-    `[PR-${number}] read config`
+    `[PR-${pr.number}] read config`
   );
   const configuration = await getConfig(context, configBranch);
 
   const { isManaged, isReview } = await getPullRequestTypes(
     context,
-    number,
+    pr,
     configuration
   );
 
   if (isManaged && isReview) {
-    throw new Error(`[PR-${number}] invalid state: managed & review`);
+    throw new Error(`[PR-${pr.number}] invalid state: managed & review`);
   }
 
   if (isManaged) {
@@ -187,36 +193,33 @@ export async function match(
   } else if (isReview) {
     await matcher.review?.(createReview(context, pr, configuration));
   } else {
-    context.log.debug(`[PR-${number}] neither managed nor review; ignore`);
+    context.log.debug(`[PR-${pr.number}] neither managed nor review; ignore`);
   }
 }
 
 async function getPullRequestTypes(
   context: Context,
-  number: number,
+  numberOrPullRequest: number | PullRequestBase,
   configuration: Configuration
 ): Promise<{
   isManaged: boolean;
   isReview: boolean;
 }> {
-  const { data: labelObjects } = await context.octokit.issues.listLabelsOnIssue(
-    context.repo({
-      issue_number: number,
-    })
-  );
+  const pullRequest =
+    typeof numberOrPullRequest === "number"
+      ? await getPullRequest(context, numberOrPullRequest)
+      : numberOrPullRequest;
 
-  const labels = labelObjects.map((label) => label.name);
-
-  const isManaged = labels.some(
+  const isManaged = pullRequest.labels.some(
     (label) => label === configuration.manageReviewLabel
   );
-  const isReview = labels.some(
+  const isReview = pullRequest.labels.some(
     (label) => label === configuration.teamReviewLabel
   );
 
   context.log.debug(
-    { configuration, labels, isManaged, isReview },
-    `[PR-${number}] labels`
+    { configuration, labels: pullRequest.labels, isManaged, isReview },
+    `[PR-${pullRequest.number}] labels`
   );
 
   return {

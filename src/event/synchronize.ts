@@ -3,7 +3,7 @@ import type { Context } from "probot";
 
 import { withGit } from "../github/clone";
 import { getPullRequestCommits } from "../github/commits";
-import { match } from "../pr/matcher";
+import { match, PullRequestBase } from "../pr/matcher";
 import { enqueue } from "../tasks/queue";
 import { synchronize } from "../tasks/synchronize";
 
@@ -15,6 +15,8 @@ export async function onPullRequestUpdated(
     number,
     head: { ref: head, sha: headSha },
     merged,
+    state,
+    labels,
   } = context.payload.pull_request;
 
   if (merged) {
@@ -24,12 +26,18 @@ export async function onPullRequestUpdated(
 
   context.log.debug(`[PR-${number}] was updated`);
 
-  await match(context, number, {
+  const pullRequest: PullRequestBase = {
+    ...context.payload.pull_request,
+    state: state === "open" ? "open" : "closed",
+    labels: labels.map((label) => label.name),
+  };
+
+  await match(context, pullRequest, {
     async managed(managed) {
       enqueue(
         context,
         `updated branch ${managed}`,
-        synchronize(context, managed.number)
+        synchronize(context, managed)
       );
     },
 
@@ -69,7 +77,7 @@ export async function onPullRequestUpdated(
         `[${review}] invalid commit ${commit.sha} onto team-pr; reset and cherry-pick onto PR-${managedPullRequest.number}`
       );
 
-      const commits = await getPullRequestCommits(context, number);
+      const commits = await getPullRequestCommits(context, review.number);
 
       await withGit(
         context,
@@ -93,7 +101,7 @@ export async function onPullRequestUpdated(
             });
             await context.octokit.issues.createComment(
               context.repo({
-                issue_number: number,
+                issue_number: review.number,
                 body: `Invalid commit on review pull request! We reset the branch!
 
     We cherry-picked your commit ${commit.sha} as ${newCommitId} onto #${managedPullRequest.number} instead.
@@ -103,7 +111,7 @@ export async function onPullRequestUpdated(
           } catch {
             await context.octokit.issues.createComment(
               context.repo({
-                issue_number: number,
+                issue_number: review.number,
                 body: `Invalid commit on review pull request! We reset the branch!
 
     Please cherry-pick your commit ${commit.sha} onto #${managedPullRequest.number} instead.
