@@ -44,6 +44,7 @@ jobs:
       - run: yarn install
       - run: yarn test ${{ matrix.tests }}
         env:
+          LOG_LEVEL: info
           APP_ID: ${{ secrets.APP_ID }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
