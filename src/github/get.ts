@@ -5,7 +5,7 @@ import { PullRequest, PullRequests } from "./pr";
 
 export async function getPullRequest(
   context: Context,
-  { number }: { number: number }
+  number: number
 ): Promise<PullRequest> {
   const { data: pullRequest } = await context.octokit.pulls.get(
     context.repo({

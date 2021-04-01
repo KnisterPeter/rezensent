@@ -97,7 +97,7 @@ async function reviewRequests(
 
   const reviewRequests: Review[] = [];
   for (const number of numbers) {
-    const pullRequest = await getPullRequest(context, { number });
+    const pullRequest = await getPullRequest(context, number);
     const isReview = isReviewPullRequest(context, {
       configuration,
       number: pullRequest.number,
@@ -162,7 +162,7 @@ export async function match(
     review?(pullRequest: Review): Promise<void>;
   }
 ): Promise<void> {
-  const pr = await getPullRequest(context, { number });
+  const pr = await getPullRequest(context, number);
   const configuration = await getConfig(
     context,
     // if pr is merged, the branch might already be deleted
