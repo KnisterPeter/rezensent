@@ -162,12 +162,15 @@ export async function match(
   }
 ): Promise<void> {
   const pr = await getPullRequest(context, number);
-  const configuration = await getConfig(
-    context,
-    // if pr is merged, the branch might already be deleted
-    // therefore we take the base branch
-    pr.merged ? pr.base.ref : pr.head.ref
+
+  // if pr is merged, the branch might already be deleted
+  // therefore we take the base branch
+  const configBranch = pr.state === "closed" ? pr.base.ref : pr.head.ref;
+  context.log.debug(
+    { from: pr.state === "closed" ? "base" : "head", branch: configBranch },
+    `[PR-${number}] read config`
   );
+  const configuration = await getConfig(context, configBranch);
 
   const { isManaged, isReview } = await getPullRequestTypes(
     context,
