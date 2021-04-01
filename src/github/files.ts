@@ -12,6 +12,7 @@ export async function getPullRequestFiles(
     context.octokit.pulls.listFiles,
     context.repo({
       pull_number: number,
+      per_page: 100,
     }),
     ({ data: files }) => files.map((file) => file.filename)
   );

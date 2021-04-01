@@ -37,8 +37,6 @@ test(
       `,
     });
     await git.addAndPushAllChanges(mainBranch, "setup main branch");
-
-    await git.fetch();
     let mainBranchSha = await git.getSha(mainBranch);
 
     //----------------------------------------
@@ -58,29 +56,26 @@ test(
       title: "Happy Path Test",
     });
     await github.addLabel(managedPrNumber, managedReviewLabel);
-    let managedPr = await github.getPullRequest(managedPrNumber);
 
     //----------------------------------------
     // wait for bot work
     //
     logStep("Wait for bot work");
 
-    const [splitTeamA, splitTeamB] = await Promise.all([
-      github.waitForPullRequest({
-        head: `${changeBranch}-team-a`,
-        state: "open",
-        user: user.login,
-      }),
-      github.waitForPullRequest({
-        head: `${changeBranch}-team-b`,
-        state: "open",
-        user: user.login,
-      }),
-    ]);
-
+    const splitTeamA = await github.waitForPullRequest({
+      head: `${changeBranch}-team-a`,
+      state: "open",
+      user: user.login,
+    });
     github.closePullRequestAfterTest(splitTeamA);
-    github.closePullRequestAfterTest(splitTeamB);
     git.deleteBranchAfterTest(`${changeBranch}-team-a`);
+
+    const splitTeamB = await github.waitForPullRequest({
+      head: `${changeBranch}-team-b`,
+      state: "open",
+      user: user.login,
+    });
+    github.closePullRequestAfterTest(splitTeamB);
     git.deleteBranchAfterTest(`${changeBranch}-team-b`);
 
     //----------------------------------------
@@ -100,11 +95,11 @@ test(
       mainBranchSha
     );
 
+    let managedPr = await github.getPullRequest(managedPrNumber);
     await github.waitForPullRequestBaseToBeUpdated(
       managedPrNumber,
       managedPr.base.sha
     );
-    managedPr = await github.getPullRequest(managedPrNumber);
 
     let files = await github.getPullRequestFiles(managedPrNumber);
     expect(files).toHaveLength(1);
@@ -121,6 +116,12 @@ test(
       user: user.login,
     });
 
+    mainBranchSha = await git.waitForBranchToBeUpdated(
+      mainBranch,
+      mainBranchSha
+    );
+
+    managedPr = await github.getPullRequest(managedPrNumber);
     await github.waitForPullRequestBaseToBeUpdated(
       managedPrNumber,
       managedPr.base.sha
@@ -135,6 +136,7 @@ test(
       state: "closed",
     });
 
+    await github.getPullRequest(managedPrNumber);
     files = await github.getPullRequestFiles(managedPrNumber);
     expect(files).toHaveLength(0);
   })

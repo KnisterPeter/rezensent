@@ -14,6 +14,7 @@
   "scripts": {
     "start": "LANG=C ts-node-transpile-only ./src/node",
     "check": "tsc",
+    "check:watch": "tsc --watch",
     "test": "LANG=C jest",
     "test:debug": "TERM=dumb LOG_LEVEL=debug DEBUG=simple-git LANG=C jest -i"
   },
