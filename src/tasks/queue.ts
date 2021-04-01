@@ -12,10 +12,17 @@ let current: Promise<void> | undefined;
 
 export function enqueue(context: Context, reason: string, task: Task): void {
   if (current) {
-    queue = [
-      ...queue.filter(([, item]) => item.number !== task.number),
-      [reason, task],
-    ];
+    const filtered = queue.filter(
+      (item) => !(item[1].name === task.name && item[1].number === task.number)
+    );
+    if (filtered.length < queue.length) {
+      context.log.info(
+        `Queue task | [PR-${task.number}] ${task.name} | already in queue -> requeue`
+      );
+      queue = filtered;
+    }
+
+    queue = [...queue, [reason, task]];
   } else {
     const runTask = async (reason: string, task: Task) => {
       context.log.info(
