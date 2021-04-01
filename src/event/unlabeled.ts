@@ -1,11 +1,11 @@
 import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
 
-import { getConfig } from "../../config";
-import { closePullRequest } from "../../github/close";
-import { getPullRequest } from "../../github/get";
-import { deleteBranch } from "../../github/git";
-import { createManaged } from "../../pr/matcher";
+import { getConfig } from "../config";
+import { closePullRequest } from "../github/close";
+import { deleteBranch } from "../github/git";
+import { PullRequest } from "../github/pr";
+import { createManaged } from "../pr/matcher";
 
 export async function onLabelRemoved(
   context: EventTypesPayload["pull_request.unlabeled"] &
@@ -26,9 +26,9 @@ export async function onLabelRemoved(
 
   context.log.debug(`[PR-${number}] Manage Review label removed`);
 
-  const pr = await getPullRequest(context, { number });
+  const pr = context.payload.pull_request as PullRequest;
   const managed = createManaged(context, pr, configuration);
-  const reviewRequests = await managed.children;
+  const reviewRequests = await managed.children();
 
   context.log.debug(
     reviewRequests.map((pr) => pr.number),

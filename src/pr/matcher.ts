@@ -16,16 +16,18 @@ export interface PullRequestBase {
     ref: PullRequest["head"]["ref"];
     sha: PullRequest["head"]["sha"];
   };
+  state: PullRequest["state"];
+  title: PullRequest["title"];
 }
 
 export interface Managed extends PullRequestBase {
   type: "managed";
-  children: Promise<Review[]>;
+  children(): Promise<Review[]>;
 }
 
 export interface Review extends PullRequestBase {
   type: "review";
-  parent: Promise<Managed>;
+  parent(): Promise<Managed>;
 }
 
 async function parentRequest(
@@ -33,9 +35,12 @@ async function parentRequest(
   review: Review,
   configuration: Configuration
 ): Promise<Managed> {
+  let managed: Managed;
+  let maybeManaged: Managed | undefined = undefined;
+
+  // get all possible candidates
   const pullRequests = await getPullRequests(context, {
     params: {
-      base: review.base.ref,
       state: "open",
     },
     filters: {
@@ -43,21 +48,15 @@ async function parentRequest(
     },
   });
 
-  let managed: Managed;
-  let maybeManaged: Managed | undefined = undefined;
   for (const pullRequest of pullRequests) {
     const isReferenced = await isReferencedPullRequest(context, {
       number: pullRequest.number,
       reference: review.number,
     });
     if (isReferenced) {
-      maybeManaged = {
-        type: "managed",
-        ...pullRequest,
-        get children() {
-          return reviewRequests(context, managed, configuration);
-        },
-      };
+      maybeManaged = createManaged(context, pullRequest, configuration);
+      // take first matching candidate
+      break;
     }
   }
   if (!maybeManaged) {
@@ -75,30 +74,36 @@ async function reviewRequests(
   managed: Managed,
   configuration: Configuration
 ): Promise<Review[]> {
-  const pullRequests = await getPullRequests(context, {
-    params: {
-      base: managed.base.ref,
-      state: "open",
-    },
-    filters: {
-      label: configuration.teamReviewLabel,
-    },
-  });
+  const items = await context.octokit.paginate(
+    context.octokit.issues.listEventsForTimeline,
+    context.repo({
+      mediaType: {
+        previews: ["mockingbird"],
+      },
+      issue_number: managed.number,
+      per_page: 100,
+    })
+  );
+
+  const crossReferences = items.filter(
+    (item) => item.event === "cross-referenced"
+  );
+
+  const issues = crossReferences.filter(
+    (item) => (item as any)?.source?.type === "issue"
+  );
+
+  const numbers = issues.map((item) => (item as any)?.source?.issue?.number);
 
   const reviewRequests: Review[] = [];
-  for (const pullRequest of pullRequests) {
-    const isReferenced = await isReferencedPullRequest(context, {
-      number: managed.number,
-      reference: pullRequest.number,
+  for (const number of numbers) {
+    const pullRequest = await getPullRequest(context, { number });
+    const isReview = isReviewPullRequest(context, {
+      configuration,
+      number: pullRequest.number,
     });
-    if (isReferenced) {
-      reviewRequests.push({
-        type: "review",
-        ...pullRequest,
-        get parent() {
-          return Promise.resolve(managed);
-        },
-      });
+    if (isReview) {
+      reviewRequests.push(createReview(context, pullRequest, configuration));
     }
   }
 
@@ -107,13 +112,15 @@ async function reviewRequests(
 
 export function createManaged(
   context: Context,
-  pr: PullRequest,
+  pr: PullRequestBase,
   configuration: Configuration
 ): Managed {
   const managed: Managed = {
     type: "managed",
+
     ...pr,
-    get children(): Promise<Review[]> {
+
+    children(): Promise<Review[]> {
       return reviewRequests(context, managed, configuration);
     },
   };
@@ -123,13 +130,15 @@ export function createManaged(
 
 export function createReview(
   context: Context,
-  pr: PullRequest,
+  pr: PullRequestBase,
   configuration: Configuration
 ): Review {
   const review: Review = {
     type: "review",
+
     ...pr,
-    get parent(): Promise<Managed> {
+
+    parent(): Promise<Managed> {
       return parentRequest(context, review, configuration);
     },
   };

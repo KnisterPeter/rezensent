@@ -50,5 +50,5 @@ export async function getPullRequests(
     }
   }
 
-  return pullRequests;
+  return pullRequests as PullRequests;
 }
