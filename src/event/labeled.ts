@@ -1,6 +1,6 @@
 import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
-import { match } from "../pr/matcher";
+import { match, PullRequestBase } from "../pr/matcher";
 
 import { enqueue } from "../tasks/queue";
 import { synchronize } from "../tasks/synchronize";
@@ -14,17 +14,23 @@ export async function onLabelAdded(
 ) {
   const {
     label: { name: label } = {},
-    pull_request: { number },
+    pull_request: { number, state, labels },
   } = context.payload;
 
   context.log.debug({ label }, `[PR-${number}] was labeled`);
 
-  await match(context, number, {
+  const pullRequest: PullRequestBase = {
+    ...context.payload.pull_request,
+    state: state === "open" ? "open" : "closed",
+    labels: labels.map((label) => label.name),
+  };
+
+  await match(context, pullRequest, {
     async managed(managed) {
       enqueue(
         context,
         `label added to PR-${managed.number}`,
-        synchronize(context, managed.number)
+        synchronize(context, managed)
       );
     },
   });

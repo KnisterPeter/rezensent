@@ -4,8 +4,7 @@ import type { Context } from "probot";
 import { getConfig } from "../config";
 import { closePullRequest } from "../github/close";
 import { deleteBranch } from "../github/git";
-import { PullRequest } from "../github/pr";
-import { createManaged } from "../pr/matcher";
+import { createManaged, PullRequestBase } from "../pr/matcher";
 
 export async function onLabelRemoved(
   context: EventTypesPayload["pull_request.unlabeled"] &
@@ -15,6 +14,8 @@ export async function onLabelRemoved(
   const {
     number,
     head: { ref: head },
+    state,
+    labels,
   } = context.payload.pull_request;
 
   const configuration = await getConfig(context, head);
@@ -25,7 +26,12 @@ export async function onLabelRemoved(
 
   context.log.debug(`[PR-${number}] Manage Review label removed`);
 
-  const pr = context.payload.pull_request as PullRequest;
+  const pr: PullRequestBase = {
+    ...context.payload.pull_request,
+    state: state === "open" ? "open" : "closed",
+    labels: labels.map((label) => label.name),
+  };
+
   const managed = createManaged(context, pr, configuration);
   const reviews = await managed.children();
 

@@ -1,19 +1,21 @@
 import { Endpoints } from "@octokit/types";
 import { Context } from "probot";
-
-import { PullRequest, PullRequests } from "./pr";
+import { PullRequestBase } from "../pr/matcher";
 
 export async function getPullRequest(
   context: Context,
   number: number
-): Promise<PullRequest> {
+): Promise<PullRequestBase> {
   const { data: pullRequest } = await context.octokit.pulls.get(
     context.repo({
       pull_number: number,
     })
   );
 
-  return pullRequest;
+  return {
+    ...pullRequest,
+    labels: pullRequest.labels.map((label) => label.name),
+  };
 }
 
 export async function getPullRequests(
@@ -30,7 +32,7 @@ export async function getPullRequests(
       label?: string | RegExp;
     };
   }
-): Promise<PullRequests> {
+): Promise<PullRequestBase[]> {
   let pullRequests = await context.octokit.paginate(
     context.octokit.pulls.list,
     context.repo({ per_page: 100, ...params })
@@ -50,5 +52,11 @@ export async function getPullRequests(
     }
   }
 
-  return pullRequests as PullRequests;
+  return pullRequests.map((pullRequest) => {
+    return {
+      ...pullRequest,
+      state: pullRequest.state === "open" ? "open" : "closed",
+      labels: pullRequest.labels.map((label) => label.name),
+    };
+  });
 }

@@ -1,4 +1,5 @@
 import { Context } from "probot";
+
 import { Configuration, getConfig } from "../config";
 import { Git } from "../git";
 import { withGit } from "../github/clone";
@@ -7,40 +8,35 @@ import { createPullRequest } from "../github/create";
 import { getChangedFilesPerTeam } from "../github/files";
 import { getFilePatternMapPerTeam } from "../ownership/codeowners";
 import { closeManagedPullRequestIfEmpty } from "../pr/managed";
-
-import { Managed, match, Review } from "../pr/matcher";
+import { Managed, Review } from "../pr/matcher";
 import { Task } from "./queue";
 
-export function synchronize(context: Context, number: number): Task {
+export function synchronize(context: Context, managed: Managed): Task {
   const task = {
     name: synchronize.name,
-    number,
+    number: managed.number,
 
     async run(): Promise<void> {
-      await match(context, number, {
-        async managed(managed) {
-          context.log.debug(`[${managed}] synchronize managed pull request`);
+      context.log.debug(`[${managed}] synchronize managed pull request`);
 
-          if (await task.updateFromHead(managed)) {
-            context.log.info(
-              `[${managed}] merged HEAD; wait for next synchronization`
-            );
-            return;
-          }
+      if (await task.updateFromHead(managed)) {
+        context.log.info(
+          `[${managed}] merged HEAD; wait for next synchronization`
+        );
+        return;
+      }
 
-          const result = await closeManagedPullRequestIfEmpty(context, managed);
-          if (result === "closed") {
-            context.log.info(
-              `[${managed}] closed; all changes are merged into ${managed.base.ref}`
-            );
-            return;
-          }
+      const result = await closeManagedPullRequestIfEmpty(context, managed);
+      if (result === "closed") {
+        context.log.info(
+          `[${managed}] closed; all changes are merged into ${managed.base.ref}`
+        );
+        return;
+      }
 
-          await task.updateReviews(managed);
+      await task.updateReviews(managed);
 
-          context.log.debug(`[${managed}] synchronized managed pull request`);
-        },
-      });
+      context.log.debug(`[${managed}] synchronized managed pull request`);
     },
 
     async updateFromHead(managed: Managed): Promise<boolean> {
