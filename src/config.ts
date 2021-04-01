@@ -5,11 +5,6 @@ export interface Configuration {
   teamReviewLabel: string;
 }
 
-const defaults = {
-  "manage-review-label": "Rezensent: Managed Review",
-  "team-review-label": "Rezensent: Review Requested",
-};
-
 export async function getConfig(
   context: Context,
   branch: string
@@ -18,12 +13,24 @@ export async function getConfig(
     context.repo({
       path: ".github/rezensent.yml",
       branch,
-      defaults,
     })
   );
 
+  const keys = Object.keys(config.config);
+  if (keys.length === 0) {
+    throw new Error("No config found");
+  }
+
+  const get = (key: string): string => {
+    const value = (config.config as Record<string, string>)[key];
+    if (!value) {
+      throw new Error(`Required configuration '${key}' missing`);
+    }
+    return value;
+  };
+
   return {
-    manageReviewLabel: config.config["manage-review-label"],
-    teamReviewLabel: config.config["team-review-label"],
+    manageReviewLabel: get("manage-review-label"),
+    teamReviewLabel: get("team-review-label"),
   };
 }
