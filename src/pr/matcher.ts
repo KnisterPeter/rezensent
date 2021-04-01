@@ -18,6 +18,8 @@ export interface PullRequestBase {
   };
   state: PullRequest["state"];
   title: PullRequest["title"];
+
+  toString(): string;
 }
 
 export interface Managed extends PullRequestBase {
@@ -60,9 +62,7 @@ async function parentRequest(
     }
   }
   if (!maybeManaged) {
-    throw new Error(
-      `[PR-${review.number}] invalid state: no managed parent found`
-    );
+    throw new Error(`[${review}] invalid state: no managed parent found`);
   }
   managed = maybeManaged;
 
@@ -123,6 +123,10 @@ export function createManaged(
     children(): Promise<Review[]> {
       return reviewRequests(context, managed, configuration);
     },
+
+    toString() {
+      return `PR-${pr.number} (managed)`;
+    },
   };
 
   return managed;
@@ -140,6 +144,10 @@ export function createReview(
 
     parent(): Promise<Managed> {
       return parentRequest(context, review, configuration);
+    },
+
+    toString() {
+      return `PR-${pr.number} (review)`;
     },
   };
 

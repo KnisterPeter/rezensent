@@ -16,7 +16,7 @@
     "check": "tsc",
     "check:watch": "tsc --watch",
     "test": "LANG=C jest",
-    "test:debug": "TERM=dumb LOG_LEVEL=debug DEBUG=simple-git LANG=C jest -i"
+    "test:debug": "TERM=dumb DEBUG=simple-git LOG_LEVEL=debug LANG=C jest -i"
   },
   "dependencies": {
     "@octokit/types": "^6.12.2",

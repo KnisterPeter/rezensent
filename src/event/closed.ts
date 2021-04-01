@@ -16,11 +16,7 @@ export async function onPullRequestClosed(
   await match(context, number, {
     async review(review) {
       const managed = await review.parent();
-      enqueue(
-        context,
-        `close PR-${review.number}`,
-        synchronize(context, managed.number)
-      );
+      enqueue(context, `close ${review}`, synchronize(context, managed.number));
     },
   });
 }
