@@ -841,7 +841,7 @@ export function setupApp(
     const logs = [sliceAnsi(testIntroLine, 0, 110), `  │`];
     const log: typeof console["log"] = (...args) => {
       if (process.env["LOG_LEVEL"] === "debug") {
-        console.log(chalk`{white.inverse  TEST }`, ...args);
+        process.stdout.write(chalk`{white.inverse  TEST } ${args.join(" ")}\n`);
       }
       logs.push(chalk`  │ ${args.join(" ")}`);
     };
