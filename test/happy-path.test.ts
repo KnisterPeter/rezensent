@@ -101,6 +101,7 @@ test(
       managedPr.base.sha
     );
 
+    await github.getPullRequest(managedPrNumber);
     let files = await github.getPullRequestFiles(managedPrNumber);
     expect(files).toHaveLength(1);
 
