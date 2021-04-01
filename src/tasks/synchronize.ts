@@ -22,8 +22,8 @@ export function synchronize(context: Context, number: number): Task {
           context.log.debug(`[${managed}] synchronize managed pull request`);
 
           if (await task.updateFromHead(managed)) {
-            context.log.debug(
-              `[${managed}] merge HEAD; wait for next synchronization`
+            context.log.info(
+              `[${managed}] merged HEAD; wait for next synchronization`
             );
             return;
           }
