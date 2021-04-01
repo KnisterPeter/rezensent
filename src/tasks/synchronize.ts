@@ -55,7 +55,11 @@ export function synchronize(context: Context, number: number): Task {
       }
 
       context.log.debug(
-        `[${managed}] merge ${managed.base.ref} into ${managed.head.ref}`
+        {
+          HEAD: `${head.object.sha} (${managed.base.ref})`,
+          ref: `${managed.base.sha} (${managed.head.ref})`,
+        },
+        `[${managed}] update branch; merge HEAD`
       );
 
       await context.octokit.pulls.updateBranch(
@@ -78,6 +82,10 @@ export function synchronize(context: Context, number: number): Task {
       );
 
       const reviews = await managed.children();
+      context.log.debug(
+        reviews.map((pr) => `PR-${pr.number} | ${pr.title}`),
+        `[${managed}] found review requests`
+      );
 
       const patterns = await getFilePatternMapPerTeam(context, {
         branch: managed.head.ref,
@@ -107,9 +115,16 @@ export function synchronize(context: Context, number: number): Task {
               continue;
             }
 
-            context.log.info(`[${managed}] update review for ${team}`);
+            const branch = `${managed.head.ref}-${team}`;
+            const review = reviews.find((review) => review.head.ref === branch);
 
-            await this.updateReview(managed, reviews, {
+            context.log.info(
+              { team, review: `${review ?? `new`} | ${review?.title ?? ""}` },
+              `[${managed}] update review`
+            );
+
+            await this.updateReview(managed, review, {
+              branch,
               git,
               startPoint,
               team,
@@ -123,14 +138,16 @@ export function synchronize(context: Context, number: number): Task {
 
     async updateReview(
       managed: Managed,
-      reviews: Review[],
+      review: Review | undefined,
       {
+        branch,
         git,
         startPoint,
         team,
         files,
         configuration,
       }: {
+        branch: string;
         git: Git;
         startPoint: string;
         team: string;
@@ -138,11 +155,7 @@ export function synchronize(context: Context, number: number): Task {
         configuration: Configuration;
       }
     ): Promise<void> {
-      const branch = `${managed.head.ref}-${team}`;
-
-      const review = reviews.find((review) => review.head.ref === branch);
-
-      if (review) {
+      if (review && review.state === "open") {
         await git.addToExistingBranch({
           branch: review.head.ref,
           files,
