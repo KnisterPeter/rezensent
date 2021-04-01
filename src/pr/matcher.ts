@@ -1,33 +1,36 @@
+import { Endpoints } from "@octokit/types";
 import { Context } from "probot";
+
 import { Configuration, getConfig } from "../config";
 import { getPullRequest, getPullRequests } from "../github/get";
 import { isReferencedPullRequest } from "../github/is-referenced";
-import { PullRequest } from "../github/pr";
+
+type PullRequest = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]["data"];
 
 export interface PullRequestBase {
-  number: PullRequest["number"];
-  base: {
-    ref: PullRequest["base"]["ref"];
-    sha: PullRequest["base"]["sha"];
+  readonly number: PullRequest["number"];
+  readonly base: {
+    readonly ref: PullRequest["base"]["ref"];
+    readonly sha: PullRequest["base"]["sha"];
   };
-  head: {
-    ref: PullRequest["head"]["ref"];
-    sha: PullRequest["head"]["sha"];
+  readonly head: {
+    readonly ref: PullRequest["head"]["ref"];
+    readonly sha: PullRequest["head"]["sha"];
   };
-  state: PullRequest["state"];
-  title: PullRequest["title"];
-  labels: PullRequest["labels"][number]["name"][];
+  readonly state: PullRequest["state"];
+  readonly title: PullRequest["title"];
+  readonly labels: PullRequest["labels"][number]["name"][];
 
   toString(): string;
 }
 
 export interface Managed extends PullRequestBase {
-  type: "managed";
+  readonly type: "managed";
   children(): Promise<Review[]>;
 }
 
 export interface Review extends PullRequestBase {
-  type: "review";
+  readonly type: "review";
   parent(): Promise<Managed>;
 }
 
