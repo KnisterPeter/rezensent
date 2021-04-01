@@ -2,11 +2,7 @@ import { Context } from "probot";
 
 export async function closePullRequest(
   context: Context,
-  {
-    number,
-  }: {
-    number: number;
-  }
+  number: number
 ): Promise<void> {
   await context.octokit.pulls.update(
     context.repo({
