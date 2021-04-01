@@ -28,7 +28,7 @@ export async function onPullRequestUpdated(
     async managed(managed) {
       enqueue(
         context,
-        `updated PR-${managed.number}`,
+        `updated branch ${managed}`,
         synchronize(context, managed.number)
       );
     },
