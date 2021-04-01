@@ -3,8 +3,6 @@ import { Configuration, getConfig } from "../config";
 import { getPullRequest, getPullRequests } from "../github/get";
 import { isReferencedPullRequest } from "../github/is-referenced";
 import { PullRequest } from "../github/pr";
-import { isManagedPullRequest } from "./managed";
-import { isReviewPullRequest } from "./review";
 
 export interface PullRequestBase {
   number: PullRequest["number"];
@@ -97,12 +95,13 @@ async function reviewRequests(
 
   const reviewRequests: Review[] = [];
   for (const number of numbers) {
-    const pullRequest = await getPullRequest(context, number);
-    const isReview = isReviewPullRequest(context, {
-      configuration,
-      number: pullRequest.number,
-    });
+    const { isReview } = await getPullRequestTypes(
+      context,
+      number,
+      configuration
+    );
     if (isReview) {
+      const pullRequest = await getPullRequest(context, number);
       reviewRequests.push(createReview(context, pullRequest, configuration));
     }
   }
@@ -170,14 +169,11 @@ export async function match(
     pr.merged ? pr.base.ref : pr.head.ref
   );
 
-  const isManaged = await isManagedPullRequest(context, {
-    configuration,
+  const { isManaged, isReview } = await getPullRequestTypes(
+    context,
     number,
-  });
-  const isReview = await isReviewPullRequest(context, {
-    configuration,
-    number,
-  });
+    configuration
+  );
 
   if (isManaged && isReview) {
     throw new Error(`[PR-${number}] invalid state: managed & review`);
@@ -188,4 +184,30 @@ export async function match(
   } else if (isReview) {
     await matcher.review?.(createReview(context, pr, configuration));
   }
+}
+
+async function getPullRequestTypes(
+  context: Context,
+  number: number,
+  configuration: Configuration
+): Promise<{
+  isManaged: boolean;
+  isReview: boolean;
+}> {
+  const { data: labels } = await context.octokit.issues.listLabelsOnIssue(
+    context.repo({
+      issue_number: number,
+    })
+  );
+  const isManaged = labels
+    .map((label) => label.name)
+    .some((label) => label === configuration.manageReviewLabel);
+  const isReview = labels
+    .map((label) => label.name)
+    .some((label) => label === configuration.teamReviewLabel);
+
+  return {
+    isManaged,
+    isReview,
+  };
 }
