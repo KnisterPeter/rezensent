@@ -36,7 +36,9 @@ export async function onLabelRemoved(
   const reviews = await managed.children();
 
   context.log.debug(
-    reviews.map((pr) => `PR-${pr.number} | ${pr.title}`),
+    reviews.map(
+      (pr) => `PR-${pr.number} | ${pr.state.padEnd(6)} | ${pr.title}`
+    ),
     `[${managed}] found review requests`
   );
 

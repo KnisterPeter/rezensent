@@ -1,19 +1,18 @@
 import { Context } from "probot";
 
-import { Configuration, getConfig } from "../config";
-import { Git } from "../git";
+import { getConfig } from "../config";
 import { withGit } from "../github/clone";
 import { getPullRequestCommits } from "../github/commits";
 import { createPullRequest } from "../github/create";
 import { getChangedFilesPerTeam } from "../github/files";
 import { getFilePatternMapPerTeam } from "../ownership/codeowners";
 import { closeManagedPullRequestIfEmpty } from "../pr/managed";
-import { Managed, Review } from "../pr/matcher";
+import { Managed } from "../pr/matcher";
 import { Task } from "./queue";
 
-export function synchronize(context: Context, managed: Managed): Task {
+export function synchronizeManaged(context: Context, managed: Managed): Task {
   const task = {
-    name: synchronize.name,
+    name: synchronizeManaged.name,
     number: managed.number,
 
     async run(): Promise<void> {
@@ -78,8 +77,10 @@ export function synchronize(context: Context, managed: Managed): Task {
       );
 
       const reviews = await managed.children();
-      context.log.debug(
-        reviews.map((pr) => `PR-${pr.number} | ${pr.title}`),
+      context.log.info(
+        reviews.map(
+          (pr) => `PR-${pr.number} | ${pr.state.padEnd(6)} | ${pr.title}`
+        ),
         `[${managed}] found review requests`
       );
 
@@ -92,20 +93,17 @@ export function synchronize(context: Context, managed: Managed): Task {
         patterns,
       });
 
-      context.log.debug(
+      context.log.info(
         Object.fromEntries(changedFilesByTeam.entries()),
         `[${managed}] changes per team`
       );
 
       const commits = await getPullRequestCommits(context, managed.number);
-      const firstCommit = commits[commits.length - 1];
 
       await withGit(
         context,
         { branch: managed.head.ref, depth: commits.length + 1 },
         async (git) => {
-          const startPoint = await git.resetCommits(`${firstCommit}^`);
-
           for (const [team, files] of changedFilesByTeam) {
             if (files.length === 0) {
               continue;
@@ -114,77 +112,51 @@ export function synchronize(context: Context, managed: Managed): Task {
             const branch = `${managed.head.ref}-${team}`;
             const review = reviews.find((review) => review.head.ref === branch);
 
-            context.log.info(
-              { team, review: `${review ?? `new`} | ${review?.title ?? ""}` },
-              `[${managed}] update review`
-            );
+            if (review && review.state === "open") {
+              await git.updateReviewBranch({
+                fromPullRequest: managed,
+                toBranch: branch,
+                team,
+                files,
+              });
 
-            await this.updateReview(managed, review, {
-              branch,
-              git,
-              startPoint,
-              team,
-              files,
-              configuration,
-            });
+              await git.push(branch);
+
+              context.log.info(
+                { team, review: `${review} | ${review.title}` },
+                `[${managed}] updated review pull request`
+              );
+            } else {
+              await git.createReviewBranch({
+                fromPullRequest: managed,
+                toBranch: branch,
+                team,
+                files,
+              });
+
+              await git.push(branch);
+
+              const title = `${managed.title} - ${team}`;
+              const newPrNumber = await createPullRequest(context, {
+                branch,
+                title,
+                body: `Changes for ${team} from #${managed.number}`,
+                managedPullRequest: {
+                  base: managed.base.ref,
+                  head: managed.head.ref,
+                  number: managed.number,
+                },
+                label: configuration.teamReviewLabel,
+              });
+
+              context.log.info(
+                { team, review: `PR-${newPrNumber} | ${title}` },
+                `[${managed}] created new review pull request`
+              );
+            }
           }
         }
       );
-    },
-
-    async updateReview(
-      managed: Managed,
-      review: Review | undefined,
-      {
-        branch,
-        git,
-        startPoint,
-        team,
-        files,
-        configuration,
-      }: {
-        branch: string;
-        git: Git;
-        startPoint: string;
-        team: string;
-        files: string[];
-        configuration: Configuration;
-      }
-    ): Promise<void> {
-      if (review && review.state === "open") {
-        await git.addToExistingBranch({
-          branch: review.head.ref,
-          files,
-        });
-      } else {
-        await git.addToNewBranch({
-          branch,
-          startPoint,
-          files,
-        });
-      }
-
-      await git.commitAndPush({
-        message: `Updates from #${managed.number} for ${team}`,
-        branch,
-      });
-
-      if (review) {
-        return;
-      }
-
-      // create new PR
-      await createPullRequest(context, {
-        branch,
-        title: `${managed.title} - ${team}`,
-        body: `Changes for ${team} from #${managed.number}`,
-        managedPullRequest: {
-          base: managed.base.ref,
-          head: managed.head.ref,
-          number: managed.number,
-        },
-        label: configuration.teamReviewLabel,
-      });
     },
   };
 
