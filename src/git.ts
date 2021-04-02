@@ -1,13 +1,13 @@
-import SimpleGit, {
-  SimpleGit as GitType,
-  ResetMode,
-  GitResponseError,
-  MergeResult,
-  CleanOptions,
-} from "simple-git";
 import { promises as fsp } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
+import SimpleGit, {
+  CleanOptions,
+  GitResponseError,
+  MergeResult,
+  ResetMode,
+  SimpleGit as GitType,
+} from "simple-git";
 import { URL } from "url";
 import { PullRequestBase } from "./matcher";
 

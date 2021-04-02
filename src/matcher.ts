@@ -1,6 +1,5 @@
 import { Endpoints } from "@octokit/types";
 import { Context } from "probot";
-
 import { Configuration, getConfig } from "./config";
 import { ErrorCode, RezensentError } from "./error";
 import { getPullRequest, getPullRequests } from "./github/get";

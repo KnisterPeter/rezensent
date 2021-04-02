@@ -2,7 +2,6 @@ import fastify from "fastify";
 import middie from "middie";
 import { createNodeMiddleware, createProbot } from "probot";
 import { URL } from "url";
-
 import { app } from "./app";
 
 export interface Server {

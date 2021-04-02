@@ -1,9 +1,8 @@
 import type { Probot } from "probot";
-
 import { onPullRequestClosed } from "./event/closed";
 import { onLabelAdded } from "./event/labeled";
-import { onLabelRemoved } from "./event/unlabeled";
 import { onPullRequestUpdated } from "./event/synchronize";
+import { onLabelRemoved } from "./event/unlabeled";
 
 export function app(app: Probot): void {
   app.on("pull_request.closed", onPullRequestClosed);
