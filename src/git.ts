@@ -94,6 +94,45 @@ export class Git {
     await this.#git.checkout([fromPullRequest.head.ref]);
   }
 
+  async moveCommits({
+    toBranch,
+    commits,
+  }: {
+    toBranch: string;
+    commits: string[];
+  }): Promise<void> {
+    // prepare
+    await this.cleanAll();
+    await this.#git.fetch(["origin", toBranch]);
+    await this.#git.checkout([toBranch]);
+
+    await this.#git.raw(["cherry-pick", ...commits]);
+    await this.#git.push(["--force", "origin", toBranch]);
+
+    // cleanup
+    await this.cleanAll();
+    await this.#git.checkout([toBranch]);
+  }
+
+  async removeCommits({
+    pullRequest,
+    amount,
+  }: {
+    pullRequest: PullRequestBase;
+    amount: number;
+  }): Promise<void> {
+    // prepare
+    await this.cleanAll();
+    await this.#git.checkout([pullRequest.head.ref]);
+
+    await this.#git.reset(ResetMode.HARD, [`HEAD~${amount}`]);
+    await this.#git.push(["--force", "origin", pullRequest.head.ref]);
+
+    // cleanup
+    await this.cleanAll();
+    await this.#git.checkout([pullRequest.head.ref]);
+  }
+
   async checkout(sha: string): Promise<void> {
     await this.#git.checkout([sha]);
   }

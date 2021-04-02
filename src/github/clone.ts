@@ -19,7 +19,7 @@ async function getAccessToken(octokit: Context["octokit"]): Promise<string> {
   return accessToken.token;
 }
 
-async function getCredentials(
+export async function getCredentials(
   octokit: Context["octokit"]
 ): Promise<{
   name: string;
