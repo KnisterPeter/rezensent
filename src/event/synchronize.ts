@@ -1,5 +1,6 @@
 import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
+import { blockPullRequest } from "../github/commit-status";
 import { match, PullRequestBase } from "../matcher";
 import { enqueue } from "../tasks/queue";
 import { synchronizeManaged } from "../tasks/synchronize-managed";
@@ -26,6 +27,8 @@ export async function onPullRequestUpdated(
 
   await match(context, pullRequest, {
     async managed(managed) {
+      await blockPullRequest(context, managed);
+
       enqueue(
         context,
         `updated branch ${managed}`,
