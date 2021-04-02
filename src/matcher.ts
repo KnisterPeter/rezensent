@@ -1,10 +1,10 @@
 import { Endpoints } from "@octokit/types";
 import { Context } from "probot";
 
-import { Configuration, getConfig } from "../config";
-import { ErrorCode, RezensentError } from "../error";
-import { getPullRequest, getPullRequests } from "../github/get";
-import { isReferencedPullRequest } from "../github/is-referenced";
+import { Configuration, getConfig } from "./config";
+import { ErrorCode, RezensentError } from "./error";
+import { getPullRequest, getPullRequests } from "./github/get";
+import { isReferencedPullRequest } from "./github/is-referenced";
 
 type PullRequest = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]["data"];
 

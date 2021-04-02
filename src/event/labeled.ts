@@ -1,6 +1,6 @@
 import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
-import { match, PullRequestBase } from "../pr/matcher";
+import { match, PullRequestBase } from "../matcher";
 
 import { enqueue } from "../tasks/queue";
 import { synchronizeManaged } from "../tasks/synchronize-managed";

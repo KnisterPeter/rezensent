@@ -2,7 +2,7 @@ import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
 import { promisify } from "util";
 import { ErrorCode, RezensentError } from "../error";
-import { match, PullRequestBase } from "../pr/matcher";
+import { match, PullRequestBase } from "../matcher";
 import { enqueue } from "../tasks/queue";
 import { synchronizeManaged } from "../tasks/synchronize-managed";
 

@@ -1,6 +1,6 @@
 import { Endpoints } from "@octokit/types";
 import { Context } from "probot";
-import { PullRequestBase } from "../pr/matcher";
+import { PullRequestBase } from "../matcher";
 
 export async function getPullRequest(
   context: Context,
