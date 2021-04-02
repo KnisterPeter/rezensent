@@ -3,7 +3,7 @@ import type { Context } from "probot";
 import { match, PullRequestBase } from "../pr/matcher";
 
 import { enqueue } from "../tasks/queue";
-import { synchronizeManaged } from "../tasks/synchronize_managed";
+import { synchronizeManaged } from "../tasks/synchronize-managed";
 
 /**
  * Called when a label is added to a pull request.

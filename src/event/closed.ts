@@ -3,7 +3,7 @@ import type { Context } from "probot";
 
 import { match, PullRequestBase } from "../pr/matcher";
 import { enqueue } from "../tasks/queue";
-import { synchronizeManaged } from "../tasks/synchronize_managed";
+import { synchronizeManaged } from "../tasks/synchronize-managed";
 
 export async function onPullRequestClosed(
   context: EventTypesPayload["pull_request.merged"] &

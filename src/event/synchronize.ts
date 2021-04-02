@@ -3,8 +3,8 @@ import type { Context } from "probot";
 
 import { match, PullRequestBase } from "../pr/matcher";
 import { enqueue } from "../tasks/queue";
-import { synchronizeManaged } from "../tasks/synchronize_managed";
-import { synchronizeReview } from "../tasks/synchronize_review";
+import { synchronizeManaged } from "../tasks/synchronize-managed";
+import { synchronizeReview } from "../tasks/synchronize-review";
 
 export async function onPullRequestUpdated(
   context: EventTypesPayload["pull_request.synchronize"] &
