@@ -19,13 +19,13 @@ export function synchronizeReview(context: Context, review: Review): Task {
       const manualCommits = commits.filter((commit) => commit.author !== name);
 
       if (manualCommits.length === 0) {
-        context.log.debug(`[${review}] no manual commits found`);
+        context.log.info(`[${review}] no manual commits found`);
         return;
       }
 
       const managed = await review.parent();
 
-      context.log.debug(
+      context.log.info(
         {
           commits: manualCommits.map(
             (commit) => `${commit.sha} | ${commit.author}`
