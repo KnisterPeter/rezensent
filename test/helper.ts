@@ -689,7 +689,7 @@ export async function setupGit(
     await git.clone(url.toString(), baseDir);
 
     const { name, email } = await getCredentials(octokit);
-    await git.addConfig("user.name", name);
+    await git.addConfig("user.name", `integration-test ${name}`);
     await git.addConfig("user.email", email);
 
     return { git, directory: baseDir };
