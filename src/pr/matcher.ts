@@ -2,6 +2,7 @@ import { Endpoints } from "@octokit/types";
 import { Context } from "probot";
 
 import { Configuration, getConfig } from "../config";
+import { ErrorCode, RezensentError } from "../error";
 import { getPullRequest, getPullRequests } from "../github/get";
 import { isReferencedPullRequest } from "../github/is-referenced";
 
@@ -64,7 +65,10 @@ async function parentRequest(
     }
   }
   if (!maybeManaged) {
-    throw new Error(`[${review}] invalid state: no managed parent found`);
+    throw new RezensentError(
+      `[${review}] invalid state: no managed parent found`,
+      ErrorCode.no_parent
+    );
   }
   managed = maybeManaged;
 
