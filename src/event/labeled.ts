@@ -1,5 +1,6 @@
 import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
+import { blockPullRequest } from "../github/commit-status";
 import { match, PullRequestBase } from "../matcher";
 import { enqueue } from "../tasks/queue";
 import { synchronizeManaged } from "../tasks/synchronize-managed";
@@ -26,14 +27,7 @@ export async function onLabelAdded(
 
   await match(context, pullRequest, {
     async managed(managed) {
-      await context.octokit.repos.createCommitStatus(
-        context.repo({
-          sha: managed.head.sha,
-          context: "rezensent",
-          description: "blocking while in review",
-          state: "pending",
-        })
-      );
+      await blockPullRequest(context, managed);
 
       enqueue(
         context,

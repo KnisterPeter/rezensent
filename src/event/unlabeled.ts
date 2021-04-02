@@ -2,6 +2,7 @@ import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
 import { getConfig } from "../config";
 import { closePullRequest } from "../github/close";
+import { unblockPullRequest } from "../github/commit-status";
 import { deleteBranch } from "../github/git";
 import { createManaged, PullRequestBase } from "../matcher";
 
@@ -32,26 +33,21 @@ export async function onLabelRemoved(
   };
 
   const managed = createManaged(context, pr, configuration);
-  const reviews = await managed.children();
+  try {
+    const reviews = await managed.children();
 
-  context.log.debug(
-    reviews.map(
-      (pr) => `PR-${pr.number} | ${pr.state.padEnd(6)} | ${pr.title}`
-    ),
-    `[${managed}] ${reviews.length} found review requests`
-  );
+    context.log.debug(
+      reviews.map(
+        (pr) => `PR-${pr.number} | ${pr.state.padEnd(6)} | ${pr.title}`
+      ),
+      `[${managed}] ${reviews.length} found review requests`
+    );
 
-  for (const review of reviews) {
-    await closePullRequest(context, review.number);
-    await deleteBranch(context, review.head.ref);
+    for (const review of reviews) {
+      await closePullRequest(context, review.number);
+      await deleteBranch(context, review.head.ref);
+    }
+  } finally {
+    await unblockPullRequest(context, managed);
   }
-
-  await context.octokit.repos.createCommitStatus(
-    context.repo({
-      sha: managed.head.sha,
-      context: "rezensent",
-      description: "removed review label",
-      state: "success",
-    })
-  );
 }
