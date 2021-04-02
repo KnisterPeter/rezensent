@@ -1,6 +1,5 @@
 import { Context, ProbotOctokit } from "probot";
 import { URL } from "url";
-
 import { clone, Git } from "../git";
 
 async function getAccessToken(octokit: Context["octokit"]): Promise<string> {

@@ -6,8 +6,8 @@ import { getPullRequestCommits } from "../github/commits";
 import { createPullRequest } from "../github/create";
 import { getChangedFilesPerTeam, getPullRequestFiles } from "../github/files";
 import { deleteBranch } from "../github/git";
-import { getFilePatternMapPerTeam } from "../ownership/codeowners";
 import { Managed } from "../matcher";
+import { getFilePatternMapPerTeam } from "../ownership/codeowners";
 import { Task } from "./queue";
 
 export function synchronizeManaged(context: Context, managed: Managed): Task {

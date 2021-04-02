@@ -1,6 +1,5 @@
 import { Context } from "probot";
 import { promisify } from "util";
-
 import { PullRequestBase } from "../matcher";
 
 const wait = promisify(setTimeout);

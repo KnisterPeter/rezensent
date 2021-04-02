@@ -1,6 +1,5 @@
 import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
-
 import { getConfig } from "../config";
 import { closePullRequest } from "../github/close";
 import { deleteBranch } from "../github/git";

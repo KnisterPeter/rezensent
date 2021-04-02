@@ -1,9 +1,8 @@
 import { Context } from "probot";
-
+import { getCredentials, withGit } from "../github/clone";
+import { getPullRequestCommits } from "../github/commits";
 import { Review } from "../matcher";
 import { Task } from "./queue";
-import { getPullRequestCommits } from "../github/commits";
-import { withGit, getCredentials } from "../github/clone";
 
 export function synchronizeReview(context: Context, review: Review): Task {
   const task = {

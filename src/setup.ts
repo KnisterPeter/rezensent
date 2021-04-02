@@ -1,5 +1,4 @@
 import type { Context } from "probot";
-
 import { getConfig } from "./config";
 
 export async function setupBot(
