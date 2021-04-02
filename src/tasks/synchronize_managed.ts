@@ -81,7 +81,7 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
         reviews.map(
           (pr) => `PR-${pr.number} | ${pr.state.padEnd(6)} | ${pr.title}`
         ),
-        `[${managed}] found review requests`
+        `[${managed}] ${reviews.length} found review requests`
       );
 
       const patterns = await getFilePatternMapPerTeam(context, {
