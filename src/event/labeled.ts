@@ -26,6 +26,15 @@ export async function onLabelAdded(
 
   await match(context, pullRequest, {
     async managed(managed) {
+      await context.octokit.repos.createCommitStatus(
+        context.repo({
+          sha: managed.head.sha,
+          context: "rezensent",
+          description: "blocking while in review",
+          state: "pending",
+        })
+      );
+
       enqueue(
         context,
         `label added to PR-${managed.number}`,
