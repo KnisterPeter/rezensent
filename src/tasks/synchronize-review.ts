@@ -1,6 +1,6 @@
 import { Context } from "probot";
 
-import { Review } from "../pr/matcher";
+import { Review } from "../matcher";
 import { Task } from "./queue";
 import { getPullRequestCommits } from "../github/commits";
 import { withGit, getCredentials } from "../github/clone";

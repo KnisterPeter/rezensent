@@ -1,13 +1,13 @@
 import { Context } from "probot";
-
 import { getConfig } from "../config";
 import { withGit } from "../github/clone";
+import { closePullRequest } from "../github/close";
 import { getPullRequestCommits } from "../github/commits";
 import { createPullRequest } from "../github/create";
-import { getChangedFilesPerTeam } from "../github/files";
+import { getChangedFilesPerTeam, getPullRequestFiles } from "../github/files";
+import { deleteBranch } from "../github/git";
 import { getFilePatternMapPerTeam } from "../ownership/codeowners";
-import { closeManagedPullRequestIfEmpty } from "../pr/managed";
-import { Managed } from "../pr/matcher";
+import { Managed } from "../matcher";
 import { Task } from "./queue";
 
 export function synchronizeManaged(context: Context, managed: Managed): Task {
@@ -25,7 +25,10 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
         return;
       }
 
-      const result = await closeManagedPullRequestIfEmpty(context, managed);
+      const result = await this.closeManagedPullRequestIfEmpty(
+        context,
+        managed
+      );
       if (result === "closed") {
         context.log.info(
           `[${managed}] closed; all changes are merged into ${managed.base.ref}`
@@ -67,6 +70,27 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
       );
 
       return true;
+    },
+
+    async closeManagedPullRequestIfEmpty(
+      context: Context,
+      managed: Managed
+    ): Promise<"open" | "closed"> {
+      const files = await getPullRequestFiles(context, {
+        number: managed.number,
+      });
+      context.log.debug({ files }, `[${managed}] files`);
+
+      if (files.length > 0) {
+        return "open";
+      }
+
+      context.log.debug(`[${managed}] is empty; closing`);
+
+      await closePullRequest(context, managed.number);
+      await deleteBranch(context, managed.head.ref);
+
+      return "closed";
     },
 
     async updateReviews(managed: Managed): Promise<void> {

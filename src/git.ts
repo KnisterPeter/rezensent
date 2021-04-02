@@ -9,7 +9,7 @@ import { promises as fsp } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import { URL } from "url";
-import { PullRequestBase } from "./pr/matcher";
+import { PullRequestBase } from "./matcher";
 
 export class Git {
   #baseDir: string;
