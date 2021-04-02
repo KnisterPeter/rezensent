@@ -3,11 +3,13 @@ import SimpleGit, {
   ResetMode,
   GitResponseError,
   MergeResult,
+  CleanOptions,
 } from "simple-git";
 import { promises as fsp } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import { URL } from "url";
+import { PullRequestBase } from "./pr/matcher";
 
 export class Git {
   #baseDir: string;
@@ -20,6 +22,76 @@ export class Git {
   constructor(baseDir: string, git: GitType) {
     this.#baseDir = baseDir;
     this.#git = git;
+  }
+
+  async cleanAll(): Promise<void> {
+    await this.#git.clean([
+      CleanOptions.RECURSIVE,
+      CleanOptions.IGNORED_INCLUDED,
+      CleanOptions.FORCE,
+    ]);
+  }
+
+  async createReviewBranch({
+    fromPullRequest,
+    toBranch,
+    team,
+    files,
+  }: {
+    fromPullRequest: PullRequestBase;
+    toBranch: string;
+    team: string;
+    files: string[];
+  }): Promise<void> {
+    // prepare
+    await this.cleanAll();
+    await this.#git.checkout([fromPullRequest.head.sha]);
+
+    await this.#git.reset(ResetMode.HARD, [fromPullRequest.head.sha]);
+    await this.#git.reset(ResetMode.SOFT, [fromPullRequest.base.sha]);
+    await this.#git.raw(["restore", "--staged", "."]);
+    await this.#git.add(files);
+    await this.#git.commit(`changes for ${team}`);
+    await this.#git.raw(["branch", toBranch]);
+
+    // cleanup
+    await this.cleanAll();
+    await this.#git.checkout([fromPullRequest.head.ref]);
+  }
+
+  async updateReviewBranch({
+    fromPullRequest,
+    toBranch,
+    team,
+    files,
+  }: {
+    fromPullRequest: PullRequestBase;
+    toBranch: string;
+    team: string;
+    files: string[];
+  }): Promise<void> {
+    // prepare
+    await this.cleanAll();
+    await this.#git.checkout([fromPullRequest.head.ref]);
+
+    await this.#git.reset(ResetMode.HARD, [fromPullRequest.head.sha]);
+    await this.#git.fetch(["origin", toBranch]);
+    await this.#git.rebase([
+      "--onto",
+      `origin/${toBranch}`,
+      fromPullRequest.base.sha,
+    ]);
+    await this.#git.reset(ResetMode.SOFT, [`origin/${toBranch}`]);
+    await this.#git.raw(["restore", "--staged", "."]);
+    await this.#git.add(files);
+    await this.#git.commit(`updates for ${team}`);
+    const sha = await this.#git.revparse(["HEAD"]);
+    await this.#git.checkout([toBranch]);
+    await this.#git.reset(ResetMode.HARD, [sha]);
+
+    // cleanup
+    await this.cleanAll();
+    await this.#git.checkout([fromPullRequest.head.ref]);
   }
 
   async checkout(sha: string): Promise<void> {

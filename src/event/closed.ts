@@ -3,7 +3,7 @@ import type { Context } from "probot";
 
 import { match, PullRequestBase } from "../pr/matcher";
 import { enqueue } from "../tasks/queue";
-import { synchronize } from "../tasks/synchronize";
+import { synchronizeManaged } from "../tasks/synchronize_managed";
 
 export async function onPullRequestClosed(
   context: EventTypesPayload["pull_request.merged"] &
@@ -22,7 +22,7 @@ export async function onPullRequestClosed(
   await match(context, pullRequest, {
     async review(review) {
       const managed = await review.parent();
-      enqueue(context, `close ${review}`, synchronize(context, managed));
+      enqueue(context, `close ${review}`, synchronizeManaged(context, managed));
     },
   });
 }

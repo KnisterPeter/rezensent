@@ -3,7 +3,7 @@ import type { Context } from "probot";
 import { match, PullRequestBase } from "../pr/matcher";
 
 import { enqueue } from "../tasks/queue";
-import { synchronize } from "../tasks/synchronize";
+import { synchronizeManaged } from "../tasks/synchronize_managed";
 
 /**
  * Called when a label is added to a pull request.
@@ -30,7 +30,7 @@ export async function onLabelAdded(
       enqueue(
         context,
         `label added to PR-${managed.number}`,
-        synchronize(context, managed)
+        synchronizeManaged(context, managed)
       );
     },
   });

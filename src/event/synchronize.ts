@@ -5,7 +5,7 @@ import { withGit } from "../github/clone";
 import { getPullRequestCommits } from "../github/commits";
 import { match, PullRequestBase } from "../pr/matcher";
 import { enqueue } from "../tasks/queue";
-import { synchronize } from "../tasks/synchronize";
+import { synchronizeManaged } from "../tasks/synchronize_managed";
 
 export async function onPullRequestUpdated(
   context: EventTypesPayload["pull_request.synchronize"] &
@@ -37,7 +37,7 @@ export async function onPullRequestUpdated(
       enqueue(
         context,
         `updated branch ${managed}`,
-        synchronize(context, managed)
+        synchronizeManaged(context, managed)
       );
     },
 
