@@ -5,11 +5,16 @@ import { closePullRequest } from "../github/close";
 import { unblockPullRequest } from "../github/commit-status";
 import { deleteBranch } from "../github/git";
 import { createManaged, PullRequestBase } from "../matcher";
+import { setupBot } from "../setup";
 
 export async function onLabelRemoved(
   context: EventTypesPayload["pull_request.unlabeled"] &
     Omit<Context<any>, keyof WebhookEvent<any>>
 ) {
+  if (!(await setupBot(context))) {
+    return;
+  }
+
   const { name: removedLabel } = context.payload.label ?? {};
   const {
     number,

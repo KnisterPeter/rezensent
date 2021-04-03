@@ -7,6 +7,7 @@ test(
   setupApp(
     async ({
       logStep,
+      log,
       testId,
       cleanupTasks,
       createUserGithub,
@@ -25,6 +26,7 @@ test(
       const { octokit: userOctokit } = userGithub;
       const { login: owner } = await userGithub.getUser();
 
+      log("Create repository");
       const {
         data: repoData,
       } = await userOctokit.repos.createForAuthenticatedUser({
@@ -45,6 +47,7 @@ test(
       const { simpleGit } = await gitClone(userGithub);
       const mainSha = await simpleGit.revparse(["main"]);
 
+      log("Add rezensent app to repository");
       await userOctokit.apps.addRepoToInstallation({
         installation_id: appInstallationId,
         repository_id: repoData.id,
@@ -65,7 +68,7 @@ test(
       });
 
       let setupPr = await userGithub.getPullRequest(setupPrNumber);
-      expect(setupPr.title).toBe(`Setup rezensent app`);
+      expect(setupPr.title).toBe(`Configure rezensent`);
 
       const setupFiles = await userGithub.getPullRequestFiles(setupPrNumber);
       expect(setupFiles).toEqual(
@@ -78,17 +81,24 @@ test(
       //
       logStep("Wait for setup to be executed");
 
+      log("Wait for main branch to be updated");
       await waitFor(async () => {
         await simpleGit.fetch();
         const sha = await simpleGit.revparse(`origin/main`);
         return sha === mainSha ? undefined : sha;
       }, Minutes.one);
 
-      const {
-        data: labels,
-      } = await userGithub.octokit.issues.listLabelsForRepo(
-        userGithub.context.repo({})
-      );
+      log("Wait for labels to be created");
+      const labels = await waitFor(async () => {
+        const {
+          data: labels,
+        } = await userGithub.octokit.issues.listLabelsForRepo(
+          userGithub.context.repo({})
+        );
+        return labels.some((label) => label.name.includes("Rezensent"))
+          ? labels
+          : undefined;
+      }, Minutes.one);
 
       expect(labels).toEqual(
         expect.arrayContaining([

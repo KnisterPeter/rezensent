@@ -82,10 +82,11 @@ class ExtendedSmeeClient extends SmeeClient {
   #testId: string;
 
   constructor({
+    testId,
     ...options
   }: ConstructorParameters<typeof SmeeClient>[0] & { testId: string }) {
     super(options);
-    this.#testId = options.testId;
+    this.#testId = testId;
   }
 
   onmessage(msg: unknown) {
@@ -118,7 +119,10 @@ class ExtendedSmeeClient extends SmeeClient {
           case "pull_request":
             try {
               const title = get<string>(data, "body.pull_request.title");
-              if (title === testify(title, this.#testId, titlePattern)) {
+              if (
+                title === testify(title, this.#testId, titlePattern) ||
+                nonTestTagged(title, titlePattern)
+              ) {
                 return super.onmessage(msg);
               }
               // detected concurrent tests, skip
@@ -249,6 +253,19 @@ export function createUserOctokit(): InstanceType<typeof ProbotOctokit> {
 export interface GithubApiContext {
   owner: string;
   repo<T>(object: T): { owner: string; repo: string } & T;
+}
+
+/**
+ * @returns true if the given string does not match the given test pattern
+ */
+function nonTestTagged(str: string, test: string): boolean {
+  return !new RegExp(
+    test
+      .replace("[", "\\[")
+      .replace("]", "\\]")
+      .replace("%t", ".*?")
+      .replace("%s", ".*?")
+  ).test(str);
 }
 
 function testify(str: string, testId: string, test: string): string {

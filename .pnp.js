@@ -1731,7 +1731,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "js-yaml",
-        "npm:3.14.1"
+        "npm:4.0.0"
       ],
       [
         "jsbn",
@@ -2958,6 +2958,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/common-tags", "npm:1.8.0"],
             ["@types/eventsource", "npm:1.1.5"],
             ["@types/jest", "npm:26.0.22"],
+            ["@types/js-yaml", "npm:4.0.0"],
             ["@types/slice-ansi", "npm:4.0.0"],
             ["chalk", "npm:4.1.0"],
             ["common-tags", "npm:1.8.0"],
@@ -2966,6 +2967,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["esbuild-jest", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:0.5.0"],
             ["fastify", "npm:3.13.0"],
             ["jest", "npm:26.6.3"],
+            ["js-yaml", "npm:4.0.0"],
             ["middie", "npm:5.2.0"],
             ["probot", "npm:11.1.0"],
             ["simple-git", "npm:2.36.2"],
@@ -10533,6 +10535,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/common-tags", "npm:1.8.0"],
             ["@types/eventsource", "npm:1.1.5"],
             ["@types/jest", "npm:26.0.22"],
+            ["@types/js-yaml", "npm:4.0.0"],
             ["@types/slice-ansi", "npm:4.0.0"],
             ["chalk", "npm:4.1.0"],
             ["common-tags", "npm:1.8.0"],
@@ -10541,6 +10544,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["esbuild-jest", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:0.5.0"],
             ["fastify", "npm:3.13.0"],
             ["jest", "npm:26.6.3"],
+            ["js-yaml", "npm:4.0.0"],
             ["middie", "npm:5.2.0"],
             ["probot", "npm:11.1.0"],
             ["simple-git", "npm:2.36.2"],
