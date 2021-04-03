@@ -6,20 +6,22 @@ jest.setTimeout(Minutes.fifteen);
 
 test(
   "Rezensent happy path workflow",
-  setupApp(async ({ logStep, gitClone, user, github }) => {
+  setupApp(async ({ logStep, gitClone, createUserGithub, github }) => {
     //----------------------------------------
     // setup bot (labels, ...)
     //
+    const app = await github.getUser();
+    const userGithub = await createUserGithub("rezensent-test");
 
-    const managedReviewLabel = await github.createLabel({
+    const managedReviewLabel = await userGithub.createLabel({
       name: "Rezensent: Managed Review (happy path)",
     });
 
-    const teamReviewLabel = await github.createLabel({
+    const teamReviewLabel = await userGithub.createLabel({
       name: "Rezensent: Review Requested (happy path)",
     });
 
-    const { git } = await gitClone();
+    const { git } = await gitClone(userGithub);
 
     //----------------------------------------
     //
@@ -50,44 +52,44 @@ test(
     });
     await git.addAndPushAllChanges(changeBranch, "add some files across teams");
 
-    const managedPrNumber = await github.createPullRequest({
+    const managedPrNumber = await userGithub.createPullRequest({
       base: mainBranch,
       head: changeBranch,
       title: "Happy Path Test",
     });
-    await github.addLabel(managedPrNumber, managedReviewLabel);
+    await userGithub.addLabel(managedPrNumber, managedReviewLabel);
 
     //----------------------------------------
     // wait for bot work
     //
     logStep("Wait for bot work");
 
-    const splitTeamA = await github.waitForPullRequest({
+    const splitTeamA = await userGithub.waitForPullRequest({
       head: `${changeBranch}-team-a`,
       state: "open",
-      user: user.login,
+      user: app.login,
     });
-    github.closePullRequestAfterTest(splitTeamA);
+    userGithub.closePullRequestAfterTest(splitTeamA);
     git.deleteBranchAfterTest(`${changeBranch}-team-a`);
 
-    const splitTeamB = await github.waitForPullRequest({
+    const splitTeamB = await userGithub.waitForPullRequest({
       head: `${changeBranch}-team-b`,
       state: "open",
-      user: user.login,
+      user: app.login,
     });
-    github.closePullRequestAfterTest(splitTeamB);
+    userGithub.closePullRequestAfterTest(splitTeamB);
     git.deleteBranchAfterTest(`${changeBranch}-team-b`);
 
     //----------------------------------------
     //
     logStep("Merge first pr");
 
-    await github.mergePullRequest(splitTeamA);
+    await userGithub.mergePullRequest(splitTeamA);
 
-    await github.waitForPullRequest({
+    await userGithub.waitForPullRequest({
       head: `${changeBranch}-team-a`,
       state: "closed",
-      user: user.login,
+      user: app.login,
     });
 
     mainBranchSha = await git.waitForBranchToBeUpdated(
@@ -95,26 +97,26 @@ test(
       mainBranchSha
     );
 
-    let managedPr = await github.getPullRequest(managedPrNumber);
-    await github.waitForPullRequestBaseToBeUpdated(
+    let managedPr = await userGithub.getPullRequest(managedPrNumber);
+    await userGithub.waitForPullRequestBaseToBeUpdated(
       managedPrNumber,
       managedPr.base.sha
     );
 
-    await github.getPullRequest(managedPrNumber);
-    let files = await github.getPullRequestFiles(managedPrNumber);
+    await userGithub.getPullRequest(managedPrNumber);
+    let files = await userGithub.getPullRequestFiles(managedPrNumber);
     expect(files).toHaveLength(1);
 
     //----------------------------------------
     //
     logStep("Merge second pr");
 
-    await github.mergePullRequest(splitTeamB);
+    await userGithub.mergePullRequest(splitTeamB);
 
-    await github.waitForPullRequest({
+    await userGithub.waitForPullRequest({
       head: `${changeBranch}-team-b`,
       state: "closed",
-      user: user.login,
+      user: app.login,
     });
 
     mainBranchSha = await git.waitForBranchToBeUpdated(
@@ -122,8 +124,8 @@ test(
       mainBranchSha
     );
 
-    managedPr = await github.getPullRequest(managedPrNumber);
-    await github.waitForPullRequestBaseToBeUpdated(
+    managedPr = await userGithub.getPullRequest(managedPrNumber);
+    await userGithub.waitForPullRequestBaseToBeUpdated(
       managedPrNumber,
       managedPr.base.sha
     );
@@ -132,13 +134,12 @@ test(
     //
     logStep("Managed pull request should be empty");
 
-    await github.waitForPullRequest({
+    await userGithub.waitForPullRequest({
       head: changeBranch,
       state: "closed",
     });
 
-    await github.getPullRequest(managedPrNumber);
-    files = await github.getPullRequestFiles(managedPrNumber);
+    files = await userGithub.getPullRequestFiles(managedPrNumber);
     expect(files).toHaveLength(0);
   })
 );
