@@ -6,20 +6,22 @@ jest.setTimeout(Minutes.fifteen);
 
 test(
   "Rezensent unlabeled workflow",
-  setupApp(async ({ logStep, gitClone, user, github }) => {
+  setupApp(async ({ logStep, gitClone, github, createUserGithub }) => {
     //----------------------------------------
     // setup bot (labels, ...)
     //
+    const app = await github.getUser();
+    const userGithub = await createUserGithub("rezensent-test");
 
-    const managedReviewLabel = await github.createLabel({
+    const managedReviewLabel = await userGithub.createLabel({
       name: "Rezensent: Managed Review (unlabeled)",
     });
 
-    const teamReviewLabel = await github.createLabel({
+    const teamReviewLabel = await userGithub.createLabel({
       name: "Rezensent: Review Requested (unlabeled)",
     });
 
-    const { git } = await gitClone();
+    const { git } = await gitClone(userGithub);
 
     //----------------------------------------
     //
@@ -49,45 +51,43 @@ test(
     });
     await git.addAndPushAllChanges(changeBranch, "add some files across teams");
 
-    const managedPrNumber = await github.createPullRequest({
+    const managedPrNumber = await userGithub.createPullRequest({
       base: mainBranch,
       head: changeBranch,
       title: "Unlabeled Test",
     });
-    await github.addLabel(managedPrNumber, managedReviewLabel);
-    const managedPr = await github.getPullRequest(managedPrNumber);
+    await userGithub.addLabel(managedPrNumber, managedReviewLabel);
+    const managedPr = await userGithub.getPullRequest(managedPrNumber);
 
     //----------------------------------------
     // wait for bot work
     //
     logStep("Wait for bot work");
 
-    const [splitTeamA, splitTeamB] = await Promise.all([
-      github.waitForPullRequest({
-        head: `${changeBranch}-team-a`,
-        state: "open",
-        user: user.login,
-      }),
-      github.waitForPullRequest({
-        head: `${changeBranch}-team-b`,
-        state: "open",
-        user: user.login,
-      }),
-    ]);
-
-    github.closePullRequestAfterTest(splitTeamA);
-    github.closePullRequestAfterTest(splitTeamB);
+    const splitTeamA = await userGithub.waitForPullRequest({
+      head: `${changeBranch}-team-a`,
+      state: "open",
+      user: app.login,
+    });
+    userGithub.closePullRequestAfterTest(splitTeamA);
     git.deleteBranchAfterTest(`${changeBranch}-team-a`);
+
+    const splitTeamB = await userGithub.waitForPullRequest({
+      head: `${changeBranch}-team-b`,
+      state: "open",
+      user: app.login,
+    });
+    userGithub.closePullRequestAfterTest(splitTeamB);
     git.deleteBranchAfterTest(`${changeBranch}-team-b`);
 
     //----------------------------------------
     //
     logStep("Un-label managed pull request");
 
-    const splitTeamAPr = await github.getPullRequest(splitTeamA);
-    const splitTeamBPr = await github.getPullRequest(splitTeamB);
+    const splitTeamAPr = await userGithub.getPullRequest(splitTeamA);
+    const splitTeamBPr = await userGithub.getPullRequest(splitTeamB);
 
-    await github.removeLabel(managedPrNumber, managedReviewLabel);
+    await userGithub.removeLabel(managedPrNumber, managedReviewLabel);
 
     //----------------------------------------
     //
@@ -96,17 +96,17 @@ test(
     await git.waitForBranchToBeDeleted(splitTeamAPr.head.ref);
     await git.waitForBranchToBeDeleted(splitTeamBPr.head.ref);
 
-    await github.waitForPullRequest({
+    await userGithub.waitForPullRequest({
       head: splitTeamAPr.head.ref,
       state: "closed",
     });
 
-    await github.waitForPullRequest({
+    await userGithub.waitForPullRequest({
       head: splitTeamBPr.head.ref,
       state: "closed",
     });
 
-    await github.waitForCommitStatus(
+    await userGithub.waitForCommitStatus(
       { ref: managedPr.head.ref },
       {
         context: "rezensent",

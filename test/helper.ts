@@ -11,8 +11,7 @@ import sliceAnsi from "slice-ansi";
 import SmeeClient from "smee-client";
 import { URL } from "url";
 import { promisify } from "util";
-
-import { startServer, Server } from "../src/node";
+import { Server, startServer } from "../src/node";
 
 const wait = promisify(setTimeout);
 export const enum Seconds {
@@ -32,6 +31,7 @@ export const enum Minutes {
 }
 export const titlePattern = "[%t] %s";
 export const branchPattern = "%t-%s";
+export const namePattern = "%t-%s";
 
 export type Awaited<PromiseType> = PromiseType extends Promise<infer Value>
   ? Value
@@ -98,6 +98,23 @@ class ExtendedSmeeClient extends SmeeClient {
       const data = JSON.parse(msg.data);
       if (has(data, "x-github-event")) {
         switch (data["x-github-event"]) {
+          case "installation_repositories":
+            try {
+              const action = get<string>(data, "body.action");
+              const key =
+                action === "added"
+                  ? "repositories_added"
+                  : "repositories_removed";
+              const name = get<string>(data, `body.${key}.0.name`);
+              if (name === testify(name, this.#testId, namePattern)) {
+                return super.onmessage(msg);
+              }
+              // detected concurrent tests, skip
+              return;
+            } catch {
+              // ignore and throw below
+            }
+            break;
           case "pull_request":
             try {
               const title = get<string>(data, "body.pull_request.title");
@@ -175,7 +192,7 @@ export function createEventSource(testId: string): EventSource {
   return smee;
 }
 
-function getAppOctokit() {
+function createJwtOctokit() {
   if (!process.env["APP_ID"] || !process.env["PRIVATE_KEY"]) {
     throw new Error("Required 'APP_ID' or 'PRIVATE_KEY' missing");
   }
@@ -191,7 +208,7 @@ function getAppOctokit() {
 }
 
 async function getAccessToken(): Promise<string> {
-  const appOctokit = getAppOctokit();
+  const appOctokit = createJwtOctokit();
 
   const { data: installations } = await appOctokit.apps.listInstallations();
 
@@ -208,7 +225,7 @@ async function getAccessToken(): Promise<string> {
   return accessToken.token;
 }
 
-export async function createAuthenticatedOctokit(): Promise<
+export async function createAppOctokit(): Promise<
   InstanceType<typeof ProbotOctokit>
 > {
   const token = await getAccessToken();
@@ -218,16 +235,21 @@ export async function createAuthenticatedOctokit(): Promise<
   });
 }
 
-export const context = {
-  owner: "KnisterPeter",
-  repo<T>(object: T) {
-    return {
-      owner: "KnisterPeter",
-      repo: "rezensent-test",
-      ...object,
-    };
-  },
-};
+export function createUserOctokit(): InstanceType<typeof ProbotOctokit> {
+  const token = process.env["USER_TOKEN"];
+  if (!token) {
+    throw new Error("No USER_TOKEN provided");
+  }
+
+  return new ProbotOctokit({
+    auth: { token },
+  });
+}
+
+export interface GithubApiContext {
+  owner: string;
+  repo<T>(object: T): { owner: string; repo: string } & T;
+}
 
 function testify(str: string, testId: string, test: string): string {
   const pattern = test
@@ -270,6 +292,9 @@ export type CommitStatusesForReferenceParams = Omit<
 >;
 export type CommitStatusesForReferenceResponse = Endpoints["GET /repos/{owner}/{repo}/commits/{ref}/statuses"]["response"]["data"][number];
 
+export type UserRepositoryParams = Endpoints["POST /user/repos"]["parameters"];
+export type UserRepositoryResponse = Endpoints["POST /user/repos"]["response"];
+
 export async function waitFor<Result>(
   test: () => Promise<Result | undefined>,
   timeout: number
@@ -288,57 +313,72 @@ export async function waitFor<Result>(
   return result;
 }
 
+export type AppOctokit = Awaited<ReturnType<typeof createAppOctokit>>;
+export type UserOctokit = ReturnType<typeof createUserOctokit>;
+
+export interface User {
+  name: string;
+  login: string;
+  email: string;
+  token: string;
+}
+
+export interface GithubApi {
+  octokit: InstanceType<typeof ProbotOctokit>;
+  context: GithubApiContext;
+
+  getUser(): Promise<User>;
+
+  createLabel(params: Partial<CreateLabelParams>): Promise<string>;
+  deleteLabel(name: string): Promise<void>;
+  deleteLabelAfterTest(name: string): void;
+  addLabel(number: number, name: string): Promise<void>;
+  removeLabel(number: number, name: string): Promise<void>;
+
+  createPullRequest(params: Partial<CreatePullRequestParams>): Promise<number>;
+  closePullRequest(number: number): Promise<void>;
+  closePullRequestAfterTest(number: number): void;
+  mergePullRequest(number: number): Promise<void>;
+  getPullRequest(number: number): Promise<GetPullRequestResponse>;
+  getPullRequestFiles(number: number): Promise<string[]>;
+
+  waitForPullRequest(
+    params: Partial<ListPullRequestParams>,
+    timeout?: number
+  ): Promise<number>;
+  waitForPullRequestBaseToBeUpdated(
+    number: number,
+    sha: string,
+    timeout?: number
+  ): Promise<void>;
+  waitForPullRequestHeadToBeUpdated(
+    number: number,
+    sha: string,
+    timeout?: number
+  ): Promise<void>;
+
+  waitForCommitStatus(
+    params: CommitStatusesForReferenceParams,
+    filter: Partial<CommitStatusesForReferenceResponse>,
+    timeout?: number
+  ): Promise<void>;
+}
+
+export type Task = () => Promise<void>;
+
 export type TestRunner = {
   testId: string;
   log: typeof console["log"];
   logStep(stepName: string): void;
+  cleanupTasks: Task[];
   skipCleanup(): void;
 
-  user: {
-    name: string;
-    login: string;
-    email: string;
-  };
-  octokit: AuthenticatedOctokit;
-  github: {
-    createLabel(params: Partial<CreateLabelParams>): Promise<string>;
-    deleteLabel(name: string): Promise<void>;
-    deleteLabelAfterTest(name: string): void;
-    addLabel(number: number, name: string): Promise<void>;
-    removeLabel(number: number, name: string): Promise<void>;
+  github: GithubApi;
+  createUserGithub(repo: string): Promise<GithubApi>;
 
-    createPullRequest(
-      params: Partial<CreatePullRequestParams>
-    ): Promise<number>;
-    closePullRequest(number: number): Promise<void>;
-    closePullRequestAfterTest(number: number): void;
-    mergePullRequest(number: number): Promise<void>;
-    getPullRequest(number: number): Promise<GetPullRequestResponse>;
-    getPullRequestFiles(number: number): Promise<string[]>;
-
-    waitForPullRequest(
-      params: Partial<ListPullRequestParams>,
-      timeout?: number
-    ): Promise<number>;
-    waitForPullRequestBaseToBeUpdated(
-      number: number,
-      sha: string,
-      timeout?: number
-    ): Promise<void>;
-    waitForPullRequestHeadToBeUpdated(
-      number: number,
-      sha: string,
-      timeout?: number
-    ): Promise<void>;
-
-    waitForCommitStatus(
-      params: CommitStatusesForReferenceParams,
-      filter: Partial<CommitStatusesForReferenceResponse>,
-      timeout?: number
-    ): Promise<void>;
-  };
-
-  gitClone(): Promise<{
+  gitClone(
+    api?: GithubApi
+  ): Promise<{
     directory: string;
     simpleGit: SimpleGit;
     git: {
@@ -364,18 +404,15 @@ export type TestRunner = {
   }>;
 };
 
-export type AuthenticatedOctokit = Awaited<
-  ReturnType<typeof createAuthenticatedOctokit>
->;
-
 export interface OctokitTaskContext {
-  octokit: AuthenticatedOctokit;
+  octokit: AppOctokit;
+  context: GithubApiContext;
   testId: string;
   log: typeof console["log"];
 }
 
 export async function createLabel(
-  { octokit, testId, log }: OctokitTaskContext,
+  { octokit, context, testId, log }: OctokitTaskContext,
   { name = "label", description, color }: Partial<CreateLabelParams>
 ): Promise<string> {
   const {
@@ -393,7 +430,7 @@ export async function createLabel(
 }
 
 export async function deleteLabel(
-  { octokit, testId, log }: OctokitTaskContext,
+  { octokit, context, testId, log }: OctokitTaskContext,
   name: string
 ): Promise<void> {
   log(`Delete label ${name}`);
@@ -406,7 +443,7 @@ export async function deleteLabel(
 }
 
 export async function addLabel(
-  { octokit, testId, log }: OctokitTaskContext,
+  { octokit, context, testId, log }: OctokitTaskContext,
   number: number,
   name: string
 ): Promise<void> {
@@ -421,7 +458,7 @@ export async function addLabel(
 }
 
 export async function removeLabel(
-  { octokit, testId, log }: OctokitTaskContext,
+  { octokit, context, testId, log }: OctokitTaskContext,
   number: number,
   name: string
 ): Promise<void> {
@@ -436,7 +473,7 @@ export async function removeLabel(
 }
 
 export async function createPullRequest(
-  { octokit, testId, log }: OctokitTaskContext,
+  { octokit, context, testId, log }: OctokitTaskContext,
   {
     base = "main",
     head = "pull-request",
@@ -462,7 +499,7 @@ export async function createPullRequest(
 }
 
 export async function listPullRequests(
-  { octokit, testId, log }: OctokitTaskContext,
+  { octokit, context, testId, log }: OctokitTaskContext,
   {
     base,
     direction,
@@ -507,7 +544,7 @@ export async function listPullRequests(
 }
 
 export async function closePullRequest(
-  { octokit, log }: OctokitTaskContext,
+  { octokit, context, log }: OctokitTaskContext,
   number: number
 ): Promise<void> {
   log(`Close pull request [number=${number}]`);
@@ -521,7 +558,7 @@ export async function closePullRequest(
 }
 
 export async function mergePullRequest(
-  { octokit, log }: OctokitTaskContext,
+  { octokit, context, log }: OctokitTaskContext,
   number: number
 ): Promise<void> {
   log(`Merge pull request [number=${number}]`);
@@ -534,7 +571,7 @@ export async function mergePullRequest(
 }
 
 export async function getPullRequest(
-  { octokit, log }: OctokitTaskContext,
+  { octokit, context, log }: OctokitTaskContext,
   number: number
 ): Promise<GetPullRequestResponse> {
   log(`Get pull request [number=${number}]`);
@@ -549,7 +586,7 @@ export async function getPullRequest(
 }
 
 export async function getPullRequestFiles(
-  { octokit, log }: OctokitTaskContext,
+  { octokit, context, log }: OctokitTaskContext,
   number: number
 ): Promise<string[]> {
   log(`Get pull request files [number=${number}]`);
@@ -564,7 +601,7 @@ export async function getPullRequestFiles(
 }
 
 export async function waitForPullRequest(
-  { octokit, testId, log }: OctokitTaskContext,
+  { octokit, context, testId, log }: OctokitTaskContext,
   params: Partial<ListPullRequestParams>,
   timeout: number
 ): Promise<number> {
@@ -576,7 +613,7 @@ export async function waitForPullRequest(
 
   const pullRequest = await waitFor<ListPullRequestResponse>(async () => {
     const list = await listPullRequests(
-      { octokit, testId, log: () => undefined },
+      { octokit, context, testId, log: () => undefined },
       params
     );
     return list.length > 0 ? list[0] : undefined;
@@ -586,7 +623,7 @@ export async function waitForPullRequest(
 }
 
 export async function waitForPullRequestBaseToBeUpdated(
-  { octokit, log }: OctokitTaskContext,
+  { octokit, context, log }: OctokitTaskContext,
   number: number,
   sha: string,
   timeout: number
@@ -602,7 +639,7 @@ export async function waitForPullRequestBaseToBeUpdated(
 }
 
 export async function waitForPullRequestHeadToBeUpdated(
-  { octokit, log }: OctokitTaskContext,
+  { octokit, context, log }: OctokitTaskContext,
   number: number,
   sha: string,
   timeout: number
@@ -618,7 +655,7 @@ export async function waitForPullRequestHeadToBeUpdated(
 }
 
 export async function waitForCommitStatus(
-  { octokit, log }: OctokitTaskContext,
+  { octokit, context, log }: OctokitTaskContext,
   params: CommitStatusesForReferenceParams,
   filter: Partial<CommitStatusesForReferenceResponse>,
   timeout: number
@@ -651,30 +688,31 @@ export async function waitForCommitStatus(
   }, timeout);
 }
 
-export async function getCredentials(
-  octokit: AuthenticatedOctokit
-): Promise<{
-  name: string;
-  login: string;
-  email: string;
-}> {
-  const appOctokit = getAppOctokit();
+export async function getCredentials(octokit: AppOctokit): Promise<User> {
+  const appOctokit = createJwtOctokit();
 
   const { data: authenticated } = await appOctokit.apps.getAuthenticated();
   const { data: user } = await octokit.users.getByUsername({
     username: `${authenticated.slug}[bot]`,
   });
 
+  const token = await getAccessToken();
+
   return {
     name: authenticated.name,
     login: user.login,
     email: `${user.id}+${user.login}@users.noreply.github.com`,
+    token,
   };
 }
 
 export async function setupGit(
-  octokit: AuthenticatedOctokit
+  github: GithubApi
 ): Promise<{ git: SimpleGit; directory: string }> {
+  const { octokit, context } = github;
+
+  const user = await github.getUser();
+
   const baseDir = await fsp.mkdtemp(join(tmpdir(), "rezensent"));
   try {
     const git: SimpleGit = Git({ baseDir });
@@ -684,13 +722,12 @@ export async function setupGit(
     } = await octokit.repos.get(context.repo({}));
     const url = new URL(clone_url);
     url.username = "x-access-token";
-    url.password = await getAccessToken();
+    url.password = user.token;
 
     await git.clone(url.toString(), baseDir);
 
-    const { name, email } = await getCredentials(octokit);
-    await git.addConfig("user.name", `integration-test ${name}`);
-    await git.addConfig("user.email", email);
+    await git.addConfig("user.name", user.login);
+    await git.addConfig("user.email", user.email);
 
     return { git, directory: baseDir };
   } catch (e) {
@@ -826,8 +863,6 @@ export async function addAndPushAllChanges(
   await pushBranch(git, testId, branch);
 }
 
-type Task = () => Promise<void>;
-
 export function setupApp(
   test: (runner: TestRunner) => Promise<void>
 ): () => Promise<void> {
@@ -849,78 +884,124 @@ export function setupApp(
     try {
       let doCleanup = true;
       const cleanupTasks: Task[] = [];
-      const octokit = await createAuthenticatedOctokit();
+      const octokit = await createAppOctokit();
 
-      const github: TestRunner["github"] = {
-        createLabel: async (params) => {
-          const label = await createLabel({ octokit, testId, log }, params);
-          github.deleteLabelAfterTest(label);
-          return label;
-        },
-        deleteLabel: (name) => deleteLabel({ octokit, testId, log }, name),
-        deleteLabelAfterTest: (name) =>
-          cleanupTasks.push(() =>
-            deleteLabel({ octokit, testId, log: () => undefined }, name)
-          ),
-        addLabel: (number, name) =>
-          addLabel({ octokit, testId, log }, number, name),
-        removeLabel: (number, name) =>
-          removeLabel({ octokit, testId, log }, number, name),
+      const createGithubApi = (
+        octokit: InstanceType<typeof ProbotOctokit>,
+        context: GithubApiContext,
+        getUser: () => Promise<User>
+      ) => {
+        const github: TestRunner["github"] = {
+          octokit,
+          context,
 
-        createPullRequest: async (params) => {
-          const number = await createPullRequest(
-            { octokit, testId, log },
-            params
-          );
-          github.closePullRequestAfterTest(number);
-          return number;
-        },
-        closePullRequest: (number) =>
-          closePullRequest({ octokit, testId, log }, number),
-        closePullRequestAfterTest: (number) =>
-          cleanupTasks.push(() =>
-            closePullRequest({ octokit, testId, log: () => undefined }, number)
-          ),
-        mergePullRequest: (number) =>
-          mergePullRequest({ octokit, testId, log }, number),
-        getPullRequest: (number) =>
-          getPullRequest({ octokit, testId, log }, number),
-        getPullRequestFiles: (number) =>
-          getPullRequestFiles({ octokit, testId, log }, number),
+          getUser,
 
-        waitForPullRequest: async (params, timeout = Seconds.sixty) =>
-          waitForPullRequest({ octokit, testId, log }, params, timeout),
-        waitForPullRequestBaseToBeUpdated: async (
-          number,
-          sha,
-          timeout = Seconds.sixty
-        ) =>
-          waitForPullRequestBaseToBeUpdated(
-            { octokit, testId, log },
+          createLabel: async (params) => {
+            const label = await createLabel(
+              { octokit, context, testId, log },
+              params
+            );
+            github.deleteLabelAfterTest(label);
+            return label;
+          },
+          deleteLabel: (name) =>
+            deleteLabel({ octokit, context, testId, log }, name),
+          deleteLabelAfterTest: (name) =>
+            cleanupTasks.push(() =>
+              deleteLabel(
+                { octokit, context, testId, log: () => undefined },
+                name
+              )
+            ),
+          addLabel: (number, name) =>
+            addLabel({ octokit, context, testId, log }, number, name),
+          removeLabel: (number, name) =>
+            removeLabel({ octokit, context, testId, log }, number, name),
+
+          createPullRequest: async (params) => {
+            const number = await createPullRequest(
+              { octokit, context, testId, log },
+              params
+            );
+            github.closePullRequestAfterTest(number);
+            return number;
+          },
+          closePullRequest: (number) =>
+            closePullRequest({ octokit, context, testId, log }, number),
+          closePullRequestAfterTest: (number) =>
+            cleanupTasks.push(() =>
+              closePullRequest(
+                { octokit, context, testId, log: () => undefined },
+                number
+              )
+            ),
+          mergePullRequest: (number) =>
+            mergePullRequest({ octokit, context, testId, log }, number),
+          getPullRequest: (number) =>
+            getPullRequest({ octokit, context, testId, log }, number),
+          getPullRequestFiles: (number) =>
+            getPullRequestFiles({ octokit, context, testId, log }, number),
+
+          waitForPullRequest: async (params, timeout = Seconds.sixty) =>
+            waitForPullRequest(
+              { octokit, context, testId, log },
+              params,
+              timeout
+            ),
+          waitForPullRequestBaseToBeUpdated: async (
             number,
             sha,
-            timeout
-          ),
-        waitForPullRequestHeadToBeUpdated: async (
-          number,
-          sha,
-          timeout = Seconds.sixty
-        ) =>
-          waitForPullRequestHeadToBeUpdated(
-            { octokit, testId, log },
+            timeout = Seconds.sixty
+          ) =>
+            waitForPullRequestBaseToBeUpdated(
+              { octokit, context, testId, log },
+              number,
+              sha,
+              timeout
+            ),
+          waitForPullRequestHeadToBeUpdated: async (
             number,
             sha,
-            timeout
-          ),
+            timeout = Seconds.sixty
+          ) =>
+            waitForPullRequestHeadToBeUpdated(
+              { octokit, context, testId, log },
+              number,
+              sha,
+              timeout
+            ),
 
-        waitForCommitStatus: (params, filter, timeout = Seconds.sixty) =>
-          waitForCommitStatus(
-            { octokit, testId, log },
-            params,
-            filter,
-            timeout
-          ),
+          waitForCommitStatus: (params, filter, timeout = Seconds.sixty) =>
+            waitForCommitStatus(
+              { octokit, context, testId, log },
+              params,
+              filter,
+              timeout
+            ),
+        };
+
+        return github;
       };
+
+      const createApiContext = (owner: string, repo: string) => {
+        return {
+          owner,
+          repo<T>(object: T) {
+            return {
+              owner,
+              repo,
+              ...object,
+            };
+          },
+        };
+      };
+
+      const github: TestRunner["github"] = createGithubApi(
+        octokit,
+        createApiContext("rezsensent", "rezensent-test"),
+        () => getCredentials(octokit)
+      );
 
       try {
         await test({
@@ -931,14 +1012,36 @@ export function setupApp(
             logs.push(sliceAnsi(line, 0, 110));
             logs.push(`  │`);
           },
+          cleanupTasks,
           skipCleanup: () => (doCleanup = false),
 
-          user: await getCredentials(octokit),
-          octokit,
           github,
+          async createUserGithub(repo: string) {
+            const octokit = await createUserOctokit();
 
-          async gitClone() {
-            const { git, directory } = await setupGit(octokit);
+            const getUser = async () => {
+              const {
+                data: { name, login, email },
+              } = await octokit.users.getAuthenticated();
+              return {
+                name: name ?? "",
+                login,
+                email: email ?? "",
+                token: process.env["USER_TOKEN"] ?? "",
+              };
+            };
+
+            const user = await getUser();
+
+            return createGithubApi(
+              octokit,
+              createApiContext(user.login, repo),
+              getUser
+            );
+          },
+
+          async gitClone(githubApi: GithubApi = github) {
+            const { git, directory } = await setupGit(githubApi);
             cleanupTasks.push(() =>
               fsp.rm(directory, { recursive: true, force: true })
             );

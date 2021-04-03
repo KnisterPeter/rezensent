@@ -8,20 +8,22 @@ jest.setTimeout(Minutes.fifteen);
 
 test(
   "Rezensent update rezensent pull-request workflow",
-  setupApp(async ({ logStep, gitClone, user, github }) => {
+  setupApp(async ({ logStep, gitClone, github, createUserGithub }) => {
     //----------------------------------------
     // setup bot (labels, ...)
     //
+    const app = await github.getUser();
+    const userGithub = await createUserGithub("rezensent-test");
 
-    const managedReviewLabel = await github.createLabel({
+    const managedReviewLabel = await userGithub.createLabel({
       name: "Rezensent: Managed Review (update pr)",
     });
 
-    const teamReviewLabel = await github.createLabel({
+    const teamReviewLabel = await userGithub.createLabel({
       name: "Rezensent: Review Requested (update pr)",
     });
 
-    const { directory, git, simpleGit } = await gitClone();
+    const { directory, git, simpleGit } = await gitClone(userGithub);
 
     //----------------------------------------
     //
@@ -53,41 +55,39 @@ test(
     });
     await git.addAndPushAllChanges(changeBranch, "add some files across teams");
 
-    const managedPrNumber = await github.createPullRequest({
+    const managedPrNumber = await userGithub.createPullRequest({
       base: mainBranch,
       head: changeBranch,
       title: "Update PR Test",
     });
-    await github.addLabel(managedPrNumber, managedReviewLabel);
+    await userGithub.addLabel(managedPrNumber, managedReviewLabel);
 
     //----------------------------------------
     // wait for bot work
     //
     logStep("Wait for bot work");
 
-    const [splitTeamA, splitTeamB] = await Promise.all([
-      github.waitForPullRequest({
-        head: `${changeBranch}-team-a`,
-        state: "open",
-        user: user.login,
-      }),
-      github.waitForPullRequest({
-        head: `${changeBranch}-team-b`,
-        state: "open",
-        user: user.login,
-      }),
-    ]);
-
-    github.closePullRequestAfterTest(splitTeamA);
-    github.closePullRequestAfterTest(splitTeamB);
+    const splitTeamA = await userGithub.waitForPullRequest({
+      head: `${changeBranch}-team-a`,
+      state: "open",
+      user: app.login,
+    });
+    userGithub.closePullRequestAfterTest(splitTeamA);
     git.deleteBranchAfterTest(`${changeBranch}-team-a`);
+
+    const splitTeamB = await userGithub.waitForPullRequest({
+      head: `${changeBranch}-team-b`,
+      state: "open",
+      user: app.login,
+    });
+    userGithub.closePullRequestAfterTest(splitTeamB);
     git.deleteBranchAfterTest(`${changeBranch}-team-b`);
 
     await git.fetch();
     let teamABranchSha = await git.getSha(`origin/${changeBranch}-team-a`);
-    let teamAPr = await github.getPullRequest(splitTeamA);
+    let teamAPr = await userGithub.getPullRequest(splitTeamA);
     let teamBBranchSha = await git.getSha(`origin/${changeBranch}-team-b`);
-    let teamBPr = await github.getPullRequest(splitTeamB);
+    let teamBPr = await userGithub.getPullRequest(splitTeamB);
 
     //----------------------------------------
     //
@@ -114,7 +114,7 @@ test(
       teamABranchSha
     );
 
-    await github.waitForPullRequestHeadToBeUpdated(
+    await userGithub.waitForPullRequestHeadToBeUpdated(
       splitTeamA,
       teamAPr.head.sha
     );
@@ -137,7 +137,7 @@ test(
       teamBBranchSha
     );
 
-    await github.waitForPullRequestHeadToBeUpdated(
+    await userGithub.waitForPullRequestHeadToBeUpdated(
       splitTeamB,
       teamBPr.head.sha
     );

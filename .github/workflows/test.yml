@@ -49,6 +49,7 @@ jobs:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
           WEBHOOK_PROXY_URL: ${{ secrets.WEBHOOK_PROXY_URL }}
+          USER_TOKEN: ${{ secrets.USER_TOKEN }}
 
   test-result:
     runs-on: ubuntu-latest
