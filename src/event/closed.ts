@@ -3,6 +3,7 @@ import type { Context } from "probot";
 import { promisify } from "util";
 import { ErrorCode, RezensentError } from "../error";
 import { match, PullRequestBase } from "../matcher";
+import { setupBot } from "../setup";
 import { enqueue } from "../tasks/queue";
 import { synchronizeManaged } from "../tasks/synchronize-managed";
 
@@ -12,6 +13,10 @@ export async function onPullRequestClosed(
   context: EventTypesPayload["pull_request.merged"] &
     Omit<Context<any>, keyof WebhookEvent<any>>
 ) {
+  if (!(await setupBot(context))) {
+    return;
+  }
+
   const { number, merged, state, labels } = context.payload.pull_request;
 
   context.log.debug(`[PR-${number}] was ${merged ? "merged" : "closed"}`);

@@ -2,6 +2,7 @@ import type { EventTypesPayload, WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
 import { blockPullRequest } from "../github/commit-status";
 import { match, PullRequestBase } from "../matcher";
+import { setupBot } from "../setup";
 import { enqueue } from "../tasks/queue";
 import { synchronizeManaged } from "../tasks/synchronize-managed";
 
@@ -12,6 +13,10 @@ export async function onLabelAdded(
   context: EventTypesPayload["pull_request.labeled"] &
     Omit<Context<any>, keyof WebhookEvent<any>>
 ) {
+  if (!(await setupBot(context))) {
+    return;
+  }
+
   const {
     label: { name: label } = {},
     pull_request: { number, state, labels },

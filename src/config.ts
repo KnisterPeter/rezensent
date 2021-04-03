@@ -5,6 +5,28 @@ export interface Configuration {
   teamReviewLabel: string;
 }
 
+export function mapYamlToConfiguration(
+  input: Record<string, string>
+): Configuration {
+  const keys = Object.keys(input);
+  if (keys.length === 0) {
+    throw new Error("No config found");
+  }
+
+  const get = (key: string): string => {
+    const value = input[key];
+    if (!value) {
+      throw new Error(`Required configuration '${key}' missing`);
+    }
+    return value;
+  };
+
+  return {
+    manageReviewLabel: get("manage-review-label"),
+    teamReviewLabel: get("team-review-label"),
+  };
+}
+
 export async function getConfig(
   context: Context,
   branch: string
@@ -16,21 +38,5 @@ export async function getConfig(
     })
   );
 
-  const keys = Object.keys(config.config);
-  if (keys.length === 0) {
-    throw new Error("No config found");
-  }
-
-  const get = (key: string): string => {
-    const value = (config.config as Record<string, string>)[key];
-    if (!value) {
-      throw new Error(`Required configuration '${key}' missing`);
-    }
-    return value;
-  };
-
-  return {
-    manageReviewLabel: get("manage-review-label"),
-    teamReviewLabel: get("team-review-label"),
-  };
+  return mapYamlToConfiguration(config.config as Record<string, string>);
 }
