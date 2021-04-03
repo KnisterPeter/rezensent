@@ -1188,7 +1188,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-yaml@npm:^4, @types/js-yaml@npm:^4.0.0":
+"@types/js-yaml@npm:4.0.0, @types/js-yaml@npm:^4.0.0":
   version: 4.0.0
   resolution: "@types/js-yaml@npm:4.0.0"
   checksum: 7a4431db3069988c5fa7fd00be45f18f6e355ab227b3ba23c993eeb949ee6ee39bf7180663b94f5a2378bece277ec4c49f26a27189edc263da7eeb6cd4a09d27
@@ -6486,7 +6486,7 @@ fsevents@^2.1.2:
     "@types/common-tags": 1.8.0
     "@types/eventsource": 1.1.5
     "@types/jest": 26.0.22
-    "@types/js-yaml": ^4
+    "@types/js-yaml": 4.0.0
     "@types/slice-ansi": 4.0.0
     chalk: 4.1.0
     common-tags: 1.8.0
