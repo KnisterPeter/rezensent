@@ -43,6 +43,18 @@ test(
           repo: repo,
         });
       });
+      // wait for repository to be created
+      await waitFor(async () => {
+        try {
+          await userOctokit.repos.get({
+            owner,
+            repo,
+          });
+          return true;
+        } catch {
+          return undefined;
+        }
+      }, Minutes.one);
 
       const { simpleGit } = await gitClone(userGithub);
       const mainSha = await simpleGit.revparse(["main"]);
@@ -95,9 +107,10 @@ test(
         } = await userGithub.octokit.issues.listLabelsForRepo(
           userGithub.context.repo({})
         );
-        return labels.some((label) => label.name.includes("Rezensent"))
-          ? labels
-          : undefined;
+        const matchingLabels = labels.filter((label) =>
+          label.name.includes("Rezensent")
+        );
+        return matchingLabels.length >= 2 ? labels : undefined;
       }, Minutes.one);
 
       expect(labels).toEqual(
