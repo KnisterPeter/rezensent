@@ -53,7 +53,15 @@ export async function setupBot(context: Context): Promise<boolean> {
 
     return true;
   } catch {
-    await runOnboarding(context, repo, default_branch);
+    try {
+      await runOnboarding(context, repo, default_branch);
+    } catch (err) {
+      context.log.error(
+        err,
+        "[Onboarding] failed, continue without onboarding"
+      );
+      return true;
+    }
   }
   return false;
 }
