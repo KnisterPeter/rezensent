@@ -87,6 +87,13 @@ test(
         expect.arrayContaining([".github/rezensent.yml"])
       );
 
+      await userOctokit.pulls.update({
+        owner,
+        repo,
+        pull_number: setupPrNumber,
+        title: `[${testId}] ${setupPr.title}`,
+      });
+
       await userGithub.mergePullRequest(setupPrNumber);
 
       //----------------------------------------
