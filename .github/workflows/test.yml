@@ -32,6 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     name: test (${{ matrix.tests }})
     needs: [setup-tests]
+    continue-on-error: true
     strategy:
       matrix:
         tests: ${{ fromJson(needs.setup-tests.outputs.tests) }}
