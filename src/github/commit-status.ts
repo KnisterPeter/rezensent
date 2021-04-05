@@ -5,7 +5,12 @@ export async function blockPullRequest(
   context: Context,
   managed: Managed
 ): Promise<void> {
-  await setCommitStatus(context, managed, "pending", "pull request is managed");
+  await setCommitStatus(
+    context,
+    managed.head.sha,
+    "pending",
+    "pull request is managed"
+  );
 }
 
 export async function unblockPullRequest(
@@ -14,21 +19,21 @@ export async function unblockPullRequest(
 ): Promise<void> {
   await setCommitStatus(
     context,
-    managed,
+    managed.head.sha,
     "success",
     "pull request not managed"
   );
 }
 
-async function setCommitStatus(
+export async function setCommitStatus(
   context: Context,
-  managed: Managed,
-  state: "success" | "pending",
+  sha: string,
+  state: "success" | "pending" | "error",
   description: string
 ): Promise<void> {
   await context.octokit.repos.createCommitStatus(
     context.repo({
-      sha: managed.head.sha,
+      sha,
       context: "rezensent",
       state,
       description,

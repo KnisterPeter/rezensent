@@ -4,6 +4,8 @@
 
 ### Summary
 
+{{ noCodeownersFound }}
+
 - Rezensent will create the configured labels
   {{ labels }}
 
