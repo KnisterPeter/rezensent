@@ -2,7 +2,7 @@ import { Endpoints } from "@octokit/types";
 import { Context } from "probot";
 import { Configuration, getConfig } from "./config";
 import { ErrorCode, RezensentError } from "./error";
-import { getPullRequest, getPullRequests } from "./github/get";
+import { findPullRequest, getPullRequest } from "./github/get";
 import { isReferencedPullRequest } from "./github/is-referenced";
 
 type PullRequest = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]["data"];
@@ -39,39 +39,43 @@ async function parentRequest(
   review: Review,
   configuration: Configuration
 ): Promise<Managed> {
-  let managed: Managed;
-  let maybeManaged: Managed | undefined = undefined;
+  context.log.debug(`[${review}] search parent`);
 
-  // get all possible candidates
-  const pullRequests = await getPullRequests(context, {
+  const pullRequest = await findPullRequest(context, {
     params: {
-      state: "open",
+      base: review.base.ref,
+      state: "all",
     },
-    filters: {
-      label: configuration.manageReviewLabel,
+    test: async (pullRequest) => {
+      if (review.number === pullRequest.number) {
+        return false;
+      }
+      context.log.debug(
+        `[${review}] Check if PR-${pullRequest.number} references ${review}`
+      );
+      try {
+        return isReferencedPullRequest(context, {
+          number: pullRequest.number,
+          reference: review.number,
+        });
+      } catch (err) {
+        context.log.error(
+          err,
+          `[${review}] failed to lookup timeline; assume no reference`
+        );
+        return false;
+      }
     },
   });
 
-  for (const pullRequest of pullRequests) {
-    const isReferenced = await isReferencedPullRequest(context, {
-      number: pullRequest.number,
-      reference: review.number,
-    });
-    if (isReferenced) {
-      maybeManaged = createManaged(context, pullRequest, configuration);
-      // take first matching candidate
-      break;
-    }
-  }
-  if (!maybeManaged) {
+  if (!pullRequest) {
     throw new RezensentError(
       `[${review}] invalid state: no managed parent found`,
       ErrorCode.no_parent
     );
   }
-  managed = maybeManaged;
 
-  return managed;
+  return createManaged(context, pullRequest, configuration);
 }
 
 async function reviewRequests(
@@ -79,6 +83,8 @@ async function reviewRequests(
   managed: Managed,
   configuration: Configuration
 ): Promise<Review[]> {
+  context.log.debug(`[${managed}] search reviews`);
+
   const items = await context.octokit.paginate(
     context.octokit.issues.listEventsForTimeline,
     context.repo({

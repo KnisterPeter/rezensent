@@ -1,3 +1,4 @@
+import { Endpoints } from "@octokit/types";
 import { Context } from "probot";
 import { getConfig } from "../config";
 import { withGit } from "../github/clone";
@@ -18,58 +19,37 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
     async run(): Promise<void> {
       context.log.debug(`[${managed}] synchronize managed pull request`);
 
-      if (await task.updateFromHead(managed)) {
-        context.log.info(
-          `[${managed}] merged HEAD; wait for next synchronization`
-        );
-        return;
+      const updatedHead = await updateFromHead(context, managed);
+      switch (updatedHead) {
+        case UpdateFromHeadResult.notFound:
+          context.log.info(
+            `[${managed}] no head branch; skip this synchronization`
+          );
+          break;
+
+        case UpdateFromHeadResult.upToDate:
+          const result = await this.closeManagedPullRequestIfEmpty(
+            context,
+            managed
+          );
+          if (result === "closed") {
+            context.log.info(
+              `[${managed}] closed; all changes are merged into ${managed.base.ref}`
+            );
+            return;
+          }
+
+          await task.updateReviews(managed);
+
+          context.log.debug(`[${managed}] synchronized managed pull request`);
+          break;
+
+        case UpdateFromHeadResult.updated:
+          context.log.info(
+            `[${managed}] merged HEAD; wait for next synchronization`
+          );
+          break;
       }
-
-      const result = await this.closeManagedPullRequestIfEmpty(
-        context,
-        managed
-      );
-      if (result === "closed") {
-        context.log.info(
-          `[${managed}] closed; all changes are merged into ${managed.base.ref}`
-        );
-        return;
-      }
-
-      await task.updateReviews(managed);
-
-      context.log.debug(`[${managed}] synchronized managed pull request`);
-    },
-
-    async updateFromHead(managed: Managed): Promise<boolean> {
-      const { data: head } = await context.octokit.git.getRef(
-        context.repo({
-          ref: `heads/${managed.base.ref}`,
-        })
-      );
-
-      if (head.object.sha === managed.base.sha) {
-        return false;
-      }
-
-      context.log.debug(
-        {
-          HEAD: `${head.object.sha} (${managed.base.ref})`,
-          ref: `${managed.base.sha} (${managed.head.ref})`,
-        },
-        `[${managed}] update branch; merge HEAD`
-      );
-
-      await context.octokit.pulls.updateBranch(
-        context.repo({
-          mediaType: {
-            previews: ["lydian"],
-          },
-          pull_number: managed.number,
-        })
-      );
-
-      return true;
     },
 
     async closeManagedPullRequestIfEmpty(
@@ -185,4 +165,51 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
   };
 
   return task;
+}
+
+enum UpdateFromHeadResult {
+  upToDate,
+  updated,
+  notFound,
+}
+
+async function updateFromHead(
+  context: Context,
+  managed: Managed
+): Promise<UpdateFromHeadResult> {
+  let head: Endpoints["GET /repos/{owner}/{repo}/git/ref/{ref}"]["response"]["data"];
+  try {
+    const { data } = await context.octokit.git.getRef(
+      context.repo({
+        ref: `heads/${managed.base.ref}`,
+      })
+    );
+    head = data;
+  } catch {
+    context.log.error(`[${managed}] head branch not found`);
+    return UpdateFromHeadResult.notFound;
+  }
+
+  if (head.object.sha === managed.base.sha) {
+    return UpdateFromHeadResult.upToDate;
+  }
+
+  context.log.debug(
+    {
+      HEAD: `${head.object.sha} (${managed.base.ref})`,
+      ref: `${managed.base.sha} (${managed.head.ref})`,
+    },
+    `[${managed}] update branch; merge HEAD`
+  );
+
+  await context.octokit.pulls.updateBranch(
+    context.repo({
+      mediaType: {
+        previews: ["lydian"],
+      },
+      pull_number: managed.number,
+    })
+  );
+
+  return UpdateFromHeadResult.updated;
 }
