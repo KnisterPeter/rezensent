@@ -35,6 +35,7 @@ jobs:
     strategy:
       matrix:
         tests: ${{ fromJson(needs.setup-tests.outputs.tests) }}
+      fail-fast: false
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js 14.x
