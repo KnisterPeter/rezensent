@@ -13,16 +13,16 @@ export async function onLabelAdded(
   context: EventTypesPayload["pull_request.labeled"] &
     Omit<Context<any>, keyof WebhookEvent<any>>
 ) {
-  if (!(await setupBot(context))) {
-    return;
-  }
-
   const {
     label: { name: label } = {},
     pull_request: { number, state, labels },
   } = context.payload;
 
   context.log.debug({ label }, `[PR-${number}] was labeled`);
+
+  if (!(await setupBot(context))) {
+    return;
+  }
 
   const pullRequest: PullRequestBase = {
     ...context.payload.pull_request,

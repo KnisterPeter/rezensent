@@ -11,10 +11,6 @@ export async function onPullRequestUpdated(
   context: EventTypesPayload["pull_request.synchronize"] &
     Omit<Context<any>, keyof WebhookEvent<any>>
 ) {
-  if (!(await setupBot(context))) {
-    return;
-  }
-
   const { number, merged, state, labels } = context.payload.pull_request;
 
   if (merged) {
@@ -23,6 +19,10 @@ export async function onPullRequestUpdated(
   }
 
   context.log.debug(`[PR-${number}] was updated`);
+
+  if (!(await setupBot(context))) {
+    return;
+  }
 
   const pullRequest: PullRequestBase = {
     ...context.payload.pull_request,

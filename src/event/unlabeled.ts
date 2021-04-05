@@ -11,10 +11,6 @@ export async function onLabelRemoved(
   context: EventTypesPayload["pull_request.unlabeled"] &
     Omit<Context<any>, keyof WebhookEvent<any>>
 ) {
-  if (!(await setupBot(context))) {
-    return;
-  }
-
   const { name: removedLabel } = context.payload.label ?? {};
   const {
     number,
@@ -22,6 +18,12 @@ export async function onLabelRemoved(
     state,
     labels,
   } = context.payload.pull_request;
+
+  context.log.debug(`[PR-${number}] was unlabeled`);
+
+  if (!(await setupBot(context))) {
+    return;
+  }
 
   const configuration = await getConfig(context, head);
 

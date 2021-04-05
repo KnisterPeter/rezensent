@@ -13,13 +13,13 @@ export async function onPullRequestClosed(
   context: EventTypesPayload["pull_request.merged"] &
     Omit<Context<any>, keyof WebhookEvent<any>>
 ) {
-  if (!(await setupBot(context))) {
-    return;
-  }
-
   const { number, merged, state, labels } = context.payload.pull_request;
 
   context.log.debug(`[PR-${number}] was ${merged ? "merged" : "closed"}`);
+
+  if (!(await setupBot(context))) {
+    return;
+  }
 
   const pullRequest: PullRequestBase = {
     ...context.payload.pull_request,
