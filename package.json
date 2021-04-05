@@ -16,7 +16,9 @@
     "check": "tsc",
     "check:watch": "tsc --watch",
     "test": "LANG=C jest",
-    "test:debug": "TERM=dumb DEBUG=simple-git LOG_LEVEL=debug LANG=C jest --colors --runInBand"
+    "test:info": "TERM=dumb LOG_LEVEL=info yarn test --colors --runInBand",
+    "test:debug": "TERM=dumb LOG_LEVEL=debug yarn test --colors --runInBand",
+    "test:verbose": "TERM=dumb DEBUG=simple-git LOG_LEVEL=debug yarn test --colors --runInBand"
   },
   "dependencies": {
     "@octokit/types": "^6.12.2",
