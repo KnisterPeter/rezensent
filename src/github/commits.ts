@@ -1,9 +1,14 @@
 import { Context } from "probot";
 
+export interface Commit {
+  sha: string;
+  author?: string;
+}
+
 export async function getPullRequestCommits(
   context: Context,
   number: number
-): Promise<{ sha: string; author?: string }[]> {
+): Promise<Commit[]> {
   return await context.octokit.paginate(
     context.octokit.pulls.listCommits,
     context.repo({

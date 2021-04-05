@@ -31,10 +31,18 @@ export async function getFilePatternMapPerTeam(
   context: Context,
   { branch }: { branch: string }
 ): Promise<Map<string, string[]>> {
-  const codeowners = await getFile(context, {
-    branch,
-    path: ".github/CODEOWNERS",
-  });
+  let codeowners: string;
+  try {
+    codeowners = await getFile(context, {
+      branch,
+      path: ".github/CODEOWNERS",
+    });
+  } catch {
+    context.log.error(
+      `Failed to read '.github/CODEOWNERS'; No team patterns available`
+    );
+    return new Map();
+  }
 
   const patterns = getTeams({
     file: codeowners,
