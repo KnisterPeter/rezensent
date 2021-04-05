@@ -28,35 +28,91 @@ export async function getPullRequests(
       Endpoints["GET /repos/{owner}/{repo}/pulls"]["parameters"],
       "repo" | "owner"
     >;
-    filters?: {
-      label?: string | RegExp;
-    };
+    filters?: PullRequestFilter;
   }
 ): Promise<PullRequestBase[]> {
-  let pullRequests = await context.octokit.paginate(
+  const list = await context.octokit.paginate(
     context.octokit.pulls.list,
     context.repo({ per_page: 100, ...params })
   );
 
+  let pullRequests = list.map((pullRequest) => ({
+    ...pullRequest,
+    state: (pullRequest.state === "open" ? "open" : "closed") as
+      | "open"
+      | "closed",
+    labels: pullRequest.labels.map((label) => label.name),
+  }));
+
   if (filters) {
     if (filters.label) {
-      const test = filters.label;
-      pullRequests = pullRequests.filter((pullRequest) => {
-        const labels = pullRequest.labels
-          .map((label) => label.name)
-          .filter((label): label is string => Boolean(label));
-        return typeof test === "string"
-          ? labels.includes(test)
-          : labels.some((label) => test.test(label));
-      });
+      pullRequests = pullRequests.filter((pullRequest) =>
+        filter(pullRequest, filters)
+      );
     }
   }
 
-  return pullRequests.map((pullRequest) => {
-    return {
-      ...pullRequest,
-      state: pullRequest.state === "open" ? "open" : "closed",
-      labels: pullRequest.labels.map((label) => label.name),
-    };
-  });
+  return pullRequests;
+}
+
+export async function findPullRequest(
+  context: Context,
+  {
+    params,
+    filters,
+    test,
+  }: {
+    params?: Omit<
+      Endpoints["GET /repos/{owner}/{repo}/pulls"]["parameters"],
+      "repo" | "owner"
+    >;
+    filters?: PullRequestFilter;
+    test?: (pullRequest: PullRequestBase) => Promise<boolean>;
+  }
+): Promise<PullRequestBase | undefined> {
+  for await (const { data: items } of context.octokit.paginate.iterator(
+    context.octokit.pulls.list,
+    context.repo(params)
+  )) {
+    for (const item of items) {
+      const pullRequest: PullRequestBase = {
+        ...item,
+        state: (item.state === "open" ? "open" : "closed") as "open" | "closed",
+        labels: item.labels.map((label) => label.name),
+      };
+
+      const filterResult = filter(pullRequest, filters);
+      const testResult = await test?.(pullRequest);
+
+      if (filterResult && testResult) {
+        return pullRequest;
+      }
+    }
+  }
+
+  return undefined;
+}
+
+export interface PullRequestFilter {
+  label?: string | RegExp;
+}
+
+function filter(
+  pullRequest: PullRequestBase,
+  filter?: PullRequestFilter
+): boolean {
+  if (!filter) {
+    return true;
+  }
+
+  const labels = pullRequest.labels.filter((label): label is string =>
+    Boolean(label)
+  );
+
+  if (typeof filter.label === "string") {
+    return labels.includes(filter.label);
+  }
+
+  const regexp = filter.label;
+  return labels.some((label) => regexp?.test(label));
 }

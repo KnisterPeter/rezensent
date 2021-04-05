@@ -25,9 +25,16 @@ export async function isReferencedPullRequest(
     (item) => item.event === "cross-referenced"
   );
 
-  const issues = crossReferences.filter(
-    (item) => (item as any).source.type === "issue"
+  const issues = crossReferences
+    .filter((item) => (item as any).source.type === "issue")
+    .map((item) => (item as any).source.issue.number as number);
+
+  context.log.debug(
+    {
+      issues,
+    },
+    `issues referenced in PR-${number}`
   );
 
-  return issues.some((item) => (item as any).source.issue.number === reference);
+  return issues.some((issue) => issue === reference);
 }

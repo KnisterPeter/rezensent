@@ -150,5 +150,8 @@ test(
       "utf-8"
     );
     expect(contentB).toBe("b2");
+
+    // todo: close managed pr
+    // todo: check that all review prs get closed
   })
 );
