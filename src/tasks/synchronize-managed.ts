@@ -3,23 +3,23 @@ import { Context } from "probot";
 import { getConfig } from "../config";
 import { withGit } from "../github/clone";
 import { closePullRequest } from "../github/close";
-import { getPullRequestCommits } from "../github/commits";
+import { Commit, getPullRequestCommits } from "../github/commits";
 import { createPullRequest } from "../github/create";
 import { getChangedFilesPerTeam, getPullRequestFiles } from "../github/files";
 import { deleteBranch } from "../github/git";
 import { Managed } from "../matcher";
 import { getFilePatternMapPerTeam } from "../ownership/codeowners";
-import { Task } from "./queue";
+import { CancellationToken, Task } from "./queue";
 
 export function synchronizeManaged(context: Context, managed: Managed): Task {
   const task = {
     name: synchronizeManaged.name,
     number: managed.number,
 
-    async run(): Promise<void> {
+    async run(token: CancellationToken): Promise<void> {
       context.log.debug(`[${managed}] synchronize managed pull request`);
 
-      const updatedHead = await updateFromHead(context, managed);
+      const updatedHead = await updateFromHead(context, managed, token);
       switch (updatedHead) {
         case UpdateFromHeadResult.notFound:
           context.log.info(
@@ -30,7 +30,8 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
         case UpdateFromHeadResult.upToDate:
           const result = await this.closeManagedPullRequestIfEmpty(
             context,
-            managed
+            managed,
+            token
           );
           if (result === "closed") {
             context.log.info(
@@ -39,7 +40,7 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
             return;
           }
 
-          await task.updateReviews(managed);
+          await task.updateReviews(managed, token);
 
           context.log.debug(`[${managed}] synchronized managed pull request`);
           break;
@@ -54,8 +55,10 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
 
     async closeManagedPullRequestIfEmpty(
       context: Context,
-      managed: Managed
+      managed: Managed,
+      token: CancellationToken
     ): Promise<"open" | "closed"> {
+      token.abortIfCanceled();
       const files = await getPullRequestFiles(context, {
         number: managed.number,
       });
@@ -67,19 +70,31 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
 
       context.log.debug(`[${managed}] is empty; closing`);
 
+      token.abortIfCanceled();
       await closePullRequest(context, managed.number);
-      await deleteBranch(context, managed.head.ref);
+
+      token.abortIfCanceled();
+      try {
+        await deleteBranch(context, managed.head.ref);
+      } catch {
+        context.log.error(`[${managed}] head branch does not exist`);
+      }
 
       return "closed";
     },
 
-    async updateReviews(managed: Managed): Promise<void> {
+    async updateReviews(
+      managed: Managed,
+      token: CancellationToken
+    ): Promise<void> {
+      token.abortIfCanceled();
       const configuration = await getConfig(
         context,
         // use head if open, base if closed (branch could be delete already)
         managed.state === "open" ? managed.head.ref : managed.base.ref
       );
 
+      token.abortIfCanceled();
       const reviews = await managed.children();
       context.log.info(
         reviews.map(
@@ -88,10 +103,16 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
         `[${managed}] ${reviews.length} found review requests`
       );
 
+      token.abortIfCanceled();
       const patterns = await getFilePatternMapPerTeam(context, {
         branch: managed.head.ref,
       });
+      if (patterns.size === 0) {
+        context.log.info(`[${managed}] no team patterns; aborting`);
+        return;
+      }
 
+      token.abortIfCanceled();
       const changedFilesByTeam = await getChangedFilesPerTeam(context, {
         number: managed.number,
         patterns,
@@ -102,8 +123,16 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
         `[${managed}] changes per team`
       );
 
-      const commits = await getPullRequestCommits(context, managed.number);
+      token.abortIfCanceled();
+      let commits: Commit[];
+      try {
+        commits = await getPullRequestCommits(context, managed.number);
+      } catch {
+        context.log.error(`[${managed}] failed to read commits; aborting`);
+        return;
+      }
 
+      token.abortIfCanceled();
       await withGit(
         context,
         { branch: managed.head.ref, depth: commits.length + 1 },
@@ -117,6 +146,7 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
             const review = reviews.find((review) => review.head.ref === branch);
 
             if (review && review.state === "open") {
+              token.abortIfCanceled();
               await git.updateReviewBranch({
                 fromPullRequest: managed,
                 toBranch: branch,
@@ -124,6 +154,7 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
                 files,
               });
 
+              token.abortIfCanceled();
               await git.push(branch);
 
               context.log.info(
@@ -131,6 +162,7 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
                 `[${managed}] updated review pull request`
               );
             } else {
+              token.abortIfCanceled();
               await git.createReviewBranch({
                 fromPullRequest: managed,
                 toBranch: branch,
@@ -138,9 +170,12 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
                 files,
               });
 
+              token.abortIfCanceled();
               await git.push(branch);
 
               const title = `${managed.title} - ${team}`;
+
+              token.abortIfCanceled();
               const newPrNumber = await createPullRequest(context, {
                 branch,
                 title,
@@ -175,8 +210,10 @@ enum UpdateFromHeadResult {
 
 async function updateFromHead(
   context: Context,
-  managed: Managed
+  managed: Managed,
+  token: CancellationToken
 ): Promise<UpdateFromHeadResult> {
+  token.abortIfCanceled();
   let head: Endpoints["GET /repos/{owner}/{repo}/git/ref/{ref}"]["response"]["data"];
   try {
     const { data } = await context.octokit.git.getRef(
@@ -202,6 +239,7 @@ async function updateFromHead(
     `[${managed}] update branch; merge HEAD`
   );
 
+  token.abortIfCanceled();
   await context.octokit.pulls.updateBranch(
     context.repo({
       mediaType: {

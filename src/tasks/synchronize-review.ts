@@ -2,17 +2,20 @@ import { Context } from "probot";
 import { getCredentials, withGit } from "../github/clone";
 import { getPullRequestCommits } from "../github/commits";
 import { Review } from "../matcher";
-import { Task } from "./queue";
+import { CancellationToken, Task } from "./queue";
 
 export function synchronizeReview(context: Context, review: Review): Task {
   const task = {
     name: synchronizeReview.name,
     number: review.number,
 
-    async run(): Promise<void> {
+    async run(token: CancellationToken): Promise<void> {
       context.log.debug(`[${review}] synchronize review pull request`);
 
+      token.abortIfCanceled();
       const { name } = await getCredentials(context.octokit);
+
+      token.abortIfCanceled();
       const commits = await getPullRequestCommits(context, review.number);
 
       const manualCommits = commits.filter((commit) => commit.author !== name);
@@ -22,6 +25,7 @@ export function synchronizeReview(context: Context, review: Review): Task {
         return;
       }
 
+      token.abortIfCanceled();
       const managed = await review.parent();
 
       context.log.info(
@@ -34,6 +38,7 @@ export function synchronizeReview(context: Context, review: Review): Task {
         `[${review}] invalid commits; move to managed pull request`
       );
 
+      token.abortIfCanceled();
       await withGit(
         context,
         {
