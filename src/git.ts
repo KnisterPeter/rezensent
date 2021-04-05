@@ -3,8 +3,6 @@ import { tmpdir } from "os";
 import { join } from "path";
 import SimpleGit, {
   CleanOptions,
-  GitResponseError,
-  MergeResult,
   ResetMode,
   SimpleGit as GitType,
 } from "simple-git";
@@ -133,74 +131,14 @@ export class Git {
     await this.#git.checkout([pullRequest.head.ref]);
   }
 
-  async checkout(sha: string): Promise<void> {
-    await this.#git.checkout([sha]);
-  }
-
-  async rebase(ref: string): Promise<void> {
-    await this.#git.fetch("origin", ref);
-    await this.#git.rebase([`origin/${ref}`]);
-  }
-
-  async mergeTheirs(from: string): Promise<string> {
-    await this.#git.fetch("origin", from);
+  async hasRemoteBranch(branch: string): Promise<boolean> {
     try {
-      await this.#git.merge([
-        "--no-edit",
-        "--strategy=recursive",
-        "--strategy-option=theirs",
-        `origin/${from}`,
-      ]);
-    } catch (e) {
-      const result:
-        | MergeResult
-        | undefined = (e as GitResponseError<MergeResult>).git;
-      if (result?.result !== "success") {
-        throw e;
-      }
+      await this.#git.fetch("origin", branch);
+      const summary = await this.#git.branch();
+      return summary.all.includes(`remotes/origin/${branch}`);
+    } catch {
+      return false;
     }
-
-    return await this.#git.revparse(["HEAD"]);
-  }
-
-  async resetCommits(sha = "HEAD^"): Promise<string> {
-    await this.#git.reset(ResetMode.MIXED, [sha]);
-    return await this.#git.revparse(["HEAD"]);
-  }
-
-  async resetHardCommits(sha = "HEAD^"): Promise<string> {
-    await this.#git.reset(ResetMode.HARD, [sha]);
-    return await this.#git.revparse(["HEAD"]);
-  }
-
-  async cherryPick({
-    commit,
-    onto,
-  }: {
-    commit: string;
-    onto: string;
-  }): Promise<string> {
-    await this.#git.fetch("origin", onto);
-    await this.#git.checkout([onto]);
-
-    await this.#git.raw(["cherry-pick", commit]);
-    const newCommitId = await this.#git.revparse(["HEAD"]);
-
-    await this.push(onto);
-
-    return newCommitId;
-  }
-
-  async addToExistingBranch({
-    branch,
-    files,
-  }: {
-    branch: string;
-    files: string[];
-  }): Promise<void> {
-    await this.#git.fetch("origin", branch);
-    await this.#git.checkout([branch]);
-    await this.#git.add(files);
   }
 
   async addToNewBranch({
@@ -221,6 +159,15 @@ export class Git {
     await this.#git.add(files);
   }
 
+  async checkout(branch: string): Promise<void> {
+    await this.#git.fetch(["origin", branch]);
+    await this.#git.checkout([branch]);
+  }
+
+  async addFiles(files: string[]): Promise<void> {
+    await this.#git.add(files);
+  }
+
   async commitAndPush({
     message,
     branch,
@@ -228,17 +175,16 @@ export class Git {
     message: string;
     branch: string;
   }): Promise<void> {
-    await this.#git.commit(message);
+    const status = await this.#git.status();
+    if (status.staged.length > 0) {
+      await this.#git.commit(message);
 
-    await this.#git.push("origin", branch);
+      await this.#git.push("origin", branch);
+    }
   }
 
   async push(branch: string): Promise<void> {
     await this.#git.push(["origin", branch]);
-  }
-
-  async forcePush(branch: string): Promise<void> {
-    await this.#git.push(["--force", "origin", branch]);
   }
 
   async close(): Promise<void> {

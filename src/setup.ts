@@ -4,18 +4,26 @@ import { dirname, join } from "path";
 import type { Context } from "probot";
 import { getConfig, mapYamlToConfiguration } from "./config";
 import { getCredentials, withGit } from "./github/clone";
+import { setCommitStatus } from "./github/commit-status";
+import { getFile } from "./github/files";
+import { getPullRequests } from "./github/get";
 
 const title = "Configure rezensent";
 const onboardingBranch = "rezensent/setup";
 const configFile = ".github/rezensent.yml";
+const codeownersFile = ".github/CODEOWNERS";
 
 export async function setupBot(context: Context): Promise<boolean> {
   const {
-    data: { name: repo, default_branch },
+    data: { owner, default_branch },
   } = await context.octokit.repos.get(context.repo({}));
 
   try {
     const configuration = await getConfig(context, default_branch);
+    await getFile(context, {
+      branch: default_branch,
+      path: codeownersFile,
+    });
 
     const {
       data: labelObjects,
@@ -53,12 +61,18 @@ export async function setupBot(context: Context): Promise<boolean> {
 
     return true;
   } catch {
+    if (!owner) {
+      context.log.error(
+        "[Onboarding] unable to determine repository owner; continue without onboarding"
+      );
+      return true;
+    }
     try {
-      await runOnboarding(context, repo, default_branch);
+      await runOnboarding(context, owner.login, default_branch);
     } catch (err) {
       context.log.error(
         err,
-        "[Onboarding] failed, continue without onboarding"
+        "[Onboarding] failed; continue without onboarding"
       );
       return true;
     }
@@ -68,10 +82,10 @@ export async function setupBot(context: Context): Promise<boolean> {
 
 async function runOnboarding(
   context: Context,
-  repo: string,
+  owner: string,
   branch: string
 ): Promise<void> {
-  if (!(await requireOnboarding(context, repo, branch))) {
+  if (!(await requireOnboarding(context, owner, branch))) {
     return;
   }
 
@@ -88,68 +102,189 @@ async function runOnboarding(
       "utf-8"
     );
 
-    const configPath = join(git.directory, configFile);
-    await fsp.mkdir(dirname(configPath), {
-      recursive: true,
-    });
-    await fsp.writeFile(configPath, configTemplate);
+    let hasConfig: boolean;
+    try {
+      await fsp.stat(join(git.directory, configFile));
+      hasConfig = true;
+    } catch {
+      hasConfig = false;
+    }
 
-    await git.addToNewBranch({ branch: onboardingBranch, files: [configFile] });
-    await git.commitAndPush({
-      branch: onboardingBranch,
-      message: "chore: configure rezensent",
-    });
+    let hasCodeowners;
+    try {
+      await fsp.stat(join(git.directory, codeownersFile));
+      hasCodeowners = true;
+    } catch {
+      hasCodeowners = false;
+    }
 
-    const { data: pr } = await context.octokit.pulls.create(
-      context.repo({
-        base: branch,
-        head: onboardingBranch,
-        title,
+    if (!hasConfig) {
+      const configPath = join(git.directory, configFile);
+      await fsp.mkdir(dirname(configPath), {
+        recursive: true,
+      });
+
+      if (await git.hasRemoteBranch(onboardingBranch)) {
+        await git.checkout(onboardingBranch);
+        await fsp.writeFile(configPath, configTemplate);
+        await git.addFiles([configFile]);
+      } else {
+        await fsp.writeFile(configPath, configTemplate);
+
+        await git.addToNewBranch({
+          branch: onboardingBranch,
+          files: [configFile],
+        });
+      }
+      await git.commitAndPush({
+        branch: onboardingBranch,
+        message: "chore: configure rezensent",
+      });
+    }
+
+    let body = onboardingTemplate
+      .replace(
         // https://regex101.com/r/J2aqvf/1
-        body: onboardingTemplate.replace(
-          /^\s*{{\slabels\s}}\n/gms,
-          [
-            `  - **${configuration.manageReviewLabel}** as label for managed pull requests`,
-            `  - **${configuration.teamReviewLabel}** as label for team review requests`,
-          ].join("\n")
-        ),
-      })
-    );
+        /^\s*{{\slabels\s}}\n/gms,
+        [
+          `  - **${configuration.manageReviewLabel}** as label for managed pull requests`,
+          `  - **${configuration.teamReviewLabel}** as label for team review requests`,
+        ].join("\n")
+      )
+      .replace(
+        /^\s*{{\snoCodeownersFound\s}}\n/gms,
+        hasCodeowners
+          ? ""
+          : `- No **CODEOWNERS** found in \`${codeownersFile}\`.  \n  This is required to split pull requests by teams. (see: [GitHub documentation](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners))`
+      );
 
-    context.log.info(`Created onboarding pr ${pr.number}`);
+    let pr = await getOnboardingPullRequest(context, owner, branch);
+    if (pr?.state === "open") {
+      await context.octokit.pulls.update(
+        context.repo({
+          pull_number: pr.number,
+          body,
+        })
+      );
+
+      context.log.info(`Updated onboarding pr ${pr.number}`);
+    } else {
+      const { data } = await context.octokit.pulls.create(
+        context.repo({
+          base: branch,
+          head: onboardingBranch,
+          title,
+          body,
+        })
+      );
+      pr = {
+        number: data.number,
+        head: data.head,
+        user: data.user,
+        state: "open",
+        closed: false,
+        merged: false,
+      };
+
+      context.log.info(`Created onboarding pr ${pr.number}`);
+    }
+
+    if (hasCodeowners) {
+      await setCommitStatus(
+        context,
+        pr.head.sha,
+        "success",
+        "Ready to merge onboarding"
+      );
+    } else {
+      await setCommitStatus(
+        context,
+        pr.head.sha,
+        "error",
+        "CODEOWNERS missing"
+      );
+    }
   });
 }
 
 async function requireOnboarding(
   context: Context,
-  repo: string,
+  owner: string,
   branch: string
 ): Promise<boolean> {
+  const pr = await getOnboardingPullRequest(context, owner, branch);
+  if (!pr) {
+    return true;
+  }
+
+  if (pr.closed && !pr.merged) {
+    context.log.info(
+      `Found closed (but unmerged) onboarding; ignore onboarding`
+    );
+    return false;
+  }
+
+  try {
+    await getFile(context, {
+      branch,
+      path: codeownersFile,
+    });
+  } catch {
+    context.log.info(`No codeowners found; require onboarding`);
+  }
+
+  return true;
+}
+
+async function getOnboardingPullRequest(
+  context: Context,
+  owner: string,
+  branch: string
+): Promise<
+  | {
+      number: number;
+      head: {
+        sha: string;
+      };
+      user: {
+        login: string;
+      } | null;
+      state: "open" | "closed";
+      closed: boolean;
+      merged: boolean;
+    }
+  | undefined
+> {
   const user = await getCredentials(context.octokit);
 
-  const pullRequests = await context.octokit.paginate(
-    context.octokit.pulls.list,
-    context.repo({
+  const pullRequests = await getPullRequests(context, {
+    params: {
       base: branch,
-      head: `${repo}:${onboardingBranch}`,
+      head: `${owner}:${onboardingBranch}`,
       per_page: 100,
-    })
-  );
-  const onboardingPr = pullRequests.find(
+      state: "all",
+    },
+  });
+
+  const pr = pullRequests.find(
     (pullRequest) =>
       pullRequest.title === title && pullRequest.user?.login === user.login
   );
 
-  context.log.debug({ onboarding: onboardingPr }, "Onboarding pull request");
+  context.log.debug({ onboarding: pr?.number }, "Onboarding pull request");
 
-  if (onboardingPr?.state === "open") {
-    context.log.info(`Found open onboarding; wait to be merged`);
-    return false;
-  }
-  if (onboardingPr?.merged_at) {
-    context.log.info(`Found closed onboarding; ignore onboarding`);
-    return false;
-  }
-
-  return true;
+  return pr
+    ? {
+        number: pr.number,
+        head: pr.head,
+        state: pr.state === "open" ? "open" : "closed",
+        user: pr.user
+          ? {
+              login: pr.user.login,
+            }
+          : null,
+        closed: Boolean(pr.closed_at),
+        merged: Boolean(pr.merged_at),
+      }
+    : undefined;
 }

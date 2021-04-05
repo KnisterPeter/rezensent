@@ -56,8 +56,15 @@ test(
         }
       }, Minutes.one);
 
-      const { simpleGit } = await gitClone(userGithub);
+      const { git, simpleGit } = await gitClone(userGithub);
       const mainSha = await simpleGit.revparse(["main"]);
+
+      await git.writeFiles({
+        ".github/CODEOWNERS": `* @rezensent`,
+      });
+      await simpleGit.add(["."]);
+      await simpleGit.commit("chore: add codeowners");
+      await simpleGit.push("origin", "main");
 
       log("Add rezensent app to repository");
       await userOctokit.apps.addRepoToInstallation({

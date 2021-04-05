@@ -17,9 +17,12 @@ export interface PullRequestBase {
     readonly ref: PullRequest["head"]["ref"];
     readonly sha: PullRequest["head"]["sha"];
   };
+  readonly user: PullRequest["user"];
   readonly state: PullRequest["state"];
   readonly title: PullRequest["title"];
   readonly labels: PullRequest["labels"][number]["name"][];
+  readonly closed_at: PullRequest["closed_at"];
+  readonly merged_at: PullRequest["merged_at"];
 
   toString(): string;
 }
