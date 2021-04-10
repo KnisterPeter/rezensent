@@ -254,12 +254,12 @@ export interface GithubApiContext {
 
 function testify(str: string, testId: string, test: string): string {
   const pattern = test
-    .replace("[", "\\[")
-    .replace("]", "\\]")
-    .replace("(", "\\(")
-    .replace(")", "\\)")
-    .replace("%s", ".*?")
-    .replace("%t", testId);
+    .replace(/\[/g, "\\[")
+    .replace(/\]/g, "\\]")
+    .replace(/\(/g, "\\(")
+    .replace(/\)/g, "\\)")
+    .replace(/%s/g, ".*?")
+    .replace(/%t/g, testId);
   const regexp = new RegExp(pattern);
 
   if (str.startsWith("origin/")) {
