@@ -144,35 +144,25 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
 
             const branch = `${managed.head.ref}-${team}`;
             const review = reviews.find((review) => review.head.ref === branch);
+            const recreate = review && review.state === "open";
 
-            if (review && review.state === "open") {
-              token.abortIfCanceled();
-              await git.updateReviewBranch({
-                fromPullRequest: managed,
-                toBranch: branch,
-                team,
-                files,
-              });
+            token.abortIfCanceled();
+            await git.createReviewBranch({
+              fromPullRequest: managed,
+              toBranch: branch,
+              team,
+              files,
+            });
 
-              token.abortIfCanceled();
-              await git.push(branch);
+            token.abortIfCanceled();
+            await git.push({ branch, force: recreate });
 
+            if (recreate) {
               context.log.info(
-                { team, review: `${review} | ${review.title}` },
+                { team, review: `${review} | ${review?.title}` },
                 `[${managed}] updated review pull request`
               );
             } else {
-              token.abortIfCanceled();
-              await git.createReviewBranch({
-                fromPullRequest: managed,
-                toBranch: branch,
-                team,
-                files,
-              });
-
-              token.abortIfCanceled();
-              await git.push(branch);
-
               const title = `${managed.title} - ${team}`;
 
               token.abortIfCanceled();
