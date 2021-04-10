@@ -14,7 +14,19 @@ jobs:
       - run: yarn install
       - run: yarn check
 
-  setup-tests:
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: unit tests
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - run: yarn install
+      - run: yarn test '\.test.ts'
+
+  setup-integration-tests:
     runs-on: ubuntu-latest
     outputs:
       tests: ${{ steps.prepare.outputs.tests }}
@@ -26,15 +38,15 @@ jobs:
           node-version: 14.x
       - run: yarn install
       - id: prepare
-        run: echo "::set-output name=tests::$(yarn jest --listTests --json |jq --compact-output '[.[] | split("/")[-1] | sub(".test.ts"; "") | . ]')"
+        run: echo "::set-output name=tests::$(yarn jest --listTests --json '\.itest.ts' |jq --compact-output '[.[] | split("/")[-1] | sub(".itest.ts"; "") | . ]')"
 
-  run-test:
+  integration-tests:
     runs-on: ubuntu-latest
-    name: test (${{ matrix.tests }})
-    needs: [setup-tests]
+    name: integration-test (${{ matrix.tests }})
+    needs: [setup-integration-tests]
     strategy:
       matrix:
-        tests: ${{ fromJson(needs.setup-tests.outputs.tests) }}
+        tests: ${{ fromJson(needs.setup-integration-tests.outputs.tests) }}
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -43,7 +55,7 @@ jobs:
         with:
           node-version: 14.x
       - run: yarn install
-      - run: yarn test ${{ matrix.tests }}
+      - run: yarn test ${{ matrix.tests }}.itest
         env:
           LOG_LEVEL: info
           APP_ID: ${{ secrets.APP_ID }}
@@ -55,6 +67,6 @@ jobs:
   test-result:
     runs-on: ubuntu-latest
     name: test-result
-    needs: [run-test]
+    needs: [unit-tests, integration-tests]
     steps:
-      - run: echo ${{ needs.run-test.result == 'success' }}
+      - run: echo "unit test=${{ needs.unit-tests.result }} integration test=${{ needs.integration-tests.result }}"
