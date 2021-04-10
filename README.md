@@ -20,15 +20,46 @@ It is loosely based on the idea of [googles rosie](https://cacm.acm.org/magazine
 
 ## How it works
 
+### Terminology
+
+| term                 | explanation                                                                                                   |
+| -------------------- | ------------------------------------------------------------------------------------------------------------- |
+| managed pull request | A pull request labeled with the 'manage label'                                                                |
+| team pull request    | A pull request created by the app per team                                                                    |
+| codeowners           | [CODEOWNERS](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners) |
+
+### Steps
+
+- Whenever a pull request is labeled with the configured 'manage label', the app
+  will create a pull request with just the changes for each team.
+
+- Then each team can review their changes separated from the other teams and
+  when the pull request is approved it can be merged.
+
+- As soon as the app detects a merge, the managed pull request is updated to the
+  HEAD of it's base branch. And all remaining team pull requests are
+  update/recreated.
+
+- When there are no changes left, the managed pull request is closed as all
+  changes are integrated into it's base branch.
+
+### Process description
+
 <p align="center">
   <img src="./docs/process.drawio.svg" alt="process" />
 </p>
 
 ## Usage
 
+### Public App
+
+The app is publicly available for free at https://github.com/apps/rezensent.
+
+You can just add it to your github repository and complete the onboarding process.
+
 ### Docker
 
-The github could be hosted using the provided docker image.
+The app could be hosted using the [provided docker image](https://hub.docker.com/r/knisterpeter/rezensent).
 
 The container need to be configured by the following environment variables:
 
