@@ -48,8 +48,11 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "testMatch": [
+      "**/*.?(i)test.ts"
+    ],
     "transform": {
-      "^.+\\.tsx?$": [
+      "^.+\\.ts$": [
         "esbuild-jest",
         {
           "sourcemap": true
