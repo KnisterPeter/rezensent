@@ -23,3 +23,18 @@ It is loosely based on the idea of [googles rosie](https://cacm.acm.org/magazine
 <p align="center">
   <img src="./docs/process.drawio.svg" alt="process" />
 </p>
+
+## Usage
+
+### Docker
+
+The github could be hosted using the provided docker image.
+
+The container need to be configured by the following environment variables:
+
+| name           | description                                | required | default |
+| -------------- | ------------------------------------------ | -------- | ------- |
+| APP_ID         | The GitHub app id                          | yes      |         |
+| PRIVATE_KEY    | The private key obtained from github       | yes      |         |
+| WEBHOOK_SECRET | The webhook secret set during app creation | yes      |         |
+| PORT           | The port of the app inside the container   | no       | 3000    |
