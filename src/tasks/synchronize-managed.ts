@@ -10,6 +10,7 @@ import { deleteBranch } from "../github/git";
 import { Managed } from "../matcher";
 import { getFilePatternMapPerTeam } from "../ownership/codeowners";
 import { CancellationToken, Task } from "./queue";
+import { removeIndentation } from "../strings";
 
 export function synchronizeManaged(context: Context, managed: Managed): Task {
   const task = {
@@ -144,32 +145,55 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
 
             const branch = `${managed.head.ref}-${team}`;
             const review = reviews.find((review) => review.head.ref === branch);
-            const recreate = review && review.state === "open";
+            const recreate = review?.state === "open";
 
             token.abortIfCanceled();
             await git.createReviewBranch({
               fromPullRequest: managed,
               toBranch: branch,
-              team,
               files,
             });
 
             token.abortIfCanceled();
             await git.push({ branch, force: recreate });
 
-            if (recreate) {
+            const title = `${managed.title} - ${team}`;
+            const body = removeIndentation`
+              ### Changes for ${team} from #${managed.number}:
+
+              <blockquote>
+                **${managed.title}**
+
+                ${managed.body ?? "No description provided."}
+              </blockquote>
+
+              ---
+
+              :warning: Do not push onto this pull request, please add your change to #${
+                managed.number
+              }!
+            `;
+
+            if (review && recreate) {
+              token.abortIfCanceled();
+              await context.octokit.pulls.update(
+                context.repo({
+                  pull_number: review.number,
+                  title,
+                  body,
+                })
+              );
+
               context.log.info(
-                { team, review: `${review} | ${review?.title}` },
+                { team, review: `${review} | ${title}` },
                 `[${managed}] updated review pull request`
               );
             } else {
-              const title = `${managed.title} - ${team}`;
-
               token.abortIfCanceled();
               const newPrNumber = await createPullRequest(context, {
                 branch,
                 title,
-                body: `Changes for ${team} from #${managed.number}`,
+                body,
                 managedPullRequest: {
                   base: managed.base.ref,
                   head: managed.head.ref,

@@ -20,6 +20,7 @@ export interface PullRequestBase {
   readonly user: PullRequest["user"];
   readonly state: PullRequest["state"];
   readonly title: PullRequest["title"];
+  readonly body: PullRequest["body"];
   readonly labels: PullRequest["labels"][number]["name"][];
   readonly closed_at: PullRequest["closed_at"];
   readonly merged_at: PullRequest["merged_at"];
