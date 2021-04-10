@@ -33,12 +33,10 @@ export class Git {
   public async createReviewBranch({
     fromPullRequest,
     toBranch,
-    team,
     files,
   }: {
     fromPullRequest: PullRequestBase;
     toBranch: string;
-    team: string;
     files: string[];
   }): Promise<void> {
     const lastLog = async () =>
@@ -71,11 +69,7 @@ export class Git {
           // just ignore non existing files
         }
       }
-      await this.#git.commit(
-        `${message.trimEnd()}\n\n  Changes for @${team} from #${
-          fromPullRequest.number
-        }`
-      );
+      await this.#git.commit(message);
       await this.#git.add(".");
       await this.#git.commit("##rezensent##temp##");
     }
