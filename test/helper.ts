@@ -400,6 +400,7 @@ export type TestRunner = {
       writeFiles(files: { [path: string]: string }): Promise<void>;
 
       push(branch: string): Promise<void>;
+      addAndCommitChanges(message: string): Promise<void>;
       addAndPushAllChanges(branch: string, message: string): Promise<void>;
     };
   }>;
@@ -854,6 +855,13 @@ export async function pushBranch(
   await git.push(["origin", testify(branch, testId, branchPattern)]);
 }
 
+export async function addAndCommitChanges(
+  { git }: SimpleGitTaskContext,
+  message: string
+): Promise<void> {
+  await git.add(["."]).commit(message);
+}
+
 export async function addAndPushAllChanges(
   git: SimpleGit,
   testId: string,
@@ -1082,6 +1090,8 @@ export function setupApp(
               writeFiles: (files) => writeFiles(directory, files),
 
               push: (branch) => pushBranch(git, testId, branch),
+              addAndCommitChanges: (message) =>
+                addAndCommitChanges({ git, testId, log }, message),
               addAndPushAllChanges: (branch, message) =>
                 addAndPushAllChanges(git, testId, branch, message),
             };

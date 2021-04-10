@@ -53,7 +53,16 @@ test(
       "folder-a/a.txt": `a`,
       "folder-b/b.txt": `b`,
     });
-    await git.addAndPushAllChanges(changeBranch, "add some files across teams");
+    await git.addAndCommitChanges("add some files across teams");
+    await git.writeFiles({
+      "folder-a/c.txt": `a`,
+      "folder-b/b.txt": `not-b`,
+      "folder-b/d.txt": `d`,
+    });
+    await git.addAndPushAllChanges(
+      changeBranch,
+      "some more changed files across teams"
+    );
 
     const managedPrNumber = await userGithub.createPullRequest({
       base: mainBranch,
