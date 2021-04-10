@@ -22,7 +22,7 @@ export class Git {
     this.#git = git;
   }
 
-  async cleanAll(): Promise<void> {
+  private async cleanAll(): Promise<void> {
     await this.#git.clean([
       CleanOptions.RECURSIVE,
       CleanOptions.IGNORED_INCLUDED,
@@ -30,7 +30,7 @@ export class Git {
     ]);
   }
 
-  async createReviewBranch({
+  public async createReviewBranch({
     fromPullRequest,
     toBranch,
     team,
@@ -41,58 +41,54 @@ export class Git {
     team: string;
     files: string[];
   }): Promise<void> {
+    const lastLog = async () =>
+      (await this.#git.log(["-n", "1"])).latest?.message;
+
     // prepare
     await this.cleanAll();
     await this.#git.checkout([fromPullRequest.head.sha]);
 
-    await this.#git.reset(ResetMode.HARD, [fromPullRequest.head.sha]);
-    await this.#git.reset(ResetMode.SOFT, [fromPullRequest.base.sha]);
-    await this.#git.raw(["restore", "--staged", "."]);
-    await this.#git.add(files);
-    await this.#git.commit(`changes for ${team}`);
-    await this.#git.raw(["branch", toBranch]);
+    await this.#git.checkout(["-b", toBranch]);
+    await this.#git.reset(ResetMode.HARD, [fromPullRequest.base.sha]);
 
-    // cleanup
-    await this.cleanAll();
-    await this.#git.checkout([fromPullRequest.head.ref]);
-  }
-
-  async updateReviewBranch({
-    fromPullRequest,
-    toBranch,
-    team,
-    files,
-  }: {
-    fromPullRequest: PullRequestBase;
-    toBranch: string;
-    team: string;
-    files: string[];
-  }): Promise<void> {
-    // prepare
-    await this.cleanAll();
-    await this.#git.checkout([fromPullRequest.head.ref]);
-
-    await this.#git.reset(ResetMode.HARD, [fromPullRequest.head.sha]);
-    await this.#git.fetch(["origin", toBranch]);
-    await this.#git.rebase([
-      "--onto",
-      `origin/${toBranch}`,
-      fromPullRequest.base.sha,
+    const commits = await this.#git.log([
+      "--no-merges",
+      "--reverse",
+      `${fromPullRequest.base.sha}..${fromPullRequest.head.sha}`,
     ]);
-    await this.#git.reset(ResetMode.SOFT, [`origin/${toBranch}`]);
-    await this.#git.raw(["restore", "--staged", "."]);
-    await this.#git.add(files);
-    await this.#git.commit(`updates for ${team}`);
-    const sha = await this.#git.revparse(["HEAD"]);
-    await this.#git.checkout([toBranch]);
-    await this.#git.reset(ResetMode.HARD, [sha]);
+    for (const { hash, message } of commits.all) {
+      await this.#git.raw(["cherry-pick", hash]);
+      await this.#git.reset(ResetMode.SOFT, ["HEAD^"]);
+      if ((await lastLog()) === "##rezensent##temp##") {
+        await this.#git.reset(ResetMode.SOFT, ["HEAD^"]);
+      }
+      await this.#git.raw(["restore", "--staged", "."]);
+      for (const file of files) {
+        try {
+          await fsp.stat(join(this.directory, file));
+          await this.#git.add(file);
+        } catch {
+          // just ignore non existing files
+        }
+      }
+      await this.#git.commit(
+        `${message.trimEnd()}\n\n  Changes for @${team} from #${
+          fromPullRequest.number
+        }`
+      );
+      await this.#git.add(".");
+      await this.#git.commit("##rezensent##temp##");
+    }
+    if ((await lastLog()) === "##rezensent##temp##") {
+      await this.#git.reset(ResetMode.HARD, ["HEAD^"]);
+    }
 
     // cleanup
     await this.cleanAll();
     await this.#git.checkout([fromPullRequest.head.ref]);
   }
 
-  async moveCommits({
+  public async moveCommits({
     toBranch,
     commits,
   }: {
@@ -112,7 +108,7 @@ export class Git {
     await this.#git.checkout([toBranch]);
   }
 
-  async removeCommits({
+  public async removeCommits({
     pullRequest,
     amount,
   }: {
@@ -141,7 +137,7 @@ export class Git {
     }
   }
 
-  async addToNewBranch({
+  public async addToNewBranch({
     branch,
     startPoint,
     files,
@@ -159,16 +155,16 @@ export class Git {
     await this.#git.add(files);
   }
 
-  async checkout(branch: string): Promise<void> {
+  public async checkout(branch: string): Promise<void> {
     await this.#git.fetch(["origin", branch]);
     await this.#git.checkout([branch]);
   }
 
-  async addFiles(files: string[]): Promise<void> {
+  public async addFiles(files: string[]): Promise<void> {
     await this.#git.add(files);
   }
 
-  async commitAndPush({
+  public async commitAndPush({
     message,
     branch,
   }: {
@@ -183,8 +179,18 @@ export class Git {
     }
   }
 
-  async push(branch: string): Promise<void> {
-    await this.#git.push(["origin", branch]);
+  public async push({
+    branch,
+    force = false,
+  }: {
+    branch: string;
+    force?: boolean;
+  }): Promise<void> {
+    const args = ["origin", branch];
+    if (force) {
+      args.unshift("--force");
+    }
+    await this.#git.push(args);
   }
 
   async close(): Promise<void> {
