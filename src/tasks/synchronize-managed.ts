@@ -159,19 +159,25 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
 
             const title = `${managed.title} - ${team}`;
             const body = removeIndentation`
-              ### Changes for ${team} from #${managed.number}:
+              Changes for :busts_in_silhouette: ${team} from #${managed.number}.
 
-              <blockquote>
-                **${managed.title}**
-
-                ${managed.body ?? "No description provided."}
-              </blockquote>
+              :nerd_face: Please review the changes and merge them when you are fine with them. In case of required changes, please comment or push on #${
+                managed.number
+              }.
 
               ---
 
-              :warning: Do not push onto this pull request, please add your change to #${
+              **${managed.title}**
+
+              ${managed.body ?? "No description provided."}
+
+              ---
+
+              :warning: Do **not** push onto this pull request, instead please add your change to #${
                 managed.number
-              }!
+              }! This branch will be recreated when #${
+              managed.number
+            } changes and all manual changes will be lost.
             `;
 
             if (review && recreate) {
