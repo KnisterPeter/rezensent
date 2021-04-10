@@ -60,6 +60,10 @@ test(
       base: mainBranch,
       head: changeBranch,
       title: "Happy Path Test",
+      body: `### :grinning: body
+
+This is just a test body with some markdown in it
+`,
     });
     await userGithub.addLabel(managedPrNumber, managedReviewLabel);
 
