@@ -58,6 +58,7 @@ jobs:
       - run: yarn test ${{ matrix.tests }}.itest
         env:
           LOG_LEVEL: info
+          SCHEDULE_TIMEOUT: -1
           APP_ID: ${{ secrets.APP_ID }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}

@@ -24,7 +24,7 @@ export function getPatternsByTeam({
     .split(/\n/)
     .map((line) => line.split(/\s+/))
     .filter(([, t]) => t?.startsWith("@") && t.substr(1) === team)
-    .map(([path]) => `^${path}.*$`);
+    .map(([path]) => (path === "*" ? "^.*$" : `^${path}.*$`));
 }
 
 export async function getFilePatternMapPerTeam(

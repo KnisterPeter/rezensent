@@ -36,17 +36,13 @@ export async function onPullRequestUpdated(
 
       enqueue(
         context,
-        `updated branch ${managed}`,
+        `updated ${managed}`,
         synchronizeManaged(context, managed)
       );
     },
 
     async review(review) {
-      enqueue(
-        context,
-        `update branch ${review}`,
-        synchronizeReview(context, review)
-      );
+      enqueue(context, `update ${review}`, synchronizeReview(context, review));
     },
   });
 }

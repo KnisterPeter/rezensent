@@ -3,6 +3,7 @@ import middie from "middie";
 import { createNodeMiddleware, createProbot } from "probot";
 import { URL } from "url";
 import { app } from "./app";
+import { stop as stopScheduler } from "./event/scheduled";
 
 export interface Server {
   port: number;
@@ -27,6 +28,7 @@ export async function startServer(options?: {
   return {
     port: Number(new URL(address).port),
     async stop() {
+      stopScheduler();
       await server.close();
     },
   };

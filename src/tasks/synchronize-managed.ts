@@ -11,6 +11,7 @@ import { Managed } from "../matcher";
 import { getFilePatternMapPerTeam } from "../ownership/codeowners";
 import { CancellationToken, Task } from "./queue";
 import { removeIndentation } from "../strings";
+import { unblockPullRequest } from "../github/commit-status";
 
 export function synchronizeManaged(context: Context, managed: Managed): Task {
   const task = {
@@ -19,6 +20,8 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
 
     async run(token: CancellationToken): Promise<void> {
       context.log.debug(`[${managed}] synchronize managed pull request`);
+
+      await handleUnlabeled(context, managed, token);
 
       const updatedHead = await updateFromHead(context, managed, token);
       switch (updatedHead) {
@@ -220,6 +223,49 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
   };
 
   return task;
+}
+
+enum HandleUnlabeledResult {
+  hasLabel,
+  hasNoLabel,
+}
+
+async function handleUnlabeled(
+  context: Context,
+  managed: Managed,
+  token: CancellationToken
+): Promise<HandleUnlabeledResult> {
+  token.abortIfCanceled();
+  const configuration = await getConfig(context, managed.head.ref);
+
+  if (managed.labels.includes(configuration.manageReviewLabel)) {
+    return HandleUnlabeledResult.hasLabel;
+  }
+
+  try {
+    token.abortIfCanceled();
+    const reviews = await managed.children();
+
+    context.log.debug(
+      reviews.map(
+        (pr) => `PR-${pr.number} | ${pr.state.padEnd(6)} | ${pr.title}`
+      ),
+      `[${managed}] ${reviews.length} found review requests`
+    );
+
+    for (const review of reviews) {
+      token.abortIfCanceled();
+      await closePullRequest(context, review.number);
+
+      token.abortIfCanceled();
+      await deleteBranch(context, review.head.ref);
+    }
+  } finally {
+    token.abortIfCanceled();
+    await unblockPullRequest(context, managed);
+  }
+
+  return HandleUnlabeledResult.hasNoLabel;
 }
 
 enum UpdateFromHeadResult {
