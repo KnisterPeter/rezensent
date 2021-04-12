@@ -36,7 +36,7 @@ export async function onLabelAdded(
 
       enqueue(
         context,
-        `label added to PR-${managed.number}`,
+        `label added to ${managed}`,
         synchronizeManaged(context, managed)
       );
     },

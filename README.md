@@ -63,9 +63,11 @@ The app could be hosted using the [provided docker image](https://hub.docker.com
 
 The container need to be configured by the following environment variables:
 
-| name           | description                                | required | default |
-| -------------- | ------------------------------------------ | -------- | ------- |
-| APP_ID         | The GitHub app id                          | yes      |         |
-| PRIVATE_KEY    | The private key obtained from github       | yes      |         |
-| WEBHOOK_SECRET | The webhook secret set during app creation | yes      |         |
-| PORT           | The port of the app inside the container   | no       | 3000    |
+| name             | description                                  | required | default |
+| ---------------- | -------------------------------------------- | -------- | ------- |
+| APP_ID           | The GitHub app id                            | yes      |         |
+| PRIVATE_KEY      | The private key obtained from github         | yes      |         |
+| WEBHOOK_SECRET   | The webhook secret set during app creation   | yes      |         |
+| PORT             | The port of the app inside the container     | no       | 3000    |
+| SCHEDULE_DELAY   | The initial scheduler delay before first run | no       | 0       |
+| SCHEDULE_TIMEOUT | The delay between scheduler runs             | no       | 1800000 |

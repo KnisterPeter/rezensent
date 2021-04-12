@@ -1116,6 +1116,7 @@ export function setupApp(
       }
     } finally {
       eventSource.close();
+      await server?.stop();
 
       logs.push(
         `  └───────────────────────────────────────────────────────────────────────────────────────────────────────────`
