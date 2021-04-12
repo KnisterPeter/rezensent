@@ -2795,12 +2795,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:0.11.8":
-  version: 0.11.8
-  resolution: "esbuild@npm:0.11.8"
+"esbuild@npm:0.11.9":
+  version: 0.11.9
+  resolution: "esbuild@npm:0.11.9"
   bin:
     esbuild: bin/esbuild
-  checksum: 2bf939680de1c59ff668a334b7aa76efc446d4c611beddb8f594de24f1b6261364de3e3440a4040f287013a0237f7c1046b556182d2fe3824fde921711188211
+  checksum: c3cfd48627e6cbafcc23aa2a6e42a7c4f19a48ead35b40810649bcdddc0bde6f30489fdb77693df9ed0eaeca023fb1ffe9023622e5ab7c9b70030a10b358247e
   languageName: node
   linkType: hard
 
@@ -6491,7 +6491,7 @@ fsevents@^2.1.2:
     chalk: 4.1.0
     common-tags: 1.8.0
     dotenv: 8.2.0
-    esbuild: 0.11.8
+    esbuild: 0.11.9
     esbuild-jest: 0.5.0
     fastify: ^3.13.0
     jest: 26.6.3
