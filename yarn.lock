@@ -2487,7 +2487,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.0.0, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.2":
+"debug@npm:4, debug@npm:^4.0.0, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1":
   version: 4.3.2
   resolution: "debug@npm:4.3.2"
   dependencies:
@@ -6498,7 +6498,7 @@ fsevents@^2.1.2:
     js-yaml: ^4.0.0
     middie: ^5.2.0
     probot: ^11.1.0
-    simple-git: ^2.36.2
+    simple-git: ^2.38.0
     slice-ansi: 4.0.0
     smee-client: 1.2.2
     ts-node: ^9.1.1
@@ -6762,14 +6762,14 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"simple-git@npm:^2.36.2":
-  version: 2.36.2
-  resolution: "simple-git@npm:2.36.2"
+"simple-git@npm:^2.38.0":
+  version: 2.38.0
+  resolution: "simple-git@npm:2.38.0"
   dependencies:
     "@kwsites/file-exists": ^1.1.1
     "@kwsites/promise-deferred": ^1.1.1
-    debug: ^4.3.2
-  checksum: 59bd368e8a940a9bdf61b646f7dd998bfe57014e12dbb77d8967e4c20d87ea397f3fc112d6ac364610841c0baf700a52392c3314836927da95a1e752cba709af
+    debug: ^4.3.1
+  checksum: 829b5ddba4c3b40dc443a69b186cd54bc1b40f18696f360cd8177922a43022aaa04927b50e922026dc4a1d9318836a8c8f6d476f8b7d39c81357af1a6154e0b3
   languageName: node
   linkType: hard
 

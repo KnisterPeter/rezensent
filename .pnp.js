@@ -2499,7 +2499,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "simple-git",
-        "npm:2.36.2"
+        "npm:2.38.0"
       ],
       [
         "sisteransi",
@@ -2970,7 +2970,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["js-yaml", "npm:4.0.0"],
             ["middie", "npm:5.2.0"],
             ["probot", "npm:11.1.0"],
-            ["simple-git", "npm:2.36.2"],
+            ["simple-git", "npm:2.38.0"],
             ["slice-ansi", "npm:4.0.0"],
             ["smee-client", "npm:1.2.2"],
             ["ts-node", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:9.1.1"],
@@ -10547,7 +10547,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["js-yaml", "npm:4.0.0"],
             ["middie", "npm:5.2.0"],
             ["probot", "npm:11.1.0"],
-            ["simple-git", "npm:2.36.2"],
+            ["simple-git", "npm:2.38.0"],
             ["slice-ansi", "npm:4.0.0"],
             ["smee-client", "npm:1.2.2"],
             ["ts-node", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:9.1.1"],
@@ -10837,10 +10837,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["simple-git", [
-        ["npm:2.36.2", {
-          "packageLocation": "./.yarn/cache/simple-git-npm-2.36.2-b4e0bb6f78-59bd368e8a.zip/node_modules/simple-git/",
+        ["npm:2.38.0", {
+          "packageLocation": "./.yarn/cache/simple-git-npm-2.38.0-57dbf6a353-829b5ddba4.zip/node_modules/simple-git/",
           "packageDependencies": [
-            ["simple-git", "npm:2.36.2"],
+            ["simple-git", "npm:2.38.0"],
             ["@kwsites/file-exists", "npm:1.1.1"],
             ["@kwsites/promise-deferred", "npm:1.1.1"],
             ["debug", "virtual:44dd92111ceeefcf2102517315d0898dd63917d4618ca69aa13521938b79863428d1107d041793aa805669b98c988fe3dda8d3308480f38c1c17073c7e91f1aa#npm:4.3.2"]
