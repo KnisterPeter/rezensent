@@ -84,7 +84,14 @@ async function runScheduled(app: Probot): Promise<void> {
         app.log
       );
 
-      await onScheduled(context);
+      try {
+        await onScheduled(context);
+      } catch (e) {
+        context.log.warn(
+          e,
+          `Unable to run scheduler on ${repository.full_name}`
+        );
+      }
     }
   }
 }
