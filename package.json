@@ -21,7 +21,7 @@
     "test:verbose": "TERM=dumb DEBUG=simple-git LOG_LEVEL=debug yarn test --colors --runInBand"
   },
   "dependencies": {
-    "@octokit/types": "^6.12.2",
+    "@octokit/types": "^6.13.0",
     "@octokit/webhooks": "7.21.0",
     "fastify": "^3.13.0",
     "js-yaml": "^4.0.0",

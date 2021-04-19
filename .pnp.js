@@ -275,7 +275,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "@octokit/openapi-types",
-        "npm:5.3.2"
+        "npm:6.0.0"
       ],
       [
         "@octokit/plugin-enterprise-compatibility",
@@ -307,7 +307,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "@octokit/types",
-        "npm:6.12.2"
+        "npm:6.13.0"
       ],
       [
         "@octokit/webhooks",
@@ -2953,7 +2953,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         [null, {
           "packageLocation": "./",
           "packageDependencies": [
-            ["@octokit/types", "npm:6.12.2"],
+            ["@octokit/types", "npm:6.13.0"],
             ["@octokit/webhooks", "npm:7.21.0"],
             ["@types/common-tags", "npm:1.8.0"],
             ["@types/eventsource", "npm:1.1.5"],
@@ -3948,10 +3948,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           ],
           "linkType": "HARD",
         }],
-        ["npm:5.3.2", {
-          "packageLocation": "./.yarn/cache/@octokit-openapi-types-npm-5.3.2-f5b8c2e3e0-5c5f2f2f6e.zip/node_modules/@octokit/openapi-types/",
+        ["npm:6.0.0", {
+          "packageLocation": "./.yarn/cache/@octokit-openapi-types-npm-6.0.0-4fe173b5c1-a748ee2665.zip/node_modules/@octokit/openapi-types/",
           "packageDependencies": [
-            ["@octokit/openapi-types", "npm:5.3.2"]
+            ["@octokit/openapi-types", "npm:6.0.0"]
           ],
           "linkType": "HARD",
         }]
@@ -4087,11 +4087,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           ],
           "linkType": "HARD",
         }],
-        ["npm:6.12.2", {
-          "packageLocation": "./.yarn/cache/@octokit-types-npm-6.12.2-93c422055a-d96bb9fae7.zip/node_modules/@octokit/types/",
+        ["npm:6.13.0", {
+          "packageLocation": "./.yarn/cache/@octokit-types-npm-6.13.0-df1213cae5-20e7f159be.zip/node_modules/@octokit/types/",
           "packageDependencies": [
-            ["@octokit/types", "npm:6.12.2"],
-            ["@octokit/openapi-types", "npm:5.3.2"]
+            ["@octokit/types", "npm:6.13.0"],
+            ["@octokit/openapi-types", "npm:6.0.0"]
           ],
           "linkType": "HARD",
         }]
@@ -10530,7 +10530,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",
           "packageDependencies": [
             ["rezensent", "workspace:."],
-            ["@octokit/types", "npm:6.12.2"],
+            ["@octokit/types", "npm:6.13.0"],
             ["@octokit/webhooks", "npm:7.21.0"],
             ["@types/common-tags", "npm:1.8.0"],
             ["@types/eventsource", "npm:1.1.5"],
