@@ -29,6 +29,7 @@ export async function getCredentials(
 
   const token = await getAccessToken(octokit);
   const authenticatedOctokit = new ProbotOctokit({
+    baseUrl: process.env["GHE_HOST"] ?? undefined,
     auth: { token },
   });
   const { data: user } = await authenticatedOctokit.users.getByUsername({
