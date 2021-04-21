@@ -1,6 +1,7 @@
-import { Endpoints } from "@octokit/types";
-import { Context } from "probot";
-import { PullRequestBase } from "../matcher";
+import type { Endpoints } from "@octokit/types";
+import type { WebhookEvent } from "@octokit/webhooks";
+import type { Context } from "probot";
+import type { PullRequestBase } from "../matcher";
 
 export async function getPullRequest(
   context: Context,
@@ -19,7 +20,7 @@ export async function getPullRequest(
 }
 
 export async function getPullRequests(
-  context: Context,
+  context: Omit<Context<any>, keyof WebhookEvent<any>>,
   {
     params,
     filters,

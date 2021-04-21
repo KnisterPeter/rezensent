@@ -1,3 +1,4 @@
+import type { WebhookEvent } from "@octokit/webhooks";
 import type { Context } from "probot";
 
 export interface Configuration {
@@ -28,7 +29,7 @@ export function mapYamlToConfiguration(
 }
 
 export async function getConfig(
-  context: Context,
+  context: Omit<Context<any>, keyof WebhookEvent<any>>,
   branch: string
 ): Promise<Configuration> {
   const config = await context.octokit.config.get(

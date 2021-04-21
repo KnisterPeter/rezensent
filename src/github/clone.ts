@@ -1,4 +1,6 @@
-import { Context, ProbotOctokit } from "probot";
+import type { WebhookEvent } from "@octokit/webhooks";
+import type { Context } from "probot";
+import { ProbotOctokit } from "probot";
 import { URL } from "url";
 import { clone, Git } from "../git";
 
@@ -44,7 +46,7 @@ export async function getCredentials(
 }
 
 export async function withGit(
-  context: Context,
+  context: Omit<Context<any>, keyof WebhookEvent<any>>,
   {
     branch,
     depth = 1,

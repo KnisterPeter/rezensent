@@ -1,4 +1,5 @@
-import { Context } from "probot";
+import type { WebhookEvent } from "@octokit/webhooks";
+import type { Context } from "probot";
 
 export async function getPullRequestFiles(
   context: Context,
@@ -19,7 +20,7 @@ export async function getPullRequestFiles(
 }
 
 export async function getFile(
-  context: Context,
+  context: Omit<Context<any>, keyof WebhookEvent<any>>,
   {
     branch,
     path,

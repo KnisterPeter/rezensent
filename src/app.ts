@@ -1,5 +1,5 @@
 import type { Probot } from "probot";
-import { onAppAdded } from "./event/app-added";
+import { onAppInstalled, onRepositoriesAdded } from "./event/app-added";
 import { onPullRequestClosed } from "./event/closed";
 import { onLabelAdded } from "./event/labeled";
 import { schedule } from "./event/scheduled";
@@ -7,7 +7,8 @@ import { onPullRequestUpdated } from "./event/synchronize";
 import { onLabelRemoved } from "./event/unlabeled";
 
 export function app(app: Probot): void {
-  app.on("installation_repositories.added", onAppAdded);
+  app.on("installation.created", onAppInstalled);
+  app.on("installation_repositories.added", onRepositoriesAdded);
 
   app.on("pull_request.closed", onPullRequestClosed);
   app.on("pull_request.labeled", onLabelAdded);

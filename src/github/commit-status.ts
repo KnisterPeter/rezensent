@@ -1,5 +1,6 @@
-import { Context } from "probot";
-import { Managed } from "../matcher";
+import type { WebhookEvent } from "@octokit/webhooks";
+import type { Context } from "probot";
+import type { Managed } from "../matcher";
 
 export async function blockPullRequest(
   context: Context,
@@ -26,7 +27,7 @@ export async function unblockPullRequest(
 }
 
 export async function setCommitStatus(
-  context: Context,
+  context: Omit<Context<any>, keyof WebhookEvent<any>>,
   sha: string,
   state: "success" | "pending" | "error",
   description: string
