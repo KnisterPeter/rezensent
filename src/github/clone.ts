@@ -33,7 +33,7 @@ export async function getCredentials(
   if (process.env["GHE_HOST"]) {
     baseUrl = `${process.env["GHE_PROTOCOL"] ?? "https"}://${
       process.env["GHE_HOST"]
-    }`;
+    }/api/v3`;
   }
 
   const token = await getAccessToken(octokit);
