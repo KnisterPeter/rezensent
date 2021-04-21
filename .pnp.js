@@ -791,7 +791,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "chalk",
-        "npm:4.1.0"
+        "npm:4.1.1"
       ],
       [
         "char-regex",
@@ -2960,7 +2960,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jest", "npm:26.0.22"],
             ["@types/js-yaml", "npm:4.0.0"],
             ["@types/slice-ansi", "npm:4.0.0"],
-            ["chalk", "npm:4.1.0"],
+            ["chalk", "npm:4.1.1"],
             ["common-tags", "npm:1.8.0"],
             ["dotenv", "npm:8.2.0"],
             ["esbuild", "npm:0.11.12"],
@@ -5541,6 +5541,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["supports-color", "npm:7.2.0"]
           ],
           "linkType": "HARD",
+        }],
+        ["npm:4.1.1", {
+          "packageLocation": "./.yarn/cache/chalk-npm-4.1.1-f1ce6bae57-445c12db7a.zip/node_modules/chalk/",
+          "packageDependencies": [
+            ["chalk", "npm:4.1.1"],
+            ["ansi-styles", "npm:4.3.0"],
+            ["supports-color", "npm:7.2.0"]
+          ],
+          "linkType": "HARD",
         }]
       ]],
       ["char-regex", [
@@ -6359,7 +6368,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ]],
       ["esbuild", [
         ["npm:0.11.12", {
-          "packageLocation": "./.yarn/unplugged/esbuild-npm-0.11.12-d87e935468/node_modules/esbuild/",
+          "packageLocation": "./.yarn/cache/esbuild-npm-0.11.12-d87e935468-06139e5fe1.zip/node_modules/esbuild/",
           "packageDependencies": [
             ["esbuild", "npm:0.11.12"]
           ],
@@ -10537,7 +10546,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jest", "npm:26.0.22"],
             ["@types/js-yaml", "npm:4.0.0"],
             ["@types/slice-ansi", "npm:4.0.0"],
-            ["chalk", "npm:4.1.0"],
+            ["chalk", "npm:4.1.1"],
             ["common-tags", "npm:1.8.0"],
             ["dotenv", "npm:8.2.0"],
             ["esbuild", "npm:0.11.12"],
