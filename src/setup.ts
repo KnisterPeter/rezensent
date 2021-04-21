@@ -1,3 +1,4 @@
+import type { WebhookEvent } from "@octokit/webhooks";
 import { promises as fsp } from "fs";
 import { load } from "js-yaml";
 import { dirname, join } from "path";
@@ -13,7 +14,9 @@ const onboardingBranch = "rezensent/setup";
 const configFile = ".github/rezensent.yml";
 const codeownersFile = ".github/CODEOWNERS";
 
-export async function setupBot(context: Context): Promise<boolean> {
+export async function setupBot(
+  context: Omit<Context<any>, keyof WebhookEvent<any>>
+): Promise<boolean> {
   const {
     data: { owner, default_branch },
   } = await context.octokit.repos.get(context.repo({}));
@@ -81,7 +84,7 @@ export async function setupBot(context: Context): Promise<boolean> {
 }
 
 async function runOnboarding(
-  context: Context,
+  context: Omit<Context<any>, keyof WebhookEvent<any>>,
   owner: string,
   branch: string
 ): Promise<void> {
@@ -208,7 +211,7 @@ async function runOnboarding(
 }
 
 async function requireOnboarding(
-  context: Context,
+  context: Omit<Context<any>, keyof WebhookEvent<any>>,
   owner: string,
   branch: string
 ): Promise<boolean> {
@@ -237,7 +240,7 @@ async function requireOnboarding(
 }
 
 async function getOnboardingPullRequest(
-  context: Context,
+  context: Omit<Context<any>, keyof WebhookEvent<any>>,
   owner: string,
   branch: string
 ): Promise<
