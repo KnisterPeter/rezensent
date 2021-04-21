@@ -8,7 +8,7 @@ jest.setTimeout(Minutes.fifteen);
 
 test(
   "Rezensent update rezensent pull-request workflow",
-  setupApp(async ({ logStep, gitClone, github, createUserGithub }) => {
+  setupApp(async ({ logStep, log, gitClone, github, createUserGithub }) => {
     //----------------------------------------
     // setup bot (labels, ...)
     //
@@ -70,6 +70,7 @@ test(
       title: "Update PR Test",
     });
     await userGithub.addLabel(managedPrNumber, managedReviewLabel);
+    const managedPr = await github.getPullRequest(managedPrNumber);
 
     //----------------------------------------
     // wait for bot work
@@ -112,6 +113,12 @@ test(
     await git.addAndPushAllChanges(
       `${changeBranch}-team-a`,
       "update team-a change"
+    );
+    log(`Pushed changes onto ${changeBranch}-team-a`);
+
+    await github.waitForPullRequestHeadToBeUpdated(
+      managedPrNumber,
+      managedPr.head.sha
     );
 
     //----------------------------------------
