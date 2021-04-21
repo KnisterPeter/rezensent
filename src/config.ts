@@ -8,11 +8,6 @@ export interface Configuration {
 export function mapYamlToConfiguration(
   input: Record<string, string>
 ): Configuration {
-  const keys = Object.keys(input);
-  if (keys.length === 0) {
-    throw new Error("No config found");
-  }
-
   const get = (key: string): string => {
     const value = input[key];
     if (!value) {
@@ -37,6 +32,9 @@ export async function getConfig(
       branch,
     })
   );
+  if (Object.keys(config.config).length === 0) {
+    throw new Error(`No config found no branch '${branch}'`);
+  }
 
   return mapYamlToConfiguration(config.config as Record<string, string>);
 }
