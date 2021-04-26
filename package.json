@@ -34,7 +34,7 @@
   "devDependencies": {
     "@types/common-tags": "1.8.0",
     "@types/eventsource": "1.1.5",
-    "@types/jest": "26.0.22",
+    "@types/jest": "26.0.23",
     "@types/js-yaml": "4.0.1",
     "@types/slice-ansi": "4.0.0",
     "chalk": "4.1.1",
