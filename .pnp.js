@@ -374,6 +374,22 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         "npm:1.1.2"
       ],
       [
+        "@tsconfig/node10",
+        "npm:1.0.7"
+      ],
+      [
+        "@tsconfig/node12",
+        "npm:1.0.7"
+      ],
+      [
+        "@tsconfig/node14",
+        "npm:1.0.0"
+      ],
+      [
+        "@tsconfig/node16",
+        "npm:1.0.1"
+      ],
+      [
         "@types/babel__core",
         "npm:7.1.12"
       ],
@@ -2643,7 +2659,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "ts-node",
-        "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:9.1.1"
+        "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:10.0.0"
       ],
       [
         "tslib",
@@ -2897,7 +2913,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["simple-git", "npm:2.36.2"],
             ["slice-ansi", "npm:4.0.0"],
             ["smee-client", "npm:1.2.2"],
-            ["ts-node", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:9.1.1"],
+            ["ts-node", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:10.0.0"],
             ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"]
           ],
           "linkType": "SOFT",
@@ -4805,6 +4821,42 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@tootallnate-once-npm-1.1.2-0517220057-d030f3fb14.zip/node_modules/@tootallnate/once/",
           "packageDependencies": [
             ["@tootallnate/once", "npm:1.1.2"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@tsconfig/node10", [
+        ["npm:1.0.7", {
+          "packageLocation": "./.yarn/cache/@tsconfig-node10-npm-1.0.7-06be8de131-a1ca752243.zip/node_modules/@tsconfig/node10/",
+          "packageDependencies": [
+            ["@tsconfig/node10", "npm:1.0.7"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@tsconfig/node12", [
+        ["npm:1.0.7", {
+          "packageLocation": "./.yarn/cache/@tsconfig-node12-npm-1.0.7-3bbdd844d7-82b0352f66.zip/node_modules/@tsconfig/node12/",
+          "packageDependencies": [
+            ["@tsconfig/node12", "npm:1.0.7"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@tsconfig/node14", [
+        ["npm:1.0.0", {
+          "packageLocation": "./.yarn/cache/@tsconfig-node14-npm-1.0.0-cf320499dc-3eda14250e.zip/node_modules/@tsconfig/node14/",
+          "packageDependencies": [
+            ["@tsconfig/node14", "npm:1.0.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@tsconfig/node16", [
+        ["npm:1.0.1", {
+          "packageLocation": "./.yarn/cache/@tsconfig-node16-npm-1.0.1-0fb4cd7d44-c389a4a81c.zip/node_modules/@tsconfig/node16/",
+          "packageDependencies": [
+            ["@tsconfig/node16", "npm:1.0.1"]
           ],
           "linkType": "HARD",
         }]
@@ -7072,7 +7124,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ]],
       ["esbuild", [
         ["npm:0.11.15", {
-          "packageLocation": "./.yarn/unplugged/esbuild-npm-0.11.15-7b74182053/node_modules/esbuild/",
+          "packageLocation": "./.yarn/cache/esbuild-npm-0.11.15-7b74182053-107341ba22.zip/node_modules/esbuild/",
           "packageDependencies": [
             ["esbuild", "npm:0.11.15"]
           ],
@@ -11281,7 +11333,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["simple-git", "npm:2.36.2"],
             ["slice-ansi", "npm:4.0.0"],
             ["smee-client", "npm:1.2.2"],
-            ["ts-node", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:9.1.1"],
+            ["ts-node", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:10.0.0"],
             ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"]
           ],
           "linkType": "SOFT",
@@ -12211,17 +12263,27 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["ts-node", [
-        ["npm:9.1.1", {
-          "packageLocation": "./.yarn/cache/ts-node-npm-9.1.1-4ad31da228-a90db4a342.zip/node_modules/ts-node/",
+        ["npm:10.0.0", {
+          "packageLocation": "./.yarn/cache/ts-node-npm-10.0.0-9c3d77d0a0-dc461e2b9b.zip/node_modules/ts-node/",
           "packageDependencies": [
-            ["ts-node", "npm:9.1.1"]
+            ["ts-node", "npm:10.0.0"]
           ],
           "linkType": "SOFT",
         }],
-        ["virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:9.1.1", {
-          "packageLocation": "./.yarn/$$virtual/ts-node-virtual-4f418e6b1c/0/cache/ts-node-npm-9.1.1-4ad31da228-a90db4a342.zip/node_modules/ts-node/",
+        ["virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:10.0.0", {
+          "packageLocation": "./.yarn/$$virtual/ts-node-virtual-6e525153d8/0/cache/ts-node-npm-10.0.0-9c3d77d0a0-dc461e2b9b.zip/node_modules/ts-node/",
           "packageDependencies": [
-            ["ts-node", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:9.1.1"],
+            ["ts-node", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:10.0.0"],
+            ["@swc/core", null],
+            ["@swc/wasm", null],
+            ["@tsconfig/node10", "npm:1.0.7"],
+            ["@tsconfig/node12", "npm:1.0.7"],
+            ["@tsconfig/node14", "npm:1.0.0"],
+            ["@tsconfig/node16", "npm:1.0.1"],
+            ["@types/node", null],
+            ["@types/swc__core", null],
+            ["@types/swc__wasm", null],
+            ["@types/types__node", null],
             ["@types/typescript", null],
             ["arg", "npm:4.1.3"],
             ["create-require", "npm:1.1.1"],
@@ -12232,6 +12294,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["yn", "npm:3.1.1"]
           ],
           "packagePeers": [
+            "@swc/core",
+            "@swc/wasm",
+            "@types/node",
+            "@types/swc__core",
+            "@types/swc__wasm",
+            "@types/types__node",
             "@types/typescript",
             "typescript"
           ],
