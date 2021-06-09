@@ -1059,7 +1059,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "dotenv",
-        "npm:8.2.0"
+        "npm:10.0.0"
       ],
       [
         "duplexer3",
@@ -2730,10 +2730,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         "npm:1.0.0"
       ],
       [
-        "update-dotenv",
-        "virtual:42b55eda99d281da149665c51211d6638fe91125e8c1c05af08ca615e5960e19761f546ae79b0f9e4bab89b09d30cbc8fb1e68a1f0ce01e822a0b11b778e2a14#npm:1.1.1"
-      ],
-      [
         "update-notifier",
         "npm:5.1.0"
       ],
@@ -2902,7 +2898,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/slice-ansi", "npm:4.0.0"],
             ["chalk", "npm:4.1.1"],
             ["common-tags", "npm:1.8.0"],
-            ["dotenv", "npm:8.2.0"],
+            ["dotenv", "npm:10.0.0"],
             ["esbuild", "npm:0.12.7"],
             ["esbuild-jest", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:0.5.0"],
             ["fastify", "npm:3.13.0"],
@@ -6996,6 +6992,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["dotenv", [
+        ["npm:10.0.0", {
+          "packageLocation": "./.yarn/cache/dotenv-npm-10.0.0-36b272df25-9c45712e21.zip/node_modules/dotenv/",
+          "packageDependencies": [
+            ["dotenv", "npm:10.0.0"]
+          ],
+          "linkType": "HARD",
+        }],
         ["npm:8.2.0", {
           "packageLocation": "./.yarn/cache/dotenv-npm-8.2.0-6b21df4d37-16cb89cbd7.zip/node_modules/dotenv/",
           "packageDependencies": [
@@ -11324,7 +11327,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/slice-ansi", "npm:4.0.0"],
             ["chalk", "npm:4.1.1"],
             ["common-tags", "npm:1.8.0"],
-            ["dotenv", "npm:8.2.0"],
+            ["dotenv", "npm:10.0.0"],
             ["esbuild", "npm:0.12.7"],
             ["esbuild-jest", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:0.5.0"],
             ["fastify", "npm:3.13.0"],
