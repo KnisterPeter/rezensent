@@ -1463,10 +1463,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-yaml@npm:4.0.1":
-  version: 4.0.1
-  resolution: "@types/js-yaml@npm:4.0.1"
-  checksum: fd8985289c713e3b2a494d6c243139c94bdda856af60346cf0c0da25bd6289e0165d367e623202b8cdfab7cef73a424a183282063beb0c0823d152dbec6d4959
+"@types/js-yaml@npm:4.0.2":
+  version: 4.0.2
+  resolution: "@types/js-yaml@npm:4.0.2"
+  checksum: bfe9df75d6144c0dc1e60e56eabb49dbe22bf65ba021735282da58cfc255f0a9a183239619efa5dc9393a20f2941c2dc6ff9d0c447edc00b26b88db2278eb3aa
   languageName: node
   linkType: hard
 
@@ -6941,7 +6941,7 @@ __metadata:
     "@types/common-tags": 1.8.0
     "@types/eventsource": 1.1.5
     "@types/jest": 26.0.23
-    "@types/js-yaml": 4.0.1
+    "@types/js-yaml": 4.0.2
     "@types/slice-ansi": 4.0.0
     chalk: 4.1.1
     common-tags: 1.8.0
