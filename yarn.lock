@@ -1350,10 +1350,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/common-tags@npm:1.8.0":
-  version: 1.8.0
-  resolution: "@types/common-tags@npm:1.8.0"
-  checksum: d6dce803763646d3746a64373c3960b69c528bd67f6937e4c39747c97ecad9e633c92a78dd2b47f4668b81a2e5a8792fb4fe02ca5f3d42106acd555e794c788a
+"@types/common-tags@npm:1.8.1":
+  version: 1.8.1
+  resolution: "@types/common-tags@npm:1.8.1"
+  checksum: 74eb47620d5db1d4917a49fa3ad91f5512f6db7ad6007267625ddf18937ae9eae42ad9e84b9b1786ebfaa619d0243f2ccaa27729f7c547c6740537254cdb62ce
   languageName: node
   linkType: hard
 
@@ -6938,7 +6938,7 @@ __metadata:
   dependencies:
     "@octokit/types": ^6.12.2
     "@octokit/webhooks": 7.21.0
-    "@types/common-tags": 1.8.0
+    "@types/common-tags": 1.8.1
     "@types/eventsource": 1.1.5
     "@types/jest": 26.0.23
     "@types/js-yaml": 4.0.1
