@@ -29,27 +29,31 @@ export async function getFile(
     path: string;
   }
 ): Promise<string> {
-  const { data } = await context.octokit.repos.getContent(
-    context.repo({
-      ref: branch,
-      path,
-    })
-  );
-  if (typeof data !== "object" || !("content" in data)) {
+  try {
+    const { data } = await context.octokit.repos.getContent(
+      context.repo({
+        ref: branch,
+        path,
+      })
+    );
+
+    if (!("content" in data)) {
+      return "";
+    }
+
+    return Buffer.from(data.content, "base64").toString().replace("\\n", "\n");
+  } catch {
     throw new Error(`File '${path}' not found`);
   }
-
-  return Buffer.from(data.content, "base64").toString().replace("\\n", "\n");
 }
 
-export async function getChangedFilesPerTeam(
-  context: Context,
-  { number, patterns }: { number: number; patterns: Map<string, string[]> }
-): Promise<Map<string, string[]>> {
-  const changedFiles = await getPullRequestFiles(context, {
-    number,
-  });
-
+export function getMapOfChangedFilesPerTeam({
+  changedFiles,
+  patterns,
+}: {
+  changedFiles: string[];
+  patterns: Map<string, string[]>;
+}): Map<string, string[]> {
   const changedFilesByTeam = changedFiles.reduce((map, file) => {
     for (const [team, pattern] of patterns.entries()) {
       if (pattern.some((p) => new RegExp(p).test(file))) {

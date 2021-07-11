@@ -8,16 +8,17 @@ import SimpleGit, {
 } from "simple-git";
 import { URL } from "url";
 import { PullRequestBase } from "./matcher";
+import { assertPath, Path } from "./types/path";
 
 export class Git {
-  #baseDir: string;
+  #baseDir: Path;
   #git: GitType;
 
-  get directory() {
+  get directory(): Path {
     return this.#baseDir;
   }
 
-  constructor(baseDir: string, git: GitType) {
+  constructor(baseDir: Path, git: GitType) {
     this.#baseDir = baseDir;
     this.#git = git;
   }
@@ -206,6 +207,8 @@ export async function clone({
   depth?: number;
 }): Promise<Git> {
   const baseDir = await fsp.mkdtemp(join(tmpdir(), "rezensent"));
+  assertPath(baseDir);
+
   try {
     const git = SimpleGit({ baseDir });
 
