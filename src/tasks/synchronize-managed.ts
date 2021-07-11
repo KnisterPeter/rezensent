@@ -5,7 +5,10 @@ import { withGit } from "../github/clone";
 import { closePullRequest } from "../github/close";
 import { Commit, getPullRequestCommits } from "../github/commits";
 import { createPullRequest } from "../github/create";
-import { getChangedFilesPerTeam, getPullRequestFiles } from "../github/files";
+import {
+  getMapOfChangedFilesPerTeam,
+  getPullRequestFiles,
+} from "../github/files";
 import { deleteBranch } from "../github/git";
 import { Managed } from "../matcher";
 import { getFilePatternMapPerTeam } from "../ownership/codeowners";
@@ -117,8 +120,11 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
       }
 
       token.abortIfCanceled();
-      const changedFilesByTeam = await getChangedFilesPerTeam(context, {
+      const changedFiles = await getPullRequestFiles(context, {
         number: managed.number,
+      });
+      const changedFilesByTeam = getMapOfChangedFilesPerTeam({
+        changedFiles,
         patterns,
       });
 
