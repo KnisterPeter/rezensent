@@ -2482,10 +2482,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/eventsource@npm:1.1.5":
-  version: 1.1.5
-  resolution: "@types/eventsource@npm:1.1.5"
-  checksum: dde3896d6552eac00eca9f879fac5041a6994ecf3bb929b879ac4ebd707ceafed9030a7e408713e7c30cbd5f974c5009283bb9fb5023e88342f3d42ae9fedcea
+"@types/eventsource@npm:1.1.6":
+  version: 1.1.6
+  resolution: "@types/eventsource@npm:1.1.6"
+  checksum: 4244506b77af5d2b3e3e45d2eaa0b98135d1194115c6a95eb714b81edb220d5c3784d3324eb2fe8e5924fc7b5f70d5eba746292c23897d2ceb632207367856a9
   languageName: node
   linkType: hard
 
@@ -7348,7 +7348,7 @@ fsevents@^2.3.2:
     "@types/babel__core": ^7
     "@types/babel__preset-env": ^7
     "@types/common-tags": 1.8.1
-    "@types/eventsource": 1.1.5
+    "@types/eventsource": 1.1.6
     "@types/jest": 26.0.24
     "@types/js-yaml": 4.0.2
     "@types/slice-ansi": 4.0.0
