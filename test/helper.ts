@@ -14,14 +14,14 @@ import { promisify } from "util";
 import { Server, startServer } from "../src/node";
 
 const wait = promisify(setTimeout);
-export const enum Seconds {
+export enum Seconds {
   one = 1000 * 1,
   two = 1000 * 2,
   ten = 1000 * 10,
   thirty = 1000 * 30,
   sixty = 1000 * 60,
 }
-export const enum Minutes {
+export enum Minutes {
   one = Seconds.sixty,
   two = Seconds.sixty * 2,
   ten = Seconds.sixty * 10,
@@ -217,11 +217,10 @@ async function getAccessToken(): Promise<string> {
     throw new Error("No installation found");
   }
 
-  const {
-    data: accessToken,
-  } = await appOctokit.apps.createInstallationAccessToken({
-    installation_id: installations[0].id,
-  });
+  const { data: accessToken } =
+    await appOctokit.apps.createInstallationAccessToken({
+      installation_id: installations[0].id,
+    });
 
   return accessToken.token;
 }
@@ -280,18 +279,21 @@ export type ListPullRequestParams = Omit<
   assignee: string;
   labels: string[];
 };
-export type ListPullRequestResponse = Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"][number];
+export type ListPullRequestResponse =
+  Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"][number];
 export type CreateLabelParams = Omit<
   Endpoints["POST /repos/{owner}/{repo}/labels"]["parameters"],
   "owner" | "repo"
 >;
-export type GetPullRequestResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]["data"];
+export type GetPullRequestResponse =
+  Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]["data"];
 
 export type CommitStatusesForReferenceParams = Omit<
   Endpoints["GET /repos/{owner}/{repo}/commits/{ref}/statuses"]["parameters"],
   "owner" | "repo"
 >;
-export type CommitStatusesForReferenceResponse = Endpoints["GET /repos/{owner}/{repo}/commits/{ref}/statuses"]["response"]["data"][number];
+export type CommitStatusesForReferenceResponse =
+  Endpoints["GET /repos/{owner}/{repo}/commits/{ref}/statuses"]["response"]["data"][number];
 
 export type UserRepositoryParams = Endpoints["POST /user/repos"]["parameters"];
 export type UserRepositoryResponse = Endpoints["POST /user/repos"]["response"];
@@ -377,9 +379,7 @@ export type TestRunner = {
   github: GithubApi;
   createUserGithub(repo: string): Promise<GithubApi>;
 
-  gitClone(
-    api?: GithubApi
-  ): Promise<{
+  gitClone(api?: GithubApi): Promise<{
     directory: string;
     simpleGit: SimpleGit;
     git: {
