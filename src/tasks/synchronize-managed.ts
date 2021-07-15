@@ -1,4 +1,3 @@
-import { Endpoints } from "@octokit/types";
 import { Context } from "probot";
 import { getConfig } from "../config";
 import { withGit } from "../github/clone";
@@ -12,9 +11,13 @@ import {
 import { deleteBranch } from "../github/git";
 import { Managed } from "../matcher";
 import { getFilePatternMapPerTeam } from "../ownership/codeowners";
-import { CancellationToken, Task } from "./queue";
 import { removeIndentation } from "../strings";
-import { unblockPullRequest } from "../github/commit-status";
+import { CancellationToken, Task } from "./queue";
+import { handleLabelRemoved } from "./synchronize-managed/label-removed";
+import {
+  updateManaged,
+  UpdateManagedResult,
+} from "./synchronize-managed/update-managed";
 
 export function synchronizeManaged(context: Context, managed: Managed): Task {
   const task = {
@@ -24,17 +27,20 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
     async run(token: CancellationToken): Promise<void> {
       context.log.debug(`[${managed}] synchronize managed pull request`);
 
-      await handleUnlabeled(context, managed, token);
+      const wasRemoved = await handleLabelRemoved(context, managed, token);
+      if (wasRemoved) {
+        return;
+      }
 
-      const updatedHead = await updateFromHead(context, managed, token);
+      const updatedHead = await updateManaged(context, managed, token);
       switch (updatedHead) {
-        case UpdateFromHeadResult.notFound:
+        case UpdateManagedResult.notFound:
           context.log.info(
-            `[${managed}] no head branch; skip this synchronization`
+            `[${managed}] no base branch; skip this synchronization`
           );
           break;
 
-        case UpdateFromHeadResult.upToDate:
+        case UpdateManagedResult.upToDate:
           const result = await this.closeManagedPullRequestIfEmpty(
             context,
             managed,
@@ -52,7 +58,7 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
           context.log.debug(`[${managed}] synchronized managed pull request`);
           break;
 
-        case UpdateFromHeadResult.updated:
+        case UpdateManagedResult.updated:
           context.log.info(
             `[${managed}] merged HEAD; wait for next synchronization`
           );
@@ -229,97 +235,4 @@ export function synchronizeManaged(context: Context, managed: Managed): Task {
   };
 
   return task;
-}
-
-enum HandleUnlabeledResult {
-  hasLabel,
-  hasNoLabel,
-}
-
-async function handleUnlabeled(
-  context: Context,
-  managed: Managed,
-  token: CancellationToken
-): Promise<HandleUnlabeledResult> {
-  token.abortIfCanceled();
-  const configuration = await getConfig(context, managed.head.ref);
-
-  if (managed.labels.includes(configuration.manageReviewLabel)) {
-    return HandleUnlabeledResult.hasLabel;
-  }
-
-  try {
-    token.abortIfCanceled();
-    const reviews = await managed.children();
-
-    context.log.debug(
-      reviews.map(
-        (pr) => `PR-${pr.number} | ${pr.state.padEnd(6)} | ${pr.title}`
-      ),
-      `[${managed}] ${reviews.length} found review requests`
-    );
-
-    for (const review of reviews) {
-      token.abortIfCanceled();
-      await closePullRequest(context, review.number);
-
-      token.abortIfCanceled();
-      await deleteBranch(context, review.head.ref);
-    }
-  } finally {
-    token.abortIfCanceled();
-    await unblockPullRequest(context, managed);
-  }
-
-  return HandleUnlabeledResult.hasNoLabel;
-}
-
-enum UpdateFromHeadResult {
-  upToDate,
-  updated,
-  notFound,
-}
-
-async function updateFromHead(
-  context: Context,
-  managed: Managed,
-  token: CancellationToken
-): Promise<UpdateFromHeadResult> {
-  token.abortIfCanceled();
-  let head: Endpoints["GET /repos/{owner}/{repo}/git/ref/{ref}"]["response"]["data"];
-  try {
-    const { data } = await context.octokit.git.getRef(
-      context.repo({
-        ref: `heads/${managed.base.ref}`,
-      })
-    );
-    head = data;
-  } catch {
-    context.log.error(`[${managed}] head branch not found`);
-    return UpdateFromHeadResult.notFound;
-  }
-
-  if (head.object.sha === managed.base.sha) {
-    return UpdateFromHeadResult.upToDate;
-  }
-
-  context.log.debug(
-    {
-      HEAD: `${head.object.sha} (${managed.base.ref})`,
-      ref: `${managed.base.sha} (${managed.head.ref})`,
-    },
-    `[${managed}] update branch; merge HEAD`
-  );
-
-  token.abortIfCanceled();
-  await context.octokit.pulls.updateBranch(
-    context.repo({
-      mediaType: {
-        previews: ["lydian"],
-      },
-      pull_number: managed.number,
-    })
-  );
-
-  return UpdateFromHeadResult.updated;
 }
