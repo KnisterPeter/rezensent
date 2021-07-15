@@ -5,7 +5,8 @@ import { ErrorCode, RezensentError } from "./error";
 import { findPullRequest, getPullRequest } from "./github/get";
 import { isReferencedPullRequest } from "./github/is-referenced";
 
-type PullRequest = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]["data"];
+type PullRequest =
+  Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]["data"];
 
 export interface PullRequestBase {
   readonly number: PullRequest["number"];
@@ -17,7 +18,9 @@ export interface PullRequestBase {
     readonly ref: PullRequest["head"]["ref"];
     readonly sha: PullRequest["head"]["sha"];
   };
-  readonly user: PullRequest["user"];
+  readonly user: {
+    login: string;
+  } | null;
   readonly state: PullRequest["state"];
   readonly title: PullRequest["title"];
   readonly body: PullRequest["body"];
