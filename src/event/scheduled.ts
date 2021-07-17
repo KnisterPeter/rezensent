@@ -36,6 +36,7 @@ export async function schedule(app: Probot): Promise<void> {
 
   await waitUntil(Date.now() + delay);
 
+  running = true;
   while (running) {
     const next = Date.now() + timeout;
 
