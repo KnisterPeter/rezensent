@@ -15,6 +15,7 @@
     "start": "LANG=C ts-node-transpile-only ./src/node",
     "check": "tsc",
     "check:watch": "tsc --watch",
+    "test:watch": "jest --watch --no-coverage src/",
     "test": "LANG=C jest",
     "test:info": "TERM=dumb LOG_LEVEL=info yarn test --colors --runInBand",
     "test:debug": "TERM=dumb LOG_LEVEL=debug yarn test --colors --runInBand",
