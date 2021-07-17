@@ -83,7 +83,7 @@ export async function findPullRequest(
       };
 
       const filterResult = filter(pullRequest, filters);
-      const testResult = await test?.(pullRequest);
+      const testResult = test ? await test(pullRequest) : true;
 
       if (filterResult && testResult) {
         return pullRequest;
