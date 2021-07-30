@@ -3520,13 +3520,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:4.1.1":
-  version: 4.1.1
-  resolution: "chalk@npm:4.1.1"
+"chalk@npm:4.1.2":
+  version: 4.1.2
+  resolution: "chalk@npm:4.1.2"
   dependencies:
     ansi-styles: ^4.1.0
     supports-color: ^7.1.0
-  checksum: 445c12db7aeed0046500a1e4184d31209a77d165654c885a789c41c8598a6a95bd2392180987cac572c967b93a2a730dda778bb7f87fa06ca63fd8592f8cc59f
+  checksum: e3901b97d953991712bf0b941d586175be7ca5da56a97d25187e07453c6b26cae0ac8d9c7aa9e87e7c5c986fff870771b3a8e2705b3becda868829e2e12c2a65
   languageName: node
   linkType: hard
 
@@ -7431,7 +7431,7 @@ fsevents@^2.3.2:
     "@types/jest": 26.0.24
     "@types/js-yaml": 4.0.2
     "@types/slice-ansi": 4.0.0
-    chalk: 4.1.1
+    chalk: 4.1.2
     common-tags: 1.8.0
     dotenv: 10.0.0
     fastify: ^3.13.0
