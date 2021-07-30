@@ -1035,7 +1035,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "chalk",
-        "npm:4.1.1"
+        "npm:4.1.2"
       ],
       [
         "char-regex",
@@ -2949,7 +2949,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jest", "npm:26.0.24"],
             ["@types/js-yaml", "npm:4.0.2"],
             ["@types/slice-ansi", "npm:4.0.0"],
-            ["chalk", "npm:4.1.1"],
+            ["chalk", "npm:4.1.2"],
             ["common-tags", "npm:1.8.0"],
             ["dotenv", "npm:10.0.0"],
             ["fastify", "npm:3.13.0"],
@@ -8064,10 +8064,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           ],
           "linkType": "HARD",
         }],
-        ["npm:4.1.1", {
-          "packageLocation": "./.yarn/cache/chalk-npm-4.1.1-f1ce6bae57-445c12db7a.zip/node_modules/chalk/",
+        ["npm:4.1.2", {
+          "packageLocation": "./.yarn/cache/chalk-npm-4.1.2-ba8b67ab80-e3901b97d9.zip/node_modules/chalk/",
           "packageDependencies": [
-            ["chalk", "npm:4.1.1"],
+            ["chalk", "npm:4.1.2"],
             ["ansi-styles", "npm:4.3.0"],
             ["supports-color", "npm:7.2.0"]
           ],
@@ -12502,7 +12502,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jest", "npm:26.0.24"],
             ["@types/js-yaml", "npm:4.0.2"],
             ["@types/slice-ansi", "npm:4.0.0"],
-            ["chalk", "npm:4.1.1"],
+            ["chalk", "npm:4.1.2"],
             ["common-tags", "npm:1.8.0"],
             ["dotenv", "npm:10.0.0"],
             ["fastify", "npm:3.13.0"],
