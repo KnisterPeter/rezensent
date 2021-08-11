@@ -6,10 +6,10 @@
   "author": "Markus Wolf <mail@markus-wolf.de>",
   "license": "MIT",
   "engines": {
-    "node": "14.17.4"
+    "node": "14.17.5"
   },
   "volta": {
-    "node": "14.17.4"
+    "node": "14.17.5"
   },
   "scripts": {
     "start": "LANG=C ts-node-transpile-only ./src/node",
