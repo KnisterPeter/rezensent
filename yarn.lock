@@ -2885,10 +2885,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/slice-ansi@npm:4.0.0":
-  version: 4.0.0
-  resolution: "@types/slice-ansi@npm:4.0.0"
-  checksum: d4b0e28dc2847c0457682a9a4f76ac7acba4b2330bf9676d21d37259640cefb0493ddbaa3bfb50e1066e154b639def3beb73552b9d131aec701350a01c7ace08
+"@types/slice-ansi@npm:5.0.0":
+  version: 5.0.0
+  resolution: "@types/slice-ansi@npm:5.0.0"
+  checksum: bf2d2ad1b2caacc78dea208f6d320c6dbd17f4fdef9061f1478c078fd0e6169bae9e03752152f21081742defda5ee593f61c94855293c195fa8a1142b7d7ae74
   languageName: node
   linkType: hard
 
@@ -3102,6 +3102,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ansi-styles@npm:^6.0.0":
+  version: 6.1.0
+  resolution: "ansi-styles@npm:6.1.0"
+  checksum: b6b1f7b28031db24dde421736b62e9f802eb0f911b91e554755c8437b7e5b3e27063a90dd6a2b21474d0cb0aabf5b53295b4f03abf0e5c60ae769d45c2376c66
+  languageName: node
+  linkType: hard
+
 "anymatch@npm:^3.0.3":
   version: 3.1.1
   resolution: "anymatch@npm:3.1.1"
@@ -3191,13 +3198,6 @@ __metadata:
   version: 1.0.0
   resolution: "assert-plus@npm:1.0.0"
   checksum: 1bda24f67343ccb75a7eee31179c92cf9f79bd6f6bc24101b0ce1495ef979376dd9b0f9b9064812bba564cdade5fbf851ed76b4a44b5e141d49cdaee6ffed6b2
-  languageName: node
-  linkType: hard
-
-"astral-regex@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "astral-regex@npm:2.0.0"
-  checksum: bf049ee7048b70af5473580020f98faf09159af31a7fa5e223099966dc90e9e87760bd34030e19a6dcac05b45614b428f559bd71f027344d123555e524cb95ac
   languageName: node
   linkType: hard
 
@@ -5264,6 +5264,13 @@ fsevents@^2.3.2:
   version: 3.0.0
   resolution: "is-fullwidth-code-point@npm:3.0.0"
   checksum: a01a19ecac34386ae3a4e801c5639d6e31082d1ddc418e7cd96317fef3c8b24ec8531558e9d3d35b33551ab9c5cf20bf2cdefa583927b7ff60c27c8d7c216063
+  languageName: node
+  linkType: hard
+
+"is-fullwidth-code-point@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "is-fullwidth-code-point@npm:4.0.0"
+  checksum: 5c55b1bf131feadb19d111f63aa9816fb6ef049ce23c7a920f3045a040d09725469f562a8fa7f16a1db2084724ed14ea7d82e6d18492ff8ef063551cd69ead25
   languageName: node
   linkType: hard
 
@@ -7531,7 +7538,7 @@ fsevents@^2.3.2:
     "@types/eventsource": 1.1.6
     "@types/jest": 27.0.1
     "@types/js-yaml": 4.0.3
-    "@types/slice-ansi": 4.0.0
+    "@types/slice-ansi": 5.0.0
     chalk: 4.1.2
     common-tags: 1.8.0
     dotenv: 10.0.0
@@ -7541,7 +7548,7 @@ fsevents@^2.3.2:
     middie: ^5.2.0
     probot: ^11.1.0
     simple-git: ^2.36.2
-    slice-ansi: 4.0.0
+    slice-ansi: 5.0.0
     smee-client: 1.2.2
     ts-node: ^10.0.0
     typescript: ^4.2.3
@@ -7768,14 +7775,13 @@ fsevents@^2.3.2:
   languageName: node
   linkType: hard
 
-"slice-ansi@npm:4.0.0":
-  version: 4.0.0
-  resolution: "slice-ansi@npm:4.0.0"
+"slice-ansi@npm:5.0.0":
+  version: 5.0.0
+  resolution: "slice-ansi@npm:5.0.0"
   dependencies:
-    ansi-styles: ^4.0.0
-    astral-regex: ^2.0.0
-    is-fullwidth-code-point: ^3.0.0
-  checksum: f411aa051802605c3dc8523edee42d39ef59d7c36e6bef6bf1e61d9d2a83894187f6af56911a43ec8e58b921996722d75b354a4c3050b924426ffd1b05da33f9
+    ansi-styles: ^6.0.0
+    is-fullwidth-code-point: ^4.0.0
+  checksum: 4d1489be2b99f9343864eb0d2e605202550131ea77bc9f8260ff1cf441d5d46e719783d3eb2509762bfd489472516bccfd4a43c0b2b6f5f53b2f5d191eb00e7a
   languageName: node
   linkType: hard
 
