@@ -571,7 +571,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "@octokit/webhooks",
-        "npm:7.21.0"
+        "npm:7.24.3"
       ],
       [
         "@probot/get-private-key",
@@ -2941,7 +2941,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@babel/preset-env", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:7.15.4"],
             ["@babel/preset-typescript", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:7.15.0"],
             ["@octokit/types", "npm:6.12.2"],
-            ["@octokit/webhooks", "npm:7.21.0"],
+            ["@octokit/webhooks", "npm:7.24.3"],
             ["@types/babel__core", "npm:7.1.15"],
             ["@types/babel__preset-env", "npm:7.9.2"],
             ["@types/common-tags", "npm:1.8.1"],
@@ -6818,6 +6818,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@octokit/request-error", "npm:2.0.5"],
             ["aggregate-error", "npm:3.1.0"],
             ["debug", "virtual:904b3fada4a3265c4dfeed8c42d6542b5b497582d17441c86eea102109bfc3b9e1825aad904bc43dd1b94603ff4820b8cb2ebcf24cfbaf45ecee04e5bc1076b8#npm:4.3.2"]
+          ],
+          "linkType": "HARD",
+        }],
+        ["npm:7.24.3", {
+          "packageLocation": "./.yarn/cache/@octokit-webhooks-npm-7.24.3-01043fa4c2-a957c24ccf.zip/node_modules/@octokit/webhooks/",
+          "packageDependencies": [
+            ["@octokit/webhooks", "npm:7.24.3"],
+            ["@octokit/request-error", "npm:2.0.5"],
+            ["aggregate-error", "npm:3.1.0"],
+            ["debug", "virtual:13aadb10a74575dd0e034d0bdf0858c9ee9289ee1d11e075867d4fb084b6d145f8eb8e7d6b5456728203936824e1774e1e7d8fecfc1717f3da48ad14bb82922d#npm:4.3.2"]
           ],
           "linkType": "HARD",
         }]
@@ -12765,7 +12775,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@babel/preset-env", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:7.15.4"],
             ["@babel/preset-typescript", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:7.15.0"],
             ["@octokit/types", "npm:6.12.2"],
-            ["@octokit/webhooks", "npm:7.21.0"],
+            ["@octokit/webhooks", "npm:7.24.3"],
             ["@types/babel__core", "npm:7.1.15"],
             ["@types/babel__preset-env", "npm:7.9.2"],
             ["@types/common-tags", "npm:1.8.1"],
