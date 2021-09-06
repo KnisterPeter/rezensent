@@ -783,7 +783,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "@types/slice-ansi",
-        "npm:4.0.0"
+        "npm:5.0.0"
       ],
       [
         "@types/sonic-boom",
@@ -900,10 +900,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       [
         "assert-plus",
         "npm:1.0.0"
-      ],
-      [
-        "astral-regex",
-        "npm:2.0.0"
       ],
       [
         "asynckit",
@@ -2563,7 +2559,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "slice-ansi",
-        "npm:4.0.0"
+        "npm:5.0.0"
       ],
       [
         "smee-client",
@@ -2948,7 +2944,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/eventsource", "npm:1.1.6"],
             ["@types/jest", "npm:27.0.1"],
             ["@types/js-yaml", "npm:4.0.3"],
-            ["@types/slice-ansi", "npm:4.0.0"],
+            ["@types/slice-ansi", "npm:5.0.0"],
             ["chalk", "npm:4.1.2"],
             ["common-tags", "npm:1.8.0"],
             ["dotenv", "npm:10.0.0"],
@@ -2958,7 +2954,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["middie", "npm:5.2.0"],
             ["probot", "npm:11.1.0"],
             ["simple-git", "npm:2.36.2"],
-            ["slice-ansi", "npm:4.0.0"],
+            ["slice-ansi", "npm:5.0.0"],
             ["smee-client", "npm:1.2.2"],
             ["ts-node", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:10.0.0"],
             ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"]
@@ -7409,10 +7405,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@types/slice-ansi", [
-        ["npm:4.0.0", {
-          "packageLocation": "./.yarn/cache/@types-slice-ansi-npm-4.0.0-3ea421e2de-d4b0e28dc2.zip/node_modules/@types/slice-ansi/",
+        ["npm:5.0.0", {
+          "packageLocation": "./.yarn/cache/@types-slice-ansi-npm-5.0.0-c04761beed-bf2d2ad1b2.zip/node_modules/@types/slice-ansi/",
           "packageDependencies": [
-            ["@types/slice-ansi", "npm:4.0.0"]
+            ["@types/slice-ansi", "npm:5.0.0"]
           ],
           "linkType": "HARD",
         }]
@@ -7647,6 +7643,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["ansi-styles", "npm:5.2.0"]
           ],
           "linkType": "HARD",
+        }],
+        ["npm:6.1.0", {
+          "packageLocation": "./.yarn/cache/ansi-styles-npm-6.1.0-4f6a594d04-b6b1f7b280.zip/node_modules/ansi-styles/",
+          "packageDependencies": [
+            ["ansi-styles", "npm:6.1.0"]
+          ],
+          "linkType": "HARD",
         }]
       ]],
       ["anymatch", [
@@ -7752,15 +7755,6 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/assert-plus-npm-1.0.0-cac95ef098-1bda24f673.zip/node_modules/assert-plus/",
           "packageDependencies": [
             ["assert-plus", "npm:1.0.0"]
-          ],
-          "linkType": "HARD",
-        }]
-      ]],
-      ["astral-regex", [
-        ["npm:2.0.0", {
-          "packageLocation": "./.yarn/cache/astral-regex-npm-2.0.0-f30d866aab-bf049ee704.zip/node_modules/astral-regex/",
-          "packageDependencies": [
-            ["astral-regex", "npm:2.0.0"]
           ],
           "linkType": "HARD",
         }]
@@ -10196,6 +10190,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/is-fullwidth-code-point-npm-3.0.0-1ecf4ebee5-a01a19ecac.zip/node_modules/is-fullwidth-code-point/",
           "packageDependencies": [
             ["is-fullwidth-code-point", "npm:3.0.0"]
+          ],
+          "linkType": "HARD",
+        }],
+        ["npm:4.0.0", {
+          "packageLocation": "./.yarn/cache/is-fullwidth-code-point-npm-4.0.0-848488b60d-5c55b1bf13.zip/node_modules/is-fullwidth-code-point/",
+          "packageDependencies": [
+            ["is-fullwidth-code-point", "npm:4.0.0"]
           ],
           "linkType": "HARD",
         }]
@@ -12772,7 +12773,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/eventsource", "npm:1.1.6"],
             ["@types/jest", "npm:27.0.1"],
             ["@types/js-yaml", "npm:4.0.3"],
-            ["@types/slice-ansi", "npm:4.0.0"],
+            ["@types/slice-ansi", "npm:5.0.0"],
             ["chalk", "npm:4.1.2"],
             ["common-tags", "npm:1.8.0"],
             ["dotenv", "npm:10.0.0"],
@@ -12782,7 +12783,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["middie", "npm:5.2.0"],
             ["probot", "npm:11.1.0"],
             ["simple-git", "npm:2.36.2"],
-            ["slice-ansi", "npm:4.0.0"],
+            ["slice-ansi", "npm:5.0.0"],
             ["smee-client", "npm:1.2.2"],
             ["ts-node", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:10.0.0"],
             ["typescript", "patch:typescript@npm%3A4.2.3#builtin<compat/typescript>::version=4.2.3&hash=a45b0e"]
@@ -13034,13 +13035,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["slice-ansi", [
-        ["npm:4.0.0", {
-          "packageLocation": "./.yarn/cache/slice-ansi-npm-4.0.0-6eeca1d10e-f411aa0518.zip/node_modules/slice-ansi/",
+        ["npm:5.0.0", {
+          "packageLocation": "./.yarn/cache/slice-ansi-npm-5.0.0-8cd4f226df-4d1489be2b.zip/node_modules/slice-ansi/",
           "packageDependencies": [
-            ["slice-ansi", "npm:4.0.0"],
-            ["ansi-styles", "npm:4.3.0"],
-            ["astral-regex", "npm:2.0.0"],
-            ["is-fullwidth-code-point", "npm:3.0.0"]
+            ["slice-ansi", "npm:5.0.0"],
+            ["ansi-styles", "npm:6.1.0"],
+            ["is-fullwidth-code-point", "npm:4.0.0"]
           ],
           "linkType": "HARD",
         }]
