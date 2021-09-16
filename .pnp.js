@@ -571,7 +571,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "@octokit/webhooks",
-        "npm:7.21.0"
+        "npm:9.15.0"
+      ],
+      [
+        "@octokit/webhooks-methods",
+        "npm:2.0.0"
+      ],
+      [
+        "@octokit/webhooks-types",
+        "npm:4.7.0"
       ],
       [
         "@probot/get-private-key",
@@ -2941,7 +2949,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@babel/preset-env", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:7.15.4"],
             ["@babel/preset-typescript", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:7.15.0"],
             ["@octokit/types", "npm:6.12.2"],
-            ["@octokit/webhooks", "npm:7.21.0"],
+            ["@octokit/webhooks", "npm:9.15.0"],
             ["@types/babel__core", "npm:7.1.15"],
             ["@types/babel__preset-env", "npm:7.9.2"],
             ["@types/common-tags", "npm:1.8.1"],
@@ -6818,6 +6826,35 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@octokit/request-error", "npm:2.0.5"],
             ["aggregate-error", "npm:3.1.0"],
             ["debug", "virtual:904b3fada4a3265c4dfeed8c42d6542b5b497582d17441c86eea102109bfc3b9e1825aad904bc43dd1b94603ff4820b8cb2ebcf24cfbaf45ecee04e5bc1076b8#npm:4.3.2"]
+          ],
+          "linkType": "HARD",
+        }],
+        ["npm:9.15.0", {
+          "packageLocation": "./.yarn/cache/@octokit-webhooks-npm-9.15.0-7cf771b6db-b2684991f2.zip/node_modules/@octokit/webhooks/",
+          "packageDependencies": [
+            ["@octokit/webhooks", "npm:9.15.0"],
+            ["@octokit/request-error", "npm:2.0.5"],
+            ["@octokit/webhooks-methods", "npm:2.0.0"],
+            ["@octokit/webhooks-types", "npm:4.7.0"],
+            ["aggregate-error", "npm:3.1.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@octokit/webhooks-methods", [
+        ["npm:2.0.0", {
+          "packageLocation": "./.yarn/cache/@octokit-webhooks-methods-npm-2.0.0-b902c12ff9-b99e19cb07.zip/node_modules/@octokit/webhooks-methods/",
+          "packageDependencies": [
+            ["@octokit/webhooks-methods", "npm:2.0.0"]
+          ],
+          "linkType": "HARD",
+        }]
+      ]],
+      ["@octokit/webhooks-types", [
+        ["npm:4.7.0", {
+          "packageLocation": "./.yarn/cache/@octokit-webhooks-types-npm-4.7.0-ae284d3e12-ecc2232555.zip/node_modules/@octokit/webhooks-types/",
+          "packageDependencies": [
+            ["@octokit/webhooks-types", "npm:4.7.0"]
           ],
           "linkType": "HARD",
         }]
@@ -12765,7 +12802,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@babel/preset-env", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:7.15.4"],
             ["@babel/preset-typescript", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:7.15.0"],
             ["@octokit/types", "npm:6.12.2"],
-            ["@octokit/webhooks", "npm:7.21.0"],
+            ["@octokit/webhooks", "npm:9.15.0"],
             ["@types/babel__core", "npm:7.1.15"],
             ["@types/babel__preset-env", "npm:7.9.2"],
             ["@types/common-tags", "npm:1.8.1"],

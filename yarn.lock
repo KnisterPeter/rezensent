@@ -2516,6 +2516,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@octokit/webhooks-methods@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@octokit/webhooks-methods@npm:2.0.0"
+  checksum: b99e19cb0734e3e0b8354c6c34327f647f189678453771b415ebd6049978444c7f14ad8a6fa5b4885cf34626fb6848d57287bd2b40dce6f3923926cf0f1e49ad
+  languageName: node
+  linkType: hard
+
+"@octokit/webhooks-types@npm:4.7.0":
+  version: 4.7.0
+  resolution: "@octokit/webhooks-types@npm:4.7.0"
+  checksum: ecc2232555e79003039bbf59796da7ca586296079931b4a5f5e5934434f5bc6a424dacc7179b1b43a1b6cb6992727ec336c802af91963a17fa8e0332cb233139
+  languageName: node
+  linkType: hard
+
 "@octokit/webhooks@npm:7.21.0":
   version: 7.21.0
   resolution: "@octokit/webhooks@npm:7.21.0"
@@ -2524,6 +2538,18 @@ __metadata:
     aggregate-error: ^3.1.0
     debug: ^4.0.0
   checksum: 46eb45b2f23106e57ff6318183a7680170d7715be9d215798c4f702484b9e2e17ce4f5c87415fcd2cf680c6103db66520eeccf10011985a9849e420a87988a49
+  languageName: node
+  linkType: hard
+
+"@octokit/webhooks@npm:9.15.0":
+  version: 9.15.0
+  resolution: "@octokit/webhooks@npm:9.15.0"
+  dependencies:
+    "@octokit/request-error": ^2.0.2
+    "@octokit/webhooks-methods": ^2.0.0
+    "@octokit/webhooks-types": 4.7.0
+    aggregate-error: ^3.1.0
+  checksum: b2684991f2326cf7851fd688b7a010b99f1b8f2d76ad962307517c033f9ff5589bb9bf46b01bba4390f4785047fcab6550ef39d7af8d85c18e0f2881e42cf461
   languageName: node
   linkType: hard
 
@@ -7673,7 +7699,7 @@ fsevents@^2.3.2:
     "@babel/preset-env": 7.15.4
     "@babel/preset-typescript": 7.15.0
     "@octokit/types": ^6.12.2
-    "@octokit/webhooks": 7.21.0
+    "@octokit/webhooks": 9.15.0
     "@types/babel__core": 7.1.15
     "@types/babel__preset-env": 7.9.2
     "@types/common-tags": 1.8.1
