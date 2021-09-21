@@ -723,7 +723,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "@types/jest",
-        "npm:27.0.1"
+        "npm:27.0.2"
       ],
       [
         "@types/js-yaml",
@@ -2946,7 +2946,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/babel__preset-env", "npm:7.9.2"],
             ["@types/common-tags", "npm:1.8.1"],
             ["@types/eventsource", "npm:1.1.6"],
-            ["@types/jest", "npm:27.0.1"],
+            ["@types/jest", "npm:27.0.2"],
             ["@types/js-yaml", "npm:4.0.3"],
             ["@types/slice-ansi", "npm:4.0.0"],
             ["chalk", "npm:4.1.2"],
@@ -7255,10 +7255,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@types/jest", [
-        ["npm:27.0.1", {
-          "packageLocation": "./.yarn/cache/@types-jest-npm-27.0.1-a860f5c797-5f2382b580.zip/node_modules/@types/jest/",
+        ["npm:27.0.2", {
+          "packageLocation": "./.yarn/cache/@types-jest-npm-27.0.2-f9ba43c7f9-0dca387566.zip/node_modules/@types/jest/",
           "packageDependencies": [
-            ["@types/jest", "npm:27.0.1"],
+            ["@types/jest", "npm:27.0.2"],
             ["jest-diff", "npm:27.0.6"],
             ["pretty-format", "npm:27.0.6"]
           ],
@@ -12770,7 +12770,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/babel__preset-env", "npm:7.9.2"],
             ["@types/common-tags", "npm:1.8.1"],
             ["@types/eventsource", "npm:1.1.6"],
-            ["@types/jest", "npm:27.0.1"],
+            ["@types/jest", "npm:27.0.2"],
             ["@types/js-yaml", "npm:4.0.3"],
             ["@types/slice-ansi", "npm:4.0.0"],
             ["chalk", "npm:4.1.2"],
