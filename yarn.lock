@@ -2527,6 +2527,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@octokit/webhooks@npm:7.24.3":
+  version: 7.24.3
+  resolution: "@octokit/webhooks@npm:7.24.3"
+  dependencies:
+    "@octokit/request-error": ^2.0.2
+    aggregate-error: ^3.1.0
+    debug: ^4.0.0
+  checksum: a957c24ccfbb3eb902f0d3e4971b9eb4f8fbbd972233d89b6aa568e45144aff8dae9f1e178feb3e668e2892d6772d476eb566e21625ad1ca3c5f9ad21fad2e1e
+  languageName: node
+  linkType: hard
+
 "@probot/get-private-key@npm:^1.1.0":
   version: 1.1.0
   resolution: "@probot/get-private-key@npm:1.1.0"
@@ -7673,7 +7684,7 @@ fsevents@^2.3.2:
     "@babel/preset-env": 7.15.4
     "@babel/preset-typescript": 7.15.0
     "@octokit/types": ^6.12.2
-    "@octokit/webhooks": 7.21.0
+    "@octokit/webhooks": 7.24.3
     "@types/babel__core": 7.1.16
     "@types/babel__preset-env": 7.9.2
     "@types/common-tags": 1.8.1
