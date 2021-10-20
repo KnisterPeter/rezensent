@@ -687,7 +687,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "@types/eventsource",
-        "npm:1.1.6"
+        "npm:1.1.7"
       ],
       [
         "@types/express",
@@ -2945,7 +2945,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/babel__core", "npm:7.1.16"],
             ["@types/babel__preset-env", "npm:7.9.2"],
             ["@types/common-tags", "npm:1.8.1"],
-            ["@types/eventsource", "npm:1.1.6"],
+            ["@types/eventsource", "npm:1.1.7"],
             ["@types/jest", "npm:27.0.2"],
             ["@types/js-yaml", "npm:4.0.3"],
             ["@types/slice-ansi", "npm:4.0.0"],
@@ -7199,10 +7199,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["@types/eventsource", [
-        ["npm:1.1.6", {
-          "packageLocation": "./.yarn/cache/@types-eventsource-npm-1.1.6-30f5ae6eca-4244506b77.zip/node_modules/@types/eventsource/",
+        ["npm:1.1.7", {
+          "packageLocation": "./.yarn/cache/@types-eventsource-npm-1.1.7-2ae27fc28c-4f864780df.zip/node_modules/@types/eventsource/",
           "packageDependencies": [
-            ["@types/eventsource", "npm:1.1.6"]
+            ["@types/eventsource", "npm:1.1.7"]
           ],
           "linkType": "HARD",
         }]
@@ -12845,7 +12845,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/babel__core", "npm:7.1.16"],
             ["@types/babel__preset-env", "npm:7.9.2"],
             ["@types/common-tags", "npm:1.8.1"],
-            ["@types/eventsource", "npm:1.1.6"],
+            ["@types/eventsource", "npm:1.1.7"],
             ["@types/jest", "npm:27.0.2"],
             ["@types/js-yaml", "npm:4.0.3"],
             ["@types/slice-ansi", "npm:4.0.0"],
