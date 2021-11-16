@@ -1107,7 +1107,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "common-tags",
-        "npm:1.8.0"
+        "npm:1.8.2"
       ],
       [
         "component-emitter",
@@ -2954,7 +2954,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/js-yaml", "npm:4.0.3"],
             ["@types/slice-ansi", "npm:4.0.0"],
             ["chalk", "npm:4.1.2"],
-            ["common-tags", "npm:1.8.0"],
+            ["common-tags", "npm:1.8.2"],
             ["dotenv", "npm:10.0.0"],
             ["fastify", "npm:3.13.0"],
             ["jest", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:27.3.1"],
@@ -8603,10 +8603,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]
       ]],
       ["common-tags", [
-        ["npm:1.8.0", {
-          "packageLocation": "./.yarn/cache/common-tags-npm-1.8.0-7a31956e16-f37a868d86.zip/node_modules/common-tags/",
+        ["npm:1.8.2", {
+          "packageLocation": "./.yarn/cache/common-tags-npm-1.8.2-2c30ba69b3-92fd1d7ae0.zip/node_modules/common-tags/",
           "packageDependencies": [
-            ["common-tags", "npm:1.8.0"]
+            ["common-tags", "npm:1.8.2"]
           ],
           "linkType": "HARD",
         }]
@@ -12861,7 +12861,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/js-yaml", "npm:4.0.3"],
             ["@types/slice-ansi", "npm:4.0.0"],
             ["chalk", "npm:4.1.2"],
-            ["common-tags", "npm:1.8.0"],
+            ["common-tags", "npm:1.8.2"],
             ["dotenv", "npm:10.0.0"],
             ["fastify", "npm:3.13.0"],
             ["jest", "virtual:f25f92ff1f537a8a20fe516382d15828921300b7945c26cd1493bbf67b17ac243665123df99574e2e82e1fd70c60272027896d59baaf1e0967598e2d87239977#npm:27.3.1"],

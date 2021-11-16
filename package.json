@@ -44,7 +44,7 @@
     "@types/js-yaml": "4.0.3",
     "@types/slice-ansi": "4.0.0",
     "chalk": "4.1.2",
-    "common-tags": "1.8.0",
+    "common-tags": "1.8.2",
     "dotenv": "10.0.0",
     "jest": "27.3.1",
     "slice-ansi": "4.0.0",

@@ -4041,10 +4041,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"common-tags@npm:1.8.0":
-  version: 1.8.0
-  resolution: "common-tags@npm:1.8.0"
-  checksum: f37a868d868929cf345fe49c4122efde693f9b06bf5764df36c3bdf5d3c271a24bb3fb6fbfaeec1f29768e60ad648cc11a4092c91bac05a8bde90ddbf5aae1a8
+"common-tags@npm:1.8.2":
+  version: 1.8.2
+  resolution: "common-tags@npm:1.8.2"
+  checksum: 92fd1d7ae0d25838784d3c2481589d6a4ca42cb9eec408308a3c6e264a6432e106b994163c723fc233614447649f4af8bfb1d18234c4d1b86255ae9c740b330e
   languageName: node
   linkType: hard
 
@@ -7778,7 +7778,7 @@ fsevents@^2.3.2:
     "@types/js-yaml": 4.0.3
     "@types/slice-ansi": 4.0.0
     chalk: 4.1.2
-    common-tags: 1.8.0
+    common-tags: 1.8.2
     dotenv: 10.0.0
     fastify: ^3.13.0
     jest: 27.3.1
