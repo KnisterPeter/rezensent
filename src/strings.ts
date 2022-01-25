@@ -52,5 +52,5 @@ export function removeIndentation(
     newLines.push(last);
   }
 
-  return newLines.map((line) => line.substr(indentation)).join("\n");
+  return newLines.map((line) => line.substring(indentation)).join("\n");
 }
