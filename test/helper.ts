@@ -262,7 +262,7 @@ function testify(str: string, testId: string, test: string): string {
   const regexp = new RegExp(pattern);
 
   if (str.startsWith("origin/")) {
-    return `origin/${testify(str.substr("origin/".length), testId, test)}`;
+    return `origin/${testify(str.substring("origin/".length), testId, test)}`;
   }
   return regexp.test(str) ? str : test.replace("%s", str).replace("%t", testId);
 }
