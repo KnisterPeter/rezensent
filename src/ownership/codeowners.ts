@@ -6,7 +6,7 @@ export function getTeams({ file }: { file: string }): string[] {
     file.split(/\n/).reduce((set, line) => {
       const [_, team] = line.split(/\s+/);
       if (team && team.startsWith("@")) {
-        set.add(team.substr(1));
+        set.add(team.substring(1));
       }
       return set;
     }, new Set<string>())
@@ -23,7 +23,7 @@ export function getPatternsByTeam({
   return file
     .split(/\n/)
     .map((line) => line.split(/\s+/))
-    .filter(([, t]) => t?.startsWith("@") && t.substr(1) === team)
+    .filter(([, t]) => t?.startsWith("@") && t.substring(1) === team)
     .map(([path]) => (path === "*" ? "^.*$" : `^${path}.*$`));
 }
 
