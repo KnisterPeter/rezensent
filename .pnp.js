@@ -747,7 +747,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],
       [
         "@types/js-yaml",
-        "npm:4.0.3"
+        "npm:4.0.5"
       ],
       [
         "@types/jsonwebtoken",
@@ -2975,7 +2975,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/common-tags", "npm:1.8.1"],
             ["@types/eventsource", "npm:1.1.7"],
             ["@types/jest", "npm:27.4.1"],
-            ["@types/js-yaml", "npm:4.0.3"],
+            ["@types/js-yaml", "npm:4.0.5"],
             ["@types/slice-ansi", "npm:4.0.0"],
             ["chalk", "npm:4.1.2"],
             ["common-tags", "npm:1.8.0"],
@@ -7600,10 +7600,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           ],
           "linkType": "HARD",
         }],
-        ["npm:4.0.3", {
-          "packageLocation": "./.yarn/cache/@types-js-yaml-npm-4.0.3-ae7bc639a1-24c3afc2e9.zip/node_modules/@types/js-yaml/",
+        ["npm:4.0.5", {
+          "packageLocation": "./.yarn/cache/@types-js-yaml-npm-4.0.5-bb64d71397-1083270453.zip/node_modules/@types/js-yaml/",
           "packageDependencies": [
-            ["@types/js-yaml", "npm:4.0.3"]
+            ["@types/js-yaml", "npm:4.0.5"]
           ],
           "linkType": "HARD",
         }]
@@ -13193,7 +13193,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/common-tags", "npm:1.8.1"],
             ["@types/eventsource", "npm:1.1.7"],
             ["@types/jest", "npm:27.4.1"],
-            ["@types/js-yaml", "npm:4.0.3"],
+            ["@types/js-yaml", "npm:4.0.5"],
             ["@types/slice-ansi", "npm:4.0.0"],
             ["chalk", "npm:4.1.2"],
             ["common-tags", "npm:1.8.0"],

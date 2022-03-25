@@ -3225,10 +3225,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-yaml@npm:4.0.3":
-  version: 4.0.3
-  resolution: "@types/js-yaml@npm:4.0.3"
-  checksum: 24c3afc2e9e656ccdabd3159a4d7fa6cc0ff54777627d29f699818938f791126d5e92f0bdd92ccffeed13c6f801c1cb2c60bb9adcf4b1d46c6843a3bf5abac1b
+"@types/js-yaml@npm:4.0.5":
+  version: 4.0.5
+  resolution: "@types/js-yaml@npm:4.0.5"
+  checksum: 108327045353d101f334928cb199e7e9db706e3d93dd430604f778fae87456ac14fc410776aac5afd96800a6a95db4966be8229368a3592bb798c1aad7ad3ad2
   languageName: node
   linkType: hard
 
@@ -8085,7 +8085,7 @@ fsevents@^2.3.2:
     "@types/common-tags": 1.8.1
     "@types/eventsource": 1.1.7
     "@types/jest": 27.4.1
-    "@types/js-yaml": 4.0.3
+    "@types/js-yaml": 4.0.5
     "@types/slice-ansi": 4.0.0
     chalk: 4.1.2
     common-tags: 1.8.0
