@@ -3347,10 +3347,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/slice-ansi@npm:4.0.0":
-  version: 4.0.0
-  resolution: "@types/slice-ansi@npm:4.0.0"
-  checksum: d4b0e28dc2847c0457682a9a4f76ac7acba4b2330bf9676d21d37259640cefb0493ddbaa3bfb50e1066e154b639def3beb73552b9d131aec701350a01c7ace08
+"@types/slice-ansi@npm:5.0.2":
+  version: 5.0.2
+  resolution: "@types/slice-ansi@npm:5.0.2"
+  checksum: d2900e4326773ca50cefbb65dfa037d48383bf98bd4c0e3039b4765d440932c7e6a1a50967214b781397509991997ef32886edd58ed5079bb30c5d98fca0852c
   languageName: node
   linkType: hard
 
@@ -8086,7 +8086,7 @@ fsevents@^2.3.2:
     "@types/eventsource": 1.1.7
     "@types/jest": 27.4.1
     "@types/js-yaml": 4.0.3
-    "@types/slice-ansi": 4.0.0
+    "@types/slice-ansi": 5.0.2
     chalk: 4.1.2
     common-tags: 1.8.0
     dotenv: 10.0.0
