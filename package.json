@@ -33,9 +33,9 @@
     "typescript": "^4.2.3"
   },
   "devDependencies": {
-    "@babel/core": "7.15.8",
-    "@babel/preset-env": "7.15.8",
-    "@babel/preset-typescript": "7.15.0",
+    "@babel/core": "7.23.3",
+    "@babel/preset-env": "7.23.3",
+    "@babel/preset-typescript": "7.23.3",
     "@types/babel__core": "7.1.16",
     "@types/babel__preset-env": "7.9.2",
     "@types/common-tags": "1.8.1",
