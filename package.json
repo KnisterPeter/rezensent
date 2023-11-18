@@ -48,7 +48,7 @@
     "dotenv": "10.0.0",
     "jest": "27.5.1",
     "slice-ansi": "4.0.0",
-    "smee-client": "1.2.2"
+    "smee-client": "1.2.5"
   },
   "jest": {
     "testEnvironment": "node",
